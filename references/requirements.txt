@@ -1,0 +1,15 @@
+# db-mcp 核心依赖
+# 使用方法: pip install -r requirements.txt
+
+# MCP 框架（核心依赖，必需）
+fastmcp<3
+
+# MySQL 数据库驱动（可选）
+# 安装方法: pip install -r requirements-mysql.txt
+# 或: pip install -r requirements.txt[mysql]
+mysql-connector-python>=8.0.30
+
+# PostgreSQL 数据库驱动（可选）
+# 安装方法: pip install -r requirements-postgresql.txt
+# 或: pip install -r requirements.txt[postgresql]
+psycopg2-binary>=2.9.0

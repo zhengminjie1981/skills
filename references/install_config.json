@@ -1,0 +1,123 @@
+{
+  "_comment": "这是 Claude 配置模板，请将以下配置添加到你的 ~/.claude.json 文件中",
+  "_instructions": [
+    "1. 找到你的 ~/.claude.json 文件",
+    "2. 在对应项目的 mcpServers 节点下添加以下配置",
+    "3. 将路径替换为实际路径",
+    "4. 选择启动方式：uvx（自动管理依赖）或 python（需手动安装依赖）",
+    "5. 重启 Claude Code"
+  ],
+
+  "_windows_example_uv": {
+    "mcpServers": {
+      "chatbi": {
+        "command": "uvx",
+        "args": [
+          "--directory",
+          "%USERPROFILE%\\.claude\\skills\\portable-chatbi-mcp",
+          "--with",
+          "mysql-connector-python",
+          "chatbi-mcp"
+        ],
+        "env": {
+          "CHATBI_CONFIG": "%USERPROFILE%\\.claude\\skills\\portable-chatbi-mcp\\db_config.json"
+        }
+      }
+    }
+  },
+
+  "_windows_example_python": {
+    "mcpServers": {
+      "chatbi": {
+        "command": "python",
+        "args": [
+          "%USERPROFILE%\\.claude\\skills\\portable-chatbi-mcp\\scripts\\server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "%USERPROFILE%\\.claude\\skills\\portable-chatbi-mcp\\scripts"
+        }
+      }
+    }
+  },
+
+  "_linux_mac_example_uv": {
+    "mcpServers": {
+      "chatbi": {
+        "command": "uvx",
+        "args": [
+          "--directory",
+          "/home/username/.claude/skills/portable-chatbi-mcp",
+          "--with",
+          "mysql-connector-python",
+          "chatbi-mcp"
+        ],
+        "env": {
+          "CHATBI_CONFIG": "/home/username/.claude/skills/portable-chatbi-mcp/db_config.json"
+        }
+      }
+    }
+  },
+
+  "_linux_mac_example_python": {
+    "mcpServers": {
+      "chatbi": {
+        "command": "python3",
+        "args": [
+          "/home/username/.claude/skills/portable-chatbi-mcp/scripts/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/home/username/.claude/skills/portable-chatbi-mcp/scripts"
+        }
+      }
+    }
+  },
+
+  "_project_root_example_uv": {
+    "mcpServers": {
+      "chatbi": {
+        "command": "uvx",
+        "args": [
+          "--directory",
+          "E:/ChatBI/portable-chatbi-mcp",
+          "--with",
+          "mysql-connector-python",
+          "chatbi-mcp"
+        ],
+        "env": {
+          "CHATBI_CONFIG": "E:/ChatBI/portable-chatbi-mcp/db_config.json"
+        }
+      }
+    }
+  },
+
+  "_project_root_example_python": {
+    "mcpServers": {
+      "chatbi": {
+        "command": "python",
+        "args": [
+          "E:/ChatBI/portable-chatbi-mcp/scripts/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "E:/ChatBI/portable-chatbi-mcp/scripts"
+        }
+      }
+    }
+  },
+
+  "_setup_steps": {
+    "step1": "安装依赖: pip install -r references/requirements.txt",
+    "step2": "或使用自动检测: python scripts/ensure_dependencies.py",
+    "step3": "选择 uvx 或 python 启动方式",
+    "step4": "将对应配置添加到 ~/.claude.json",
+    "step5": "重启 Claude Code"
+  },
+
+  "_notes": {
+    "uvx": "uvx 是 uv 的工具执行器，首次运行会自动下载依赖（需要安装 uv）",
+    "python": "使用 Python 直接运行，需要先手动安装依赖：pip install -r references/requirements.txt",
+    "--directory": "指定项目目录，uvx 会在该目录中查找 pyproject.toml",
+    "--with": "额外安装的依赖包，如 mysql-connector-python",
+    "chatbi-mcp": "要执行的命令，在 pyproject.toml 的 [project.scripts] 中定义",
+    "PYTHONPATH": "Python 模块搜索路径，确保能找到项目模块"
+  }
+}

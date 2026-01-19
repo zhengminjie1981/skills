@@ -1,0 +1,4 @@
+# PostgreSQL 数据库驱动
+# 使用方法: pip install -r requirements-postgresql.txt
+
+psycopg2-binary>=2.9.0

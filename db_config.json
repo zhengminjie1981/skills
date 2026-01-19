@@ -1,0 +1,10 @@
+{
+  "try_mcp": {
+    "type": "mysql",
+    "host": "rm-bp1g9a2fd7e9t14b1ko.mysql.rds.aliyuncs.com",
+    "port": 3306,
+    "user": "zhengmj",
+    "password": "9s8K!789",
+    "database": "try_mcp"
+  }
+}
