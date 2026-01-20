@@ -1,0 +1,36 @@
+# Doc2Md .gitignore
+# Portable tools (can be re-downloaded with --auto-install)
+bin/
+
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Converted outputs
+*.md
+!README.md
+!SKILL.md
+!references/*.md
+
+# Extracted media
+media/
+
+# Test documents
+test_docs/
+tests/input/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db

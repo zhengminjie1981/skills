@@ -15,6 +15,13 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Literal
 
+# Import portable runtime support
+try:
+    from portable_runtime import PortableRuntime
+    PORTABLE_RUNTIME = PortableRuntime()
+except ImportError:
+    PORTABLE_RUNTIME = None
+
 # Pandoc supported formats
 SUPPORTED_FORMATS = {
     # Word processing
@@ -139,6 +146,11 @@ INPUT_FORMATS = {
 
 def check_pandoc_installed() -> bool:
     """Check if pandoc is installed and accessible."""
+    # Check portable runtime first
+    if PORTABLE_RUNTIME and PORTABLE_RUNTIME.is_pandoc_available():
+        return True
+
+    # Fall back to system pandoc
     try:
         result = subprocess.run(
             ['pandoc', '--version'],
@@ -151,11 +163,21 @@ def check_pandoc_installed() -> bool:
         return False
 
 
+def get_pandoc_command() -> List[str]:
+    """Get pandoc command (portable or system)."""
+    if PORTABLE_RUNTIME:
+        portable_path = PORTABLE_RUNTIME.get_pandoc_executable()
+        if portable_path:
+            return [str(portable_path)]
+    return ['pandoc']
+
+
 def get_pandoc_version() -> Optional[str]:
     """Get pandoc version string."""
     try:
+        cmd = get_pandoc_command()
         result = subprocess.run(
-            ['pandoc', '--version'],
+            cmd + ['--version'],
             capture_output=True,
             text=True,
             timeout=5
@@ -394,8 +416,7 @@ def convert_with_pandoc(
         output_path = get_output_path(input_path)
 
     # Build pandoc command
-    cmd = [
-        'pandoc',
+    cmd = get_pandoc_command() + [
         '-f', input_format,
         '-t', 'markdown',
         input_path,
@@ -757,11 +778,44 @@ Examples:
         help='Remove table of contents (Markdown has no page numbers)'
     )
 
+    parser.add_argument(
+        '--auto-install',
+        action='store_true',
+        help='Automatically download portable pandoc if not found'
+    )
+
+    parser.add_argument(
+        '--status',
+        action='store_true',
+        help='Show runtime status and exit'
+    )
+
     args = parser.parse_args()
+
+    # Show status if requested
+    if args.status:
+        if PORTABLE_RUNTIME:
+            PORTABLE_RUNTIME.print_status()
+        else:
+            print("\nPortable runtime not available.")
+            print(f"Pandoc installed: {check_pandoc_installed()}")
+            print(f"MinerU installed: {check_mineru_available()}")
+        sys.exit(0)
 
     # Determine required tools
     needs_pandoc = args.tool in ['auto', 'pandoc']
     needs_mineru = args.tool == 'mineru' or (args.tool == 'auto' and check_mineru_available())
+
+    # Auto-install pandoc if requested
+    if args.auto_install and PORTABLE_RUNTIME:
+        if not PORTABLE_RUNTIME.is_pandoc_available():
+            print("Pandoc not found. Attempting to download portable version...")
+            if PORTABLE_RUNTIME.ensure_pandoc(auto_install=True):
+                print("Pandoc installed successfully!")
+            else:
+                print("Failed to install pandoc automatically.")
+                print_installation_instructions()
+                sys.exit(1)
 
     # Check tool availability
     pandoc_ok = check_pandoc_installed()
@@ -769,6 +823,8 @@ Examples:
 
     if needs_pandoc and not pandoc_ok:
         print_installation_instructions()
+        if PORTABLE_RUNTIME:
+            print("\nTip: Use --auto-install to download pandoc automatically.")
         sys.exit(1)
 
     # Show version info if verbose

@@ -37,6 +37,9 @@ python scripts/converter.py document.docx
 # Convert a PDF with MinerU (better for tables, OCR)
 python scripts/converter.py document.pdf --tool mineru
 
+# Portable mode: auto-download pandoc if not found
+python scripts/converter.py document.docx --auto-install
+
 # Remove table of contents (recommended for Word/PDF)
 python scripts/converter.py document.docx --skip-toc
 
@@ -64,6 +67,8 @@ Use this skill when:
 
 | Option | Description |
 |--------|-------------|
+| `--auto-install` | Auto-download portable pandoc to `bin/` if not found |
+| `--status` | Show runtime status (pandoc, mineru availability) |
 | `--tool {pandoc|mineru}` | Select conversion tool (auto-detect for non-PDF) |
 | `--skip-toc` | Remove table of contents (recommended - Markdown has no page numbers) |
 | `--extract-media` | Extract images to media/ folder |
@@ -117,8 +122,12 @@ Use this skill when:
 ## Important Notes
 
 - **Tool requirements**: At least one tool (Pandoc or MinerU) must be installed
-  - Pandoc: Required for non-PDF formats
-  - MinerU: Optional, for advanced PDF processing
+  - Pandoc: Required for non-PDF formats. Can be system-installed OR use `--auto-install` for portable version
+  - MinerU: Optional, for advanced PDF processing. Install with `pip install mineru`
+- **Portable mode**: Use `--auto-install` to automatically download pandoc to `bin/` directory
+  - Downloaded once, reused across sessions
+  - Can be synced to cloud/storage for use across machines
+  - Priority: portable bin/ > system pandoc
 - **PDF handling**: For PDFs, MinerU is recommended for:
   - Scanned documents
   - Complex table layouts
@@ -133,7 +142,10 @@ Use this skill when:
 
 ## Troubleshooting
 
-- **"Pandoc not found"**: Install pandoc using system package manager
+- **"Pandoc not found"**:
+  - Option 1: Use `--auto-install` to download portable version automatically
+  - Option 2: Install system-wide with `choco/brew/apt install pandoc`
+  - Option 3: Check status with `--status`
 - **"MinerU not found"**: Install with `pip install mineru`
 - **Conversion fails**: Use `-v` flag to see detailed error messages
 - **Images options**:
