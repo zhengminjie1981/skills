@@ -14,10 +14,11 @@ Convert documents to Markdown using two powerful tools:
 | Use Case | Recommended Tool |
 |----------|-----------------|
 | Word, EPUB, HTML, other formats | **Pandoc** |
-| Standard PDFs (text-based) | Pandoc or MinerU |
+| Standard PDFs (text-based) | PyMuPDF or Pandoc |
 | Scanned PDFs / PDFs with OCR | **MinerU** |
 | Complex table extraction | **MinerU** |
 | Academic papers with formulas | **MinerU** |
+| Python 3.14+ compatibility | **PyMuPDF** |
 | Batch mixed formats | Pandoc (auto-detects) |
 
 ## Quick Start
@@ -29,13 +30,19 @@ brew install pandoc   # macOS
 sudo apt-get install pandoc  # Linux
 
 # Install MinerU (for advanced PDF processing)
-pip install mineru  # Python package
+pip install mineru  # Python 3.10-3.12 required
+
+# Install PyMuPDF (lightweight PDF alternative, Python 3.14+ compatible)
+pip install PyMuPDF
 
 # Convert a document with Pandoc
 python scripts/converter.py document.docx
 
-# Convert a PDF with MinerU (better for tables, OCR)
+# Convert a PDF with MinerU (best for tables, OCR)
 python scripts/converter.py document.pdf --tool mineru
+
+# Convert a PDF with PyMuPDF (lightweight, Python 3.14+)
+python scripts/converter.py document.pdf --tool pymupdf
 
 # Portable mode: auto-download pandoc if not found
 python scripts/converter.py document.docx --auto-install
@@ -110,6 +117,14 @@ Use this skill when:
 - **Multi-language**: Supports Chinese, English, and other languages
 - **Image extraction**: Preserves images and figure captions
 
+### PyMuPDF (Lightweight PDF)
+- **Lightweight**: Fast and simple PDF parsing
+- **Python 3.14+ compatible**: Works with latest Python versions
+- **Text extraction**: Extracts text from text-based PDFs
+- **Basic layout**: Detects headings and paragraphs
+- **Image extraction**: Extracts images to media folder
+- **No complex dependencies**: Simple pip install
+
 ## Workflow
 
 1. User provides document path(s)
@@ -121,18 +136,18 @@ Use this skill when:
 
 ## Important Notes
 
-- **Tool requirements**: At least one tool (Pandoc or MinerU) must be installed
+- **Tool requirements**: At least one tool (Pandoc, MinerU, or PyMuPDF) must be installed
   - Pandoc: Required for non-PDF formats. Can be system-installed OR use `--auto-install` for portable version
-  - MinerU: Optional, for advanced PDF processing. Install with `pip install mineru`
+  - MinerU: Optional, for advanced PDF processing. Install with `pip install mineru` (Python 3.10-3.12)
+  - PyMuPDF: Optional, for lightweight PDF processing. Install with `pip install PyMuPDF` (Python 3.14+ compatible)
 - **Portable mode**: Use `--auto-install` to automatically download pandoc to `bin/` directory
   - Downloaded once, reused across sessions
   - Can be synced to cloud/storage for use across machines
   - Priority: portable bin/ > system pandoc
-- **PDF handling**: For PDFs, MinerU is recommended for:
-  - Scanned documents
-  - Complex table layouts
-  - Mathematical formulas
-  - Chinese/mixed-language content
+- **PDF handling**: For PDFs, choose the appropriate tool:
+  - **MinerU**: Best for scanned documents, complex tables, formulas, Chinese/mixed-language content
+  - **PyMuPDF**: Good for simple text-based PDFs, fast processing, Python 3.14+ compatibility
+  - **Pandoc**: Basic PDF support, works on most systems
 - **Image handling**:
   - `--relative-images`: Extracts images to media/ folder, keeps relative paths
   - `--embed-images`: Embeds images as Base64, creating self-contained but larger files
@@ -146,7 +161,8 @@ Use this skill when:
   - Option 1: Use `--auto-install` to download portable version automatically
   - Option 2: Install system-wide with `choco/brew/apt install pandoc`
   - Option 3: Check status with `--status`
-- **"MinerU not found"**: Install with `pip install mineru`
+- **"MinerU not found"**: Install with `pip install mineru` (requires Python 3.10-3.12)
+- **"PyMuPDF not found"**: Install with `pip install PyMuPDF` (compatible with Python 3.14+)
 - **Conversion fails**: Use `-v` flag to see detailed error messages
 - **Images options**:
   - Use `--relative-images` for separate image files in media/ folder
@@ -154,6 +170,7 @@ Use this skill when:
   - Use `--extract-media` (same as `--relative-images`)
 - **TOC still present**: Ensure `--skip-toc` flag is used
 - **PDF table issues**: Try `--tool mineru` for better table extraction
-- **Scanned PDF blank**: Use `--tool mineru` (auto-enables OCR)
+- **Scanned PDF blank**: Use `--tool mineru` (auto-enables OCR) or `--tool pymupdf` for text PDFs only
+- **Python 3.14 compatibility**: Use `--tool pymupdf` for PDF processing with Python 3.14+
 
 For detailed documentation, see `references/usage.md`.

@@ -199,12 +199,32 @@ def check_mineru_available() -> bool:
         return False
 
 
+def check_pymupdf_available() -> bool:
+    """Check if PyMuPDF is available."""
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("PyMuPDF") or importlib.util.find_spec("fitz")
+        return spec is not None
+    except Exception:
+        return False
+
+
 def get_mineru_converter():
     """Import MinerU converter module."""
     try:
         # Try to import from same directory
         import mineru_converter
         return mineru_converter
+    except ImportError:
+        return None
+
+
+def get_pymupdf_converter():
+    """Import PyMuPDF converter module."""
+    try:
+        # Try to import from same directory
+        import pymupdf_converter
+        return pymupdf_converter
     except ImportError:
         return None
 
@@ -478,7 +498,7 @@ def convert_with_pandoc(
 def convert(
     input_path: str,
     output_path: Optional[str] = None,
-    tool: Literal['auto', 'pandoc', 'mineru'] = 'auto',
+    tool: Literal['auto', 'pandoc', 'mineru', 'pymupdf'] = 'auto',
     extract_media: bool = False,
     embed_images: bool = False,
     relative_images: bool = False,
@@ -492,7 +512,7 @@ def convert(
     Args:
         input_path: Path to input file
         output_path: Path to output .md file
-        tool: Conversion tool ('auto', 'pandoc', 'mineru')
+        tool: Conversion tool ('auto', 'pandoc', 'mineru', 'pymupdf')
         extract_media: Extract images to media folder
         embed_images: Embed images as Base64
         relative_images: Keep images as relative paths (implies extract_media)
@@ -508,9 +528,14 @@ def convert(
 
     # Auto-detect tool
     if tool == 'auto':
-        if is_pdf and check_mineru_available():
-            # Use MinerU for PDFs when available
-            tool = 'mineru'
+        if is_pdf:
+            # For PDFs, prefer: MinerU -> PyMuPDF -> Pandoc
+            if check_mineru_available():
+                tool = 'mineru'
+            elif check_pymupdf_available():
+                tool = 'pymupdf'
+            else:
+                tool = 'pandoc'
         else:
             # Use Pandoc for everything else
             tool = 'pandoc'
@@ -534,6 +559,25 @@ def convert(
                 )
             else:
                 print("Error: MinerU module not found.")
+                return None, False
+
+    if tool == 'pymupdf':
+        if not is_pdf:
+            print(f"Warning: PyMuPDF only supports PDF files. Using Pandoc instead.")
+            tool = 'pandoc'
+        else:
+            pymupdf_conv = get_pymupdf_converter()
+            if pymupdf_conv:
+                return pymupdf_conv.convert_pdf(
+                    input_path,
+                    output_path=output_path,
+                    extract_images=extract_media,
+                    embed_images=embed_images,
+                    relative_images=relative_images,
+                    skip_toc=skip_toc
+                )
+            else:
+                print("Error: PyMuPDF module not found.")
                 return None, False
 
     if tool == 'pandoc':
@@ -595,7 +639,7 @@ def get_supported_files(paths: List[str]) -> List[str]:
 def batch_convert(
     inputs: List[str],
     output_dir: Optional[str] = None,
-    tool: Literal['auto', 'pandoc', 'mineru'] = 'auto',
+    tool: Literal['auto', 'pandoc', 'mineru', 'pymupdf'] = 'auto',
     extract_media: bool = False,
     embed_images: bool = False,
     relative_images: bool = False,
@@ -699,18 +743,23 @@ def main():
 Supported formats:
   Pandoc: DOCX, DOC, ODT, RTF, EPUB, PDF, HTML, TXT, and 30+ more
   MinerU: PDF (advanced parsing with OCR and table extraction)
+  PyMuPDF: PDF (lightweight, text-based, Python 3.14+ compatible)
 
 Tool Selection:
-  --tool auto    Auto-detect (MinerU for PDFs if available, Pandoc otherwise)
+  --tool auto    Auto-detect (MinerU > PyMuPDF > Pandoc for PDFs)
   --tool pandoc  Use Pandoc for all files
   --tool mineru  Use MinerU for PDFs (Pandoc for other formats)
+  --tool pymupdf Use PyMuPDF for PDFs (Pandoc for other formats)
 
 Examples:
   # Convert a Word document
   %(prog)s document.docx
 
-  # Convert a PDF with MinerU (better tables/OCR)
+  # Convert a PDF with MinerU (best for OCR/tables)
   %(prog)s document.pdf --tool mineru
+
+  # Convert a PDF with PyMuPDF (lightweight, Python 3.14+)
+  %(prog)s document.pdf --tool pymupdf
 
   # Convert to specific output directory
   %(prog)s document.pdf -o ./markdown/
@@ -743,7 +792,7 @@ Examples:
 
     parser.add_argument(
         '--tool',
-        choices=['auto', 'pandoc', 'mineru'],
+        choices=['auto', 'pandoc', 'mineru', 'pymupdf'],
         default='auto',
         help='Conversion tool to use (default: auto)'
     )

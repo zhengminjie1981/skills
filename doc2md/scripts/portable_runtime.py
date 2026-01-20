@@ -160,12 +160,22 @@ class PortableRuntime:
         """Check status of required Python packages."""
         packages = {
             "mineru": False,
+            "pymupdf": False,
         }
 
         for pkg in packages:
             try:
-                __import__(pkg)
-                packages[pkg] = True
+                # Try alternative import names
+                if pkg == "pymupdf":
+                    try:
+                        __import__("fitz")
+                        packages[pkg] = True
+                    except ImportError:
+                        __import__("PyMuPDF")
+                        packages[pkg] = True
+                else:
+                    __import__(pkg)
+                    packages[pkg] = True
             except ImportError:
                 pass
 

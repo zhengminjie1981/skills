@@ -1,6 +1,6 @@
 # Doc2Md - Document to Markdown Converter
 
-Convert 40+ document formats to Markdown using Pandoc and MinerU.
+Convert 40+ document formats to Markdown using Pandoc, MinerU, and PyMuPDF.
 
 ## Features
 
@@ -16,6 +16,13 @@ Convert 40+ document formats to Markdown using Pandoc and MinerU.
 - **Formula parsing** - LaTeX formulas converted to readable format
 - **Layout recognition** - detects document structure automatically
 - **Multi-language** support (Chinese, English, and more)
+
+### PyMuPDF (Lightweight PDF Parser)
+- **Lightweight** and fast PDF conversion
+- **Python 3.14+ compatible** - works with latest Python versions
+- **Text extraction** from text-based PDFs
+- **Basic layout detection** - headings and paragraphs
+- **Image extraction** support
 
 ## Image Handling Options
 
@@ -58,6 +65,13 @@ sudo yum install pandoc      # RHEL/CentOS
 ### MinerU (Optional, for advanced PDF processing)
 ```bash
 pip install mineru
+# Requires Python 3.10-3.12
+```
+
+### PyMuPDF (Optional, for lightweight PDF processing)
+```bash
+pip install PyMuPDF
+# Compatible with Python 3.14+
 ```
 
 ## Quick Start
@@ -75,8 +89,11 @@ python scripts/converter.py document.docx --embed-images
 # Remove table of contents (recommended)
 python scripts/converter.py document.docx --skip-toc --relative-images
 
-# Convert PDF with MinerU (better for tables/OCR)
+# Convert PDF with MinerU (best for tables/OCR)
 python scripts/converter.py document.pdf --tool mineru --relative-images
+
+# Convert PDF with PyMuPDF (lightweight, Python 3.14+)
+python scripts/converter.py document.pdf --tool pymupdf --relative-images
 
 # Batch convert
 python scripts/converter.py "./docs/*.pdf" -o ./output/ --relative-images
@@ -87,10 +104,11 @@ python scripts/converter.py "./docs/*.pdf" -o ./output/ --relative-images
 | Use Case | Recommended Tool |
 |----------|-----------------|
 | Word, EPUB, HTML, other formats | **Pandoc** |
-| Standard PDFs (text-based) | Pandoc or MinerU |
+| Standard PDFs (text-based) | PyMuPDF or Pandoc |
 | Scanned PDFs / PDFs with OCR | **MinerU** |
 | Complex table extraction | **MinerU** |
 | Academic papers with formulas | **MinerU** |
+| Python 3.14+ compatibility | **PyMuPDF** |
 
 ## Command-Line Options
 
@@ -101,7 +119,7 @@ positional arguments:
 optional arguments:
   -h, --help            Show help message
   -o DIR, --output DIR  Output directory
-  --tool {auto,pandoc,mineru}
+  --tool {auto,pandoc,mineru,pymupdf}
                         Conversion tool (default: auto)
   -v, --verbose         Enable detailed output
   --skip-toc            Remove table of contents
@@ -128,6 +146,9 @@ python scripts/converter.py document.pdf --relative-images
 
 # Scanned PDF with MinerU (OCR)
 python scripts/converter.py scanned.pdf --tool mineru --relative-images
+
+# Simple PDF with PyMuPDF (fast, lightweight)
+python scripts/converter.py document.pdf --tool pymupdf --relative-images
 
 # Academic paper with formulas
 python scripts/converter.py paper.pdf --tool mineru --embed-images
@@ -174,13 +195,15 @@ output/
 
 ### Conversion fails
 - **"Pandoc not found"**: Install Pandoc using package manager
-- **"MinerU not found"**: Run `pip install mineru`
+- **"MinerU not found"**: Run `pip install mineru` (requires Python 3.10-3.12)
+- **"PyMuPDF not found"**: Run `pip install PyMuPDF` (compatible with Python 3.14+)
 - **Use verbose mode**: Add `-v` flag for detailed error messages
 
 ### PDF issues
-- **Blank output**: Use `--tool mineru` for scanned PDFs
+- **Blank output**: Use `--tool mineru` for scanned PDFs or `--tool pymupdf` for text PDFs
 - **Table issues**: Try `--tool mineru` for better table extraction
 - **Chinese content**: Use `--tool mineru` for better multi-language support
+- **Python 3.14 compatibility**: Use `--tool pymupdf` for PDF processing
 
 ## License
 
