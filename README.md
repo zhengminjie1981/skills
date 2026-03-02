@@ -4,6 +4,44 @@ A collection of AI skills for Claude Code, each designed to enhance productivity
 
 ## Available Skills
 
+### [dev-workflow](./dev-workflow/) - Document-Driven Development Workflow
+
+A comprehensive development workflow specification enforcing document-driven development: no code without documentation, no code changes without documentation updates.
+
+**Core Principles:**
+- **Documentation First**: Any module or feature implementation must have technical documentation completed before coding
+- **Change Tracking**: Any iterative modification must update related documentation and complete impact analysis before code changes
+- **Modular Boundaries**: Modules interact through data structure specifications and interface specifications
+- **Consistency Maintenance**: After documentation updates, synchronize all references
+- **Centralized Progress**: All work plans and progress recorded in unified project planning documents
+
+**Key Features:**
+- 5-tier document hierarchy (System → Specs → Modules → Validation → Reports)
+- Quality gates for pre-coding and pre-commit checkpoints
+- Automated consistency checking tools
+- Complete templates and checklists for new module development and iteration changes
+- Temporary file isolation and management
+
+**Trigger Scenarios:**
+1. Creating new modules or features
+2. Modifying existing code, data structures, or interfaces
+3. Iterative changes or refactoring
+4. Documentation consistency checks
+5. Module design, data structure specifications, interface specifications
+
+**Quick Start:**
+```bash
+# View complete specification
+cat dev-workflow/SKILL.md
+
+# Reference materials
+ls dev-workflow/references/
+# - full-spec.md: Detailed examples, anti-patterns, flowcharts
+# - checklist.md: New module and iteration checklists
+# - quality-gates.md: Quality standards for each phase
+# - tools.md: Document maintenance scripts and tools
+```
+
 ### [db-mcp](./db-mcp/) - Database MCP Service Management
 
 A comprehensive database MCP server skill providing secure database query functionality.
