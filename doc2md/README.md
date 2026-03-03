@@ -205,10 +205,52 @@ output/
 - **Chinese content**: Use `--tool mineru` for better multi-language support
 - **Python 3.14 compatibility**: Use `--tool pymupdf` for PDF processing
 
-## License
+## 📚 Documentation
 
-MIT License
+### For AI Agents
+- **[AI Quick Reference](references/ai-quick-reference.md)** - Optimized for AI agents
+- **[metadata.json](metadata.json)** - Machine-readable metadata
+- **[SKILL.md](SKILL.md)** - Optimized skill documentation
 
-## Contributing
+### For Users
+- **[Usage Scenarios](references/scenarios.md)** - Common use cases with examples
+- **[Installation Guide](references/installation.md)** - Detailed installation instructions
+- **[Usage Guide](references/usage.md)** - Complete usage documentation
+- **[Troubleshooting](references/troubleshooting.md)** - Problem-solving guide
+- **[Portable Mode](references/portable.md)** - Cross-machine setup
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### For Contributors
+- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](docs/CHANGELOG.md)** - Version history
+- **[IMPROVEMENTS.md](docs/IMPROVEMENTS.md)** - Improvement roadmap
+
+### Examples
+- **[examples/](examples/)** - Sample files and expected outputs
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+
+### Ways to Contribute
+- Report bugs
+- Suggest features
+- Improve documentation
+- Submit pull requests
+- Add example files
+
+## 📊 Project Status
+
+See [IMPROVEMENTS.md](docs/IMPROVEMENTS.md) for:
+- Current progress
+- Planned features
+- Development roadmap
+
+## 🙏 Acknowledgments
+
+- **Pandoc** - Universal document converter
+- **MinerU** - Advanced PDF parsing
+- **PyMuPDF** - Lightweight PDF processing

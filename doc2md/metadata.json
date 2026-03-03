@@ -1,0 +1,158 @@
+{
+  "skill": {
+    "name": "doc2md",
+    "version": "1.0.0",
+    "category": "document-conversion",
+    "triggers": {
+      "keywords": [
+        "convert document",
+        "to markdown",
+        "docx to md",
+        "pdf to markdown",
+        "word to markdown",
+        "extract from pdf",
+        "document conversion"
+      ],
+      "file_types": [
+        ".docx", ".doc", ".pdf", ".epub", ".html", ".htm",
+        ".pptx", ".odt", ".rtf", ".txt", ".tex", ".latex"
+      ],
+      "intent_patterns": [
+        "convert {file} to markdown",
+        "extract text from {file}",
+        "change format of {file}",
+        "make {file} readable as markdown"
+      ]
+    },
+    "capabilities": {
+      "formats": "40+ document formats",
+      "ocr": true,
+      "table_extraction": true,
+      "image_handling": ["relative", "embedded"],
+      "batch_processing": true,
+      "cross_platform": true
+    },
+    "requirements": {
+      "mandatory": "Python 3.7+",
+      "optional": [
+        {
+          "tool": "pandoc",
+          "purpose": "Universal document converter (40+ formats)",
+          "install": "choco install pandoc (Windows) | brew install pandoc (macOS)",
+          "auto_install": true
+        },
+        {
+          "tool": "mineru",
+          "purpose": "Advanced PDF with OCR and table extraction",
+          "install": "pip install mineru (Python 3.10-3.12)",
+          "python_version": "3.10-3.12"
+        },
+        {
+          "tool": "PyMuPDF",
+          "purpose": "Lightweight PDF processing",
+          "install": "pip install PyMuPDF (Python 3.14+)",
+          "python_version": "3.14+"
+        }
+      ]
+    },
+    "decision_tree": {
+      "root": "Check file extension",
+      "branches": [
+        {
+          "condition": "PDF file",
+          "check": "Has complex content (tables/OCR/formulas)?",
+          "yes": "Use --tool mineru",
+          "no": "Use --tool pymupdf (or pandoc)"
+        },
+        {
+          "condition": "Word/EPUB/HTML",
+          "action": "Use default pandoc"
+        },
+        {
+          "condition": "Other formats",
+          "action": "Use default pandoc"
+        }
+      ]
+    },
+    "common_patterns": [
+      {
+        "name": "standard_word",
+        "command": "python scripts/converter.py {file} --relative-images --skip-toc",
+        "use_when": "Converting Word/EPUB/HTML documents"
+      },
+      {
+        "name": "complex_pdf",
+        "command": "python scripts/converter.py {file} --tool mineru --relative-images",
+        "use_when": "PDF with tables, formulas, or scanned content"
+      },
+      {
+        "name": "simple_pdf",
+        "command": "python scripts/converter.py {file} --tool pymupdf --relative-images",
+        "use_when": "Simple text-based PDF"
+      },
+      {
+        "name": "batch_convert",
+        "command": "python scripts/converter.py {pattern} -o {output_dir} --relative-images --skip-toc",
+        "use_when": "Converting multiple files"
+      }
+    ],
+    "error_recovery": {
+      "pandoc_not_found": {
+        "solution": "Add --auto-install flag",
+        "command": "python scripts/converter.py {file} --auto-install"
+      },
+      "mineru_not_found": {
+        "solution": "Install MinerU package",
+        "command": "pip install mineru"
+      },
+      "images_missing": {
+        "solution": "Add --relative-images flag",
+        "note": "Images need to be explicitly extracted"
+      },
+      "pdf_blank_output": {
+        "solution": "PDF may be scanned or image-based",
+        "command": "python scripts/converter.py {file} --tool mineru"
+      },
+      "conversion_slow": {
+        "solution": "Use lighter tool for simple PDFs",
+        "command": "python scripts/converter.py {file} --tool pymupdf"
+      }
+    },
+    "documentation": {
+      "quick_reference": "references/ai-quick-reference.md",
+      "installation": "references/installation.md",
+      "usage": "references/usage.md",
+      "troubleshooting": "references/troubleshooting.md",
+      "portable": "references/portable.md"
+    },
+    "safe_defaults": {
+      "image_handling": "--relative-images",
+      "toc_removal": "--skip-toc",
+      "tool_selection": "--tool auto"
+    },
+    "performance": {
+      "pandoc": {
+        "speed": "fast",
+        "best_for": "Non-PDF formats"
+      },
+      "mineru": {
+        "speed": "slow",
+        "best_for": "Complex PDFs (OCR, tables, formulas)",
+        "accuracy": "high"
+      },
+      "pymupdf": {
+        "speed": "fast",
+        "best_for": "Simple text-based PDFs",
+        "accuracy": "medium"
+      }
+    },
+    "agent_workflow": [
+      "Check status: python scripts/converter.py --status",
+      "If pandoc missing: add --auto-install",
+      "Determine tool based on file type and content",
+      "Build command with safe defaults",
+      "Execute conversion",
+      "If failed: check error and apply recovery strategy"
+    ]
+  }
+}

@@ -83,6 +83,7 @@ Convert 40+ document formats to Markdown using Pandoc and MinerU.
 **Features:**
 - **Pandoc**: Universal converter for DOCX, EPUB, HTML, PPTX, LaTeX, and more
 - **MinerU**: Advanced PDF parser with OCR, table extraction, and layout recognition
+- **PyMuPDF**: Fast and lightweight PDF converter
 - Batch processing with glob patterns
 - Flexible image handling (relative paths or Base64 embedding)
 - TOC removal and post-processing
@@ -98,23 +99,80 @@ Convert 40+ document formats to Markdown using Pandoc and MinerU.
 **Quick Start:**
 ```bash
 cd doc2md
-# Install Pandoc (required)
-choco install pandoc  # Windows
-brew install pandoc   # macOS
+# Check environment status
+python scripts/converter.py --status
 
-# Install MinerU (optional, for advanced PDF)
-pip install mineru
-
-# Convert documents
+# Convert Word document
 python scripts/converter.py document.docx --relative-images --skip-toc
-python scripts/converter.py document.pdf --tool mineru --relative-images
+
+# Convert PDF (with auto tool selection)
+python scripts/converter.py document.pdf --tool auto --relative-images
+
+# Batch convert
+python scripts/converter.py "./docs/*.docx" -o ./output/ --relative-images --skip-toc
 ```
+
+### [knowledge-index](./knowledge-index/) - Local Knowledge Base Intelligent Indexing
+
+Build AI-readable indexes for local document collections with automatic summarization, incremental updates, and intelligent retrieval.
+
+**Core Features:**
+- **Auto Conversion**: Automatically convert 40+ formats (PDF, Word, PPT) to Markdown
+- **AI Summarization**: Generate concise summaries (50-500 chars) and keywords (5-10) for each document
+- **Incremental Updates**: Detect file changes and update only modified documents
+- **Intelligent Retrieval**: AI-powered search through index to locate relevant documents
+- **Tool Flexibility**: Auto-detect and select optimal conversion tool (doc2md/pandoc/mineru/PyMuPDF)
+
+**Key Principles:**
+- **Document First**: All documents converted to Markdown before indexing
+- **Incremental Priority**: Prefer incremental updates over full rebuilds
+- **Quality Assurance**: Three-layer validation (structure, semantics, completeness)
+- **Fault Tolerance**: Single document failure doesn't affect overall workflow
+
+**Trigger Scenarios:**
+1. "Build index for [knowledge-base]"
+2. "Update [knowledge-base] index"
+3. "Search in knowledge base for..."
+4. "Check which knowledge bases need updates"
+
+**Quick Start:**
+```bash
+# Build index for a knowledge base
+# AI will: Scan → Convert → Generate summaries → Write _index.yaml
+
+# Query the knowledge base
+# AI will: Read index → Match documents → Generate answer
+
+# Update index incrementally
+# AI will: Detect changes → Process new/modified files → Update index
+```
+
+**Index Structure:**
+```
+knowledge-base/
+├── _index.yaml          # AI-readable index file
+├── _index_config.yaml   # Configuration (optional)
+├── document1.md
+├── document2.pdf
+└── subfolder/
+    └── document3.docx
+```
+
+**Reference Materials:**
+- `references/core/` - Index specification, workflow, quality gates
+- `references/decision/` - Decision trees, quick reference, anti-patterns
+- `references/execution/` - Tools, checklists, templates, troubleshooting
+- `references/advanced/` - Incremental updates, performance tuning, integration
 
 ## Installation
 
 Each skill can be installed independently:
 
 ```bash
+# Install dev-workflow skill
+xcopy dev-workflow %USERPROFILE%\.claude\skills\ /E /I  # Windows
+cp -r dev-workflow ~/.claude/skills/                     # Linux/Mac
+
 # Install db-mcp skill
 xcopy db-mcp %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r db-mcp ~/.claude/skills/                     # Linux/Mac
@@ -122,14 +180,20 @@ cp -r db-mcp ~/.claude/skills/                     # Linux/Mac
 # Install doc2md skill
 xcopy doc2md %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r doc2md ~/.claude/skills/                     # Linux/Mac
+
+# Install knowledge-index skill
+xcopy knowledge-index %USERPROFILE%\.claude\skills\ /E /I  # Windows
+cp -r knowledge-index ~/.claude/skills/                     # Linux/Mac
 ```
 
 ## Usage
 
 Each skill has its own `SKILL.md` file with detailed instructions:
 
+- `dev-workflow/SKILL.md` - Document-driven development workflow specification
 - `db-mcp/SKILL.md` - Database management usage guide
 - `doc2md/SKILL.md` - Document conversion workflow
+- `knowledge-index/SKILL.md` - Knowledge base indexing guide
 
 ## Contributing
 

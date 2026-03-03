@@ -12,7 +12,9 @@ env/
 *.md
 !README.md
 !SKILL.md
+!docs/*.md
 !references/*.md
+!examples/*.md
 
 # Extracted media
 media/
@@ -20,6 +22,7 @@ media/
 # Test documents
 test_docs/
 tests/input/
+docs/
 
 # Python
 __pycache__/
@@ -34,3 +37,17 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.bak
+nul
+
+# Archive (optional - uncomment if you don't want to track archive)
+# docs/_archive/

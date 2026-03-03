@@ -1,176 +1,258 @@
 ---
 name: doc2md
-description: Convert 40+ document formats to Markdown using Pandoc and MinerU. Supports Word, PDF, EPUB, HTML, PowerPoint, LaTeX, Jupyter, CSV, and more. MinerU provides advanced PDF parsing with OCR, table extraction, and layout recognition. Ideal for documents with tables, images, complex formatting, or scanned PDFs.
+description: |
+  Convert 40+ document formats to Markdown.
+
+  WHEN TO USE: User needs to convert DOCX, PDF, EPUB, HTML, PPTX to Markdown
+  TRIGGERS: "convert document", "to markdown", "extract from PDF", "Word to MD"
+  CAPABILITIES: OCR, table extraction, image handling, batch processing
 ---
 
 # Doc2Md - Document to Markdown Converter
 
-Convert documents to Markdown using two powerful tools:
-- **Pandoc**: Universal document converter for 40+ formats
-- **MinerU**: Advanced PDF parser with OCR and intelligent layout recognition
+## 🎯 One-Line Summary
+Convert any document to clean Markdown with intelligent tool selection.
 
-## Tool Selection
+## 🤖 AI Agent Quick Reference
 
-| Use Case | Recommended Tool |
-|----------|-----------------|
-| Word, EPUB, HTML, other formats | **Pandoc** |
-| Standard PDFs (text-based) | PyMuPDF or Pandoc |
-| Scanned PDFs / PDFs with OCR | **MinerU** |
-| Complex table extraction | **MinerU** |
-| Academic papers with formulas | **MinerU** |
-| Python 3.14+ compatibility | **PyMuPDF** |
-| Batch mixed formats | Pandoc (auto-detects) |
-
-## Quick Start
-
-```bash
-# Install Pandoc (for 40+ formats)
-choco install pandoc  # Windows
-brew install pandoc   # macOS
-sudo apt-get install pandoc  # Linux
-
-# Install MinerU (for advanced PDF processing)
-pip install mineru  # Python 3.10-3.12 required
-
-# Install PyMuPDF (lightweight PDF alternative, Python 3.14+ compatible)
-pip install PyMuPDF
-
-# Convert a document with Pandoc
-python scripts/converter.py document.docx
-
-# Convert a PDF with MinerU (best for tables, OCR)
-python scripts/converter.py document.pdf --tool mineru
-
-# Convert a PDF with PyMuPDF (lightweight, Python 3.14+)
-python scripts/converter.py document.pdf --tool pymupdf
-
-# Portable mode: auto-download pandoc if not found
-python scripts/converter.py document.docx --auto-install
-
-# Remove table of contents (recommended for Word/PDF)
-python scripts/converter.py document.docx --skip-toc
-
-# With images - extract and keep as relative paths
-python scripts/converter.py document.docx --relative-images
-
-# With images - embed as Base64 (self-contained)
-python scripts/converter.py document.docx --extract-media --embed-images
-
-# Batch convert
-python scripts/converter.py "./docs/*.pdf" -o ./output/
+### Decision Tree (3 steps)
+```
+Is it a PDF?
+├─ YES → Does it have tables/formulas/scanned content?
+│         ├─ YES → Use --tool mineru
+│         └─ NO  → Use --tool pymupdf (or pandoc)
+└─ NO  → Use --tool pandoc (default)
 ```
 
-## When to Use
+### Most Common Commands
 
-Use this skill when:
-- Converting Word documents (.docx, .doc) to Markdown
-- Extracting content from PDFs (especially scanned PDFs)
-- Converting EPUB e-books, HTML, or other formats
-- Processing documents with complex tables, images, or formulas
-- Converting academic papers with mathematical formulas
-- Batch converting multiple documents
+```bash
+# Pattern 1: Standard Word Document (80% of cases)
+python scripts/converter.py document.docx --relative-images --skip-toc
 
-## Common Options
+# Pattern 2: Complex PDF (tables/OCR/formulas)
+python scripts/converter.py document.pdf --tool mineru --relative-images
 
-| Option | Description |
-|--------|-------------|
-| `--auto-install` | Auto-download portable pandoc to `bin/` if not found |
-| `--status` | Show runtime status (pandoc, mineru availability) |
-| `--tool {pandoc|mineru}` | Select conversion tool (auto-detect for non-PDF) |
-| `--skip-toc` | Remove table of contents (recommended - Markdown has no page numbers) |
-| `--extract-media` | Extract images to media/ folder |
-| `--embed-images` | Embed images as Base64 (creates self-contained Markdown) |
-| `--relative-images` | Keep images as relative paths (implies --extract-media) |
-| `-o DIR` | Specify output directory |
-| `-v` | Verbose mode |
+# Pattern 3: Simple PDF (fast)
+python scripts/converter.py document.pdf --tool pymupdf --relative-images
 
-### MinerU-Specific Options
+# Pattern 4: Batch Convert
+python scripts/converter.py "./docs/*.docx" -o ./output/ --relative-images --skip-toc
+```
 
-| Option | Description |
-|--------|-------------|
-| `--ocr` | Enable OCR for scanned PDFs (auto-detected by MinerU) |
-| `--formula-as-text` | Convert LaTeX formulas to text/MathML |
-| `--parse-tables` | Enhanced table parsing (default for MinerU) |
+## 📋 Tool Selection Matrix
 
-## Key Features
+| File Type | Tool | Command Flag | Why |
+|-----------|------|-------------|-----|
+| Word/EPUB/HTML | `pandoc` | (default) | Native support |
+| Scanned PDF | `mineru` | `--tool mineru` | OCR required |
+| PDF with tables | `mineru` | `--tool mineru` | Better extraction |
+| Simple PDF | `pymupdf` | `--tool pymupdf` | Fast & light |
+| Python 3.14+ | `pymupdf` | `--tool pymupdf` | Compatibility |
 
-### Pandoc (40+ formats)
-- **Documents**: DOCX, DOC, ODT, RTF, PDF
-- **E-books**: EPUB, FB2
-- **Presentations**: PPTX
-- **Web**: HTML, XHTML, XML
-- **Markdown**: MD, Markdown, RMarkdown, and variants
-- **Academic**: LaTeX, TeX
-- **Code**: RST, Textile, Org-mode, Jupyter Notebook
-- **Data**: CSV, TSV, JSON
-- Fast conversion for standard documents
-- Preserves structure: headings, tables, lists, formatting
-- Image handling: extract to folder or embed as Base64
-- Batch processing with glob patterns
-- TOC removal in multiple languages
+## ⚡ Quick Start
 
-### MinerU (Advanced PDF)
-- **Intelligent layout recognition**: Detects document structure automatically
-- **OCR support**: Processes scanned PDFs and images
-- **Table extraction**: Complex table structures preserved as Markdown
-- **Formula parsing**: LaTeX formulas converted to readable format
-- **Multi-language**: Supports Chinese, English, and other languages
-- **Image extraction**: Preserves images and figure captions
+### Step 1: Check Environment
+```bash
+python scripts/converter.py --status
+```
 
-### PyMuPDF (Lightweight PDF)
-- **Lightweight**: Fast and simple PDF parsing
-- **Python 3.14+ compatible**: Works with latest Python versions
-- **Text extraction**: Extracts text from text-based PDFs
-- **Basic layout**: Detects headings and paragraphs
-- **Image extraction**: Extracts images to media folder
-- **No complex dependencies**: Simple pip install
+### Step 2: Convert (with auto-setup)
+```bash
+# If pandoc missing, add --auto-install
+python scripts/converter.py document.docx --auto-install --relative-images --skip-toc
+```
 
-## Workflow
+## 🚨 Common Issues & Quick Fixes
 
-1. User provides document path(s)
-2. Detect file format - PDFs can use Pandoc or MinerU
-3. Check tool availability (provide installation instructions if needed)
-4. Run appropriate converter with options
-5. Post-process: remove TOC, embed images
-6. Return converted .md file(s)
+| Issue | Solution | Command |
+|-------|----------|---------|
+| "Pandoc not found" | Auto-install | Add `--auto-install` |
+| "MinerU not found" | Install package | `pip install mineru` (Python 3.10-3.12) |
+| "PyMuPDF not found" | Install package | `pip install PyMuPDF` |
+| Images missing | Extract images | Add `--relative-images` |
+| TOC still present | Remove TOC | Add `--skip-toc` |
+| PDF blank output | Use OCR tool | Add `--tool mineru` |
+| Conversion slow | Use fast tool | Add `--tool pymupdf` |
 
-## Important Notes
+## 💡 AI Agent Notes
 
-- **Tool requirements**: At least one tool (Pandoc, MinerU, or PyMuPDF) must be installed
-  - Pandoc: Required for non-PDF formats. Can be system-installed OR use `--auto-install` for portable version
-  - MinerU: Optional, for advanced PDF processing. Install with `pip install mineru` (Python 3.10-3.12)
-  - PyMuPDF: Optional, for lightweight PDF processing. Install with `pip install PyMuPDF` (Python 3.14+ compatible)
-- **Portable mode**: Use `--auto-install` to automatically download pandoc to `bin/` directory
-  - Downloaded once, reused across sessions
-  - Can be synced to cloud/storage for use across machines
-  - Priority: portable bin/ > system pandoc
-- **PDF handling**: For PDFs, choose the appropriate tool:
-  - **MinerU**: Best for scanned documents, complex tables, formulas, Chinese/mixed-language content
-  - **PyMuPDF**: Good for simple text-based PDFs, fast processing, Python 3.14+ compatibility
-  - **Pandoc**: Basic PDF support, works on most systems
-- **Image handling**:
-  - `--relative-images`: Extracts images to media/ folder, keeps relative paths
-  - `--embed-images`: Embeds images as Base64, creating self-contained but larger files
-  - `--extract-media`: Extracts images (same as --relative-images)
-- **TOC removal**: Recommended for Word/PDF documents with tables of contents
-- **Error handling**: Continues processing batch operations even if individual files fail
+### Safe Defaults (Always Use)
+- `--relative-images` - Extract images to media/ folder (editable)
+- `--skip-toc` - Remove TOC for Word/PDF (Markdown has no pages)
+- `--tool auto` - Auto-select for mixed batches
 
-## Troubleshooting
+### Typical Workflow
+```
+1. Check status: python scripts/converter.py --status
+2. If pandoc missing: add --auto-install
+3. Convert with safe defaults: --relative-images --skip-toc
+4. For PDFs: specify tool (mineru or pymupdf)
+5. If fails: use -v flag and check error
+```
 
-- **"Pandoc not found"**:
-  - Option 1: Use `--auto-install` to download portable version automatically
-  - Option 2: Install system-wide with `choco/brew/apt install pandoc`
-  - Option 3: Check status with `--status`
-- **"MinerU not found"**: Install with `pip install mineru` (requires Python 3.10-3.12)
-- **"PyMuPDF not found"**: Install with `pip install PyMuPDF` (compatible with Python 3.14+)
-- **Conversion fails**: Use `-v` flag to see detailed error messages
-- **Images options**:
-  - Use `--relative-images` for separate image files in media/ folder
-  - Use `--embed-images` for Base64 embedded images
-  - Use `--extract-media` (same as `--relative-images`)
-- **TOC still present**: Ensure `--skip-toc` flag is used
-- **PDF table issues**: Try `--tool mineru` for better table extraction
-- **Scanned PDF blank**: Use `--tool mineru` (auto-enables OCR) or `--tool pymupdf` for text PDFs only
-- **Python 3.14 compatibility**: Use `--tool pymupdf` for PDF processing with Python 3.14+
+### Red Flags (Special Handling)
+- User mentions "scanned", "OCR", "tables" → use `--tool mineru`
+- User wants "single file" → use `--embed-images`
+- User needs "portable" → use `--auto-install`
+- Python 3.14+ environment → use `--tool pymupdf` for PDF
 
-For detailed documentation, see `references/usage.md`.
+## 🔍 When to Load Detailed Docs
+
+Load these **ONLY when needed** (avoid context pollution):
+
+- **Installation issues?** → `references/installation.md`
+- **Need more examples?** → `references/scenarios.md`
+- **Conversion failed?** → `references/troubleshooting.md`
+- **Portable mode?** → `references/portable.md`
+- **AI quick ref?** → `references/ai-quick-reference.md`
+
+## 📦 Options Reference
+
+### Essential Options (Most Used)
+```
+--relative-images          Extract images to media/ (recommended)
+--skip-toc                 Remove table of contents
+--tool {auto|pandoc|mineru|pymupdf}  Select converter
+-o DIR                     Output directory
+```
+
+### Convenience Options
+```
+--auto-install             Auto-download pandoc if missing
+--status                   Check runtime status
+-v                         Verbose mode (debugging)
+```
+
+### Advanced Options
+```
+--embed-images             Embed as Base64 (single file)
+```
+
+## 📚 Supported Formats (40+)
+
+**Common:** `.docx`, `.doc`, `.pdf`, `.epub`, `.html`, `.pptx`, `.txt`
+**Academic:** `.tex`, `.latex`, `.rst`, `.ipynb`
+**Data:** `.csv`, `.tsv`, `.json`, `.xml`
+
+Full list: see `scripts/converter.py` → `SUPPORTED_FORMATS`
+
+## 🎓 Examples by Scenario
+
+### Scenario 1: Word Document
+```bash
+python scripts/converter.py report.docx --relative-images --skip-toc
+```
+**Output:** `report.md` + `media/` folder with images
+
+### Scenario 2: Complex PDF (tables/OCR)
+```bash
+python scripts/converter.py financial-report.pdf --tool mineru --relative-images
+```
+**Why mineru:** Better table extraction and OCR support
+
+### Scenario 3: Simple PDF (fast)
+```bash
+python scripts/converter.py document.pdf --tool pymupdf --relative-images
+```
+**Why pymupdf:** Fast and lightweight for text-based PDFs
+
+### Scenario 4: Batch Convert
+```bash
+python scripts/converter.py "./docs/*.docx" -o ./markdown/ --relative-images --skip-toc
+```
+**Result:** All .docx files converted to ./markdown/
+
+### Scenario 5: Single File (embedded images)
+```bash
+python scripts/converter.py presentation.pptx --embed-images --skip-toc
+```
+**Result:** Single .md file with Base64 images (easy to share)
+
+### Scenario 6: First Time Setup
+```bash
+# Check what's available
+python scripts/converter.py --status
+
+# Auto-install pandoc
+python scripts/converter.py document.docx --auto-install --relative-images --skip-toc
+```
+
+## 📊 Performance Guide
+
+| Tool | Speed | Best For |
+|------|-------|----------|
+| `pandoc` | Fast | Non-PDF formats |
+| `pymupdf` | Fast | Simple PDFs |
+| `mineru` | Slow | Complex PDFs (OCR, tables, formulas) |
+
+**Tip:** When in doubt, use `--tool auto` for automatic selection.
+
+## 🔄 Typical Agent Workflow
+
+```python
+# Pseudocode for AI agents
+
+def convert_document(file_path, user_requirements):
+    # 1. Check environment
+    status = run("python scripts/converter.py --status")
+
+    # 2. Determine tool
+    if file_path.endswith('.pdf'):
+        if has_requirements(['scanned', 'ocr', 'tables', 'formulas']):
+            tool = 'mineru'
+        else:
+            tool = 'pymupdf'
+    else:
+        tool = 'pandoc'  # default
+
+    # 3. Build command
+    cmd = f"python scripts/converter.py {file_path}"
+    cmd += f" --tool {tool}"
+    cmd += " --relative-images --skip-toc"
+
+    if not has_pandoc(status):
+        cmd += " --auto-install"
+
+    # 4. Execute
+    result = run(cmd)
+
+    # 5. Handle errors
+    if result.failed:
+        if "not found" in result.error:
+            return install_and_retry(tool, cmd)
+        return debug_with_verbose(file_path, tool)
+
+    return result
+```
+
+## ✅ Pre-Flight Checklist
+
+Before conversion, ensure:
+
+- [ ] Pandoc available (check with `--status` or use `--auto-install`)
+- [ ] For PDF with MinerU: `pip install mineru` (Python 3.10-3.12)
+- [ ] For PDF with PyMuPDF: `pip install PyMuPDF` (Python 3.14+)
+- [ ] Input file exists
+- [ ] Output directory specified (or will use same directory)
+
+---
+
+## 📖 Full Documentation
+
+For comprehensive guides, see the `references/` directory:
+
+- **`ai-quick-reference.md`** - AI agent optimized guide
+- **`scenarios.md`** - Usage scenarios with examples
+- **`usage.md`** - Complete usage documentation
+- **`installation.md`** - Installation guide
+- **`troubleshooting.md`** - Problem solving
+- **`portable.md`** - Portable mode guide
+
+---
+
+**Remember:**
+1. Start with safe defaults: `--relative-images --skip-toc`
+2. Use `--tool mineru` for complex PDFs
+3. Use `--status` to check environment
+4. Use `--auto-install` for automatic setup
