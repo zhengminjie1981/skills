@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/interface-spec.schema.json",
+  "title": "接口规范",
+  "description": "L2 规范级文档的 JSON Schema 定义",
+  "type": "object",
+  "required": ["title", "documentPosition", "moduleInterfaces", "versionHistory"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "文档标题",
+      "examples": ["接口规范"]
+    },
+    "documentPosition": {
+      "type": "object",
+      "description": "文档定位说明",
+      "required": ["level", "question"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "const": "L2",
+          "description": "文档层级"
+        },
+        "question": {
+          "type": "string",
+          "description": "回答的问题",
+          "examples": ["跨模块接口的权威定义"]
+        }
+      }
+    },
+    "moduleInterfaces": {
+      "type": "array",
+      "description": "模块间接口",
+      "items": {
+        "type": "object",
+        "required": ["name", "signature", "parameters", "returnValue", "exceptions", "usageExample", "implementedBy"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "接口名称"
+          },
+          "signature": {
+            "type": "string",
+            "description": "接口签名（代码）"
+          },
+          "parameters": {
+            "type": "array",
+            "description": "参数说明",
+            "items": {
+              "type": "object",
+              "required": ["name", "type", "required", "defaultValue", "description"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "参数名"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "参数类型"
+                },
+                "required": {
+                  "type": "boolean",
+                  "description": "是否必填"
+                },
+                "defaultValue": {
+                  "type": "string",
+                  "description": "默认值"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "参数说明"
+                }
+              }
+            }
+          },
+          "returnValue": {
+            "type": "object",
+            "description": "返回值",
+            "required": ["type", "description"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "返回值类型"
+              },
+              "description": {
+                "type": "string",
+                "description": "返回值说明"
+              },
+              "reference": {
+                "type": "string",
+                "description": "引用数据结构规范",
+                "format": "uri-reference"
+              }
+            }
+          },
+          "exceptions": {
+            "type": "array",
+            "description": "异常",
+            "items": {
+              "type": "object",
+              "required": ["type", "trigger", "handling"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "异常类型"
+                },
+                "trigger": {
+                  "type": "string",
+                  "description": "触发条件"
+                },
+                "handling": {
+                  "type": "string",
+                  "description": "处理建议"
+                }
+              }
+            }
+          },
+          "usageExample": {
+            "type": "string",
+            "description": "使用示例（代码）"
+          },
+          "implementedBy": {
+            "type": "array",
+            "description": "实现模块",
+            "items": {
+              "type": "string",
+              "format": "uri-reference"
+            }
+          }
+        }
+      }
+    },
+    "versionHistory": {
+      "type": "array",
+      "description": "版本历史",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "description"],
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "版本号",
+            "pattern": "^v\\d+\\.\\d+$"
+          },
+          "date": {
+            "type": "string",
+            "description": "日期",
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "description": "变更说明（包含影响范围）"
+          }
+        }
+      }
+    }
+  }
+}

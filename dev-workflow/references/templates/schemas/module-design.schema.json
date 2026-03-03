@@ -1,0 +1,340 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/module-design.schema.json",
+  "title": "模块设计文档",
+  "description": "L3 模块级文档的 JSON Schema 定义",
+  "type": "object",
+  "required": ["title", "documentPosition", "modulePosition", "inputOutput", "coreAlgorithm", "verification", "versionHistory"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "文档标题",
+      "examples": ["用户认证模块设计"]
+    },
+    "documentPosition": {
+      "type": "object",
+      "description": "文档定位说明",
+      "required": ["level", "question", "parentDocument", "childDocument"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["L1", "L2", "L3", "L4", "L5"],
+          "description": "文档层级"
+        },
+        "question": {
+          "type": "string",
+          "description": "回答的问题",
+          "examples": ["用户认证模块如何实现"]
+        },
+        "parentDocument": {
+          "type": "string",
+          "description": "上位文档链接",
+          "format": "uri-reference"
+        },
+        "childDocument": {
+          "type": "string",
+          "description": "下游文档链接",
+          "format": "uri-reference"
+        }
+      }
+    },
+    "modulePosition": {
+      "type": "object",
+      "description": "模块定位与边界",
+      "required": ["responsibilities", "nonResponsibilities", "fileStructure", "systemPosition"],
+      "properties": {
+        "responsibilities": {
+          "type": "array",
+          "description": "模块职责（做什么）",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nonResponsibilities": {
+          "type": "array",
+          "description": "模块不负责的功能",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fileStructure": {
+          "type": "object",
+          "description": "文件结构",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "systemPosition": {
+          "type": "string",
+          "description": "在系统中的位置（引用架构图）",
+          "format": "uri-reference"
+        }
+      }
+    },
+    "inputOutput": {
+      "type": "object",
+      "description": "输入输出数据规范",
+      "required": ["input", "output"],
+      "properties": {
+        "input": {
+          "type": "object",
+          "description": "输入数据规范",
+          "required": ["dataStructure", "constraints"],
+          "properties": {
+            "dataStructure": {
+              "type": "string",
+              "description": "引用的数据结构",
+              "format": "uri-reference"
+            },
+            "constraints": {
+              "type": "array",
+              "description": "约束条件",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "输出数据规范",
+          "required": ["dataStructure", "constraints"],
+          "properties": {
+            "dataStructure": {
+              "type": "string",
+              "description": "引用的数据结构",
+              "format": "uri-reference"
+            },
+            "constraints": {
+              "type": "array",
+              "description": "约束条件",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "coreAlgorithm": {
+      "type": "object",
+      "description": "核心算法/逻辑设计",
+      "required": ["flowchart", "keyParameters", "designDecisions"],
+      "properties": {
+        "flowchart": {
+          "type": "string",
+          "description": "算法流程（流程图或伪代码）"
+        },
+        "keyParameters": {
+          "type": "array",
+          "description": "关键参数",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "defaultValue", "description"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "参数名"
+              },
+              "type": {
+                "type": "string",
+                "description": "参数类型"
+              },
+              "defaultValue": {
+                "type": "string",
+                "description": "默认值"
+              },
+              "description": {
+                "type": "string",
+                "description": "参数说明"
+              }
+            }
+          }
+        },
+        "designDecisions": {
+          "type": "array",
+          "description": "设计决策及依据",
+          "items": {
+            "type": "object",
+            "required": ["decision", "reason", "reference"],
+            "properties": {
+              "decision": {
+                "type": "string",
+                "description": "决策内容"
+              },
+              "reason": {
+                "type": "string",
+                "description": "决策原因"
+              },
+              "reference": {
+                "type": "string",
+                "description": "参考文档",
+                "format": "uri-reference"
+              }
+            }
+          }
+        }
+      }
+    },
+    "interfaceDesign": {
+      "type": "object",
+      "description": "接口设计",
+      "properties": {
+        "publicInterfaces": {
+          "type": "array",
+          "description": "公开接口",
+          "items": {
+            "type": "string",
+            "description": "引用接口规范"
+          }
+        },
+        "internalInterfaces": {
+          "type": "array",
+          "description": "内部接口",
+          "items": {
+            "type": "object",
+            "required": ["name", "signature", "description"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "接口名称"
+              },
+              "signature": {
+                "type": "string",
+                "description": "接口签名"
+              },
+              "description": {
+                "type": "string",
+                "description": "接口说明"
+              }
+            }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "description": "验证方案与测试用例",
+      "required": ["unitTests", "integrationTests"],
+      "properties": {
+        "unitTests": {
+          "type": "array",
+          "description": "单元测试用例",
+          "items": {
+            "type": "object",
+            "required": ["id", "input", "expectedOutput", "acceptanceCriteria"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "用例ID",
+                "pattern": "^UT-\\d{3}$"
+              },
+              "input": {
+                "type": "string",
+                "description": "输入条件"
+              },
+              "expectedOutput": {
+                "type": "string",
+                "description": "预期输出"
+              },
+              "acceptanceCriteria": {
+                "type": "string",
+                "description": "验收标准"
+              }
+            }
+          }
+        },
+        "integrationTests": {
+          "type": "array",
+          "description": "集成测试用例",
+          "items": {
+            "type": "object",
+            "required": ["id", "scenario", "modules", "expectedResult"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "用例ID",
+                "pattern": "^IT-\\d{3}$"
+              },
+              "scenario": {
+                "type": "string",
+                "description": "测试场景"
+              },
+              "modules": {
+                "type": "array",
+                "description": "涉及的模块",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "expectedResult": {
+                "type": "string",
+                "description": "预期结果"
+              }
+            }
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "已知约束与改进路线图",
+      "properties": {
+        "currentConstraints": {
+          "type": "array",
+          "description": "当前约束",
+          "items": {
+            "type": "string"
+          }
+        },
+        "improvementRoadmap": {
+          "type": "array",
+          "description": "改进计划",
+          "items": {
+            "type": "object",
+            "required": ["priority", "item", "estimatedCompletion"],
+            "properties": {
+              "priority": {
+                "type": "string",
+                "enum": ["P0", "P1", "P2", "P3"]
+              },
+              "item": {
+                "type": "string",
+                "description": "改进项"
+              },
+              "estimatedCompletion": {
+                "type": "string",
+                "description": "预计完成时间",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    },
+    "versionHistory": {
+      "type": "array",
+      "description": "版本历史",
+      "items": {
+        "type": "object",
+        "required": ["version", "date", "description"],
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "版本号",
+            "pattern": "^v\\d+\\.\\d+$"
+          },
+          "date": {
+            "type": "string",
+            "description": "日期",
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "description": "变更说明"
+          }
+        }
+      }
+    }
+  }
+}

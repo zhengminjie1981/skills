@@ -36,10 +36,18 @@ cat dev-workflow/SKILL.md
 
 # Reference materials
 ls dev-workflow/references/
-# - full-spec.md: Detailed examples, anti-patterns, flowcharts
+# - full-spec.md: Detailed examples, anti-patterns, flowcharts, AI execution flows
 # - checklist.md: New module and iteration checklists
 # - quality-gates.md: Quality standards for each phase
-# - tools.md: Document maintenance scripts and tools
+# - decision-tree.md: Common scenario decision flows
+# - anti-patterns.md: Anti-pattern examples with correct approaches
+# - conversation-examples.md: Example AI-user interactions
+# - quick-reference.md: Quick lookup tables and decision charts
+# - ai-checklist.md: Pre-execution checkpoints for AI
+# - git-integration.md: Git workflow integration
+# - doc-generation-guide.md: Document generation assistance
+# - templates.md: Document templates
+# - tools.md: Document maintenance scripts
 ```
 
 ### [db-mcp](./db-mcp/) - Database MCP Service Management
