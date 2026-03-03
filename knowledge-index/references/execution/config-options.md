@@ -39,10 +39,36 @@ indexing:
     method: "mtime"        # mtime (修改时间) 或 hash (内容哈希)
     auto_check: true       # 是否自动检测变更
 
-  # 文档转换
-  conversion:
-    pdf_engine: "mineru"   # mineru 或 pymupdf
-    ocr_enabled: true      # PDF OCR 支持
+  # 文档读取策略
+  read_strategy:
+    # 读取模式: direct（直接读取）, convert（转换后读取）, hybrid（混合模式）
+    mode: "direct"
+
+    # 各格式的读取策略（仅在 mode=hybrid 时生效）
+    formats:
+      pdf: "direct"      # direct 或 convert
+      word: "convert"    # direct（尝试）或 convert
+      markdown: "direct" # 始终直接读取
+
+    # 转换工具优先级（仅在需要转换时使用）
+    conversion_tools:
+      - "doc2md"    # 优先使用 doc2md skill
+      - "pandoc"    # 备选：pandoc
+      - "pymupdf"   # 备选：PyMuPDF（仅 PDF）
+
+    # 转换失败时的行为
+    on_conversion_failure: "fallback"  # fallback（降级到直接读取）或 skip（跳过文档）
+
+    # PDF 特殊配置
+    pdf:
+      prefer_ocr: false        # 是否优先使用 OCR（适用于扫描件）
+      prefer_structure: false  # 是否优先保留结构（适用于复杂表格/公式）
+
+    # 缓存策略
+    cache:
+      enabled: false           # 是否缓存转换结果
+      directory: ".knowledge-index/cache"  # 缓存目录
+      max_age_days: 30        # 缓存过期天数
 ```
 
 ## 配置项详解
@@ -91,6 +117,79 @@ summary:
   language: "zh"         # 摘要语言
 ```
 
+### read_strategy（新增）
+
+控制 AI Agent 如何读取文档内容：
+
+```yaml
+# 模式1: 直接读取（默认，零依赖）
+read_strategy:
+  mode: "direct"
+  # PDF 和 Markdown 都直接读取，不进行转换
+
+# 模式2: 转换后读取（高质量）
+read_strategy:
+  mode: "convert"
+  conversion_tools:
+    - "doc2md"
+    - "pandoc"
+  # 所有文档都转换为 Markdown 后再读取
+
+# 模式3: 混合模式（推荐）
+read_strategy:
+  mode: "hybrid"
+  formats:
+    pdf: "direct"      # PDF 直接读取
+    word: "convert"    # Word 转换后读取
+    markdown: "direct" # Markdown 直接读取
+  on_conversion_failure: "fallback"
+```
+
+**读取模式对比**：
+
+| 模式 | 依赖 | 速度 | 质量 | 适用场景 |
+|------|------|------|------|---------|
+| `direct` | 无 | 快 | 中 | 大部分场景 |
+| `convert` | doc2md/pandoc | 慢 | 高 | 复杂文档、需要保留格式 |
+| `hybrid` | 可选 | 中 | 高 | 混合格式知识库 |
+
+**PDF 特殊配置**：
+
+```yaml
+read_strategy:
+  mode: "hybrid"
+  formats:
+    pdf: "convert"  # PDF 转换
+  pdf:
+    prefer_ocr: true        # 扫描件优先 OCR
+    prefer_structure: true  # 复杂表格/公式优先保留结构
+  conversion_tools:
+    - "doc2md"
+```
+
+**缓存策略**（提升性能）：
+
+```yaml
+read_strategy:
+  mode: "convert"
+  cache:
+    enabled: true
+    directory: ".knowledge-index/cache"
+    max_age_days: 30
+```
+
+**降级策略**：
+
+```yaml
+read_strategy:
+  mode: "convert"
+  on_conversion_failure: "fallback"  # 转换失败时降级到直接读取
+```
+
+### conversion（已废弃）
+
+⚠️ 此配置项已被 `read_strategy` 替代，保留仅为向后兼容。
+
 ### update_detection
 
 变更检测策略：
@@ -118,7 +217,7 @@ indexing:
     - ".pdf"
 ```
 
-### 完整配置
+### 完整配置（推荐）
 
 ```yaml
 indexing:
@@ -140,12 +239,20 @@ indexing:
   update_detection:
     method: "mtime"
 
-  conversion:
-    pdf_engine: "mineru"
-    ocr_enabled: true
+  # 新增：文档读取策略
+  read_strategy:
+    mode: "hybrid"
+    formats:
+      pdf: "direct"      # PDF 直接读取
+      word: "convert"    # Word 转换
+      markdown: "direct" # Markdown 直接读取
+    conversion_tools:
+      - "doc2md"
+      - "pandoc"
+    on_conversion_failure: "fallback"
 ```
 
-### 仅索引 Markdown
+### 仅索引 Markdown（零依赖）
 
 ```yaml
 indexing:
@@ -153,4 +260,46 @@ indexing:
     - ".md"
   exclude:
     - "templates/"
+  read_strategy:
+    mode: "direct"  # 无需任何工具
+```
+
+### PDF 扫描件索引（需要 OCR）
+
+```yaml
+indexing:
+  file_types:
+    - ".pdf"
+  read_strategy:
+    mode: "convert"
+    conversion_tools:
+      - "doc2md"  # 使用 doc2md --tool mineru
+    pdf:
+      prefer_ocr: true
+      prefer_structure: true
+```
+
+### 混合格式知识库（推荐配置）
+
+```yaml
+indexing:
+  file_types:
+    - ".md"
+    - ".pdf"
+    - ".docx"
+    - ".doc"
+
+  read_strategy:
+    mode: "hybrid"
+    formats:
+      pdf: "direct"      # PDF 直接读取
+      word: "convert"    # Word 转换
+      markdown: "direct" # Markdown 直接读取
+    conversion_tools:
+      - "doc2md"
+      - "pandoc"
+    on_conversion_failure: "fallback"
+    cache:
+      enabled: true
+      directory: ".knowledge-index/cache"
 ```

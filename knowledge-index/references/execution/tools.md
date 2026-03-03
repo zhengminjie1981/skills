@@ -1,35 +1,181 @@
 # 工具支持
 
-本文档定义知识库索引的工具支持策略，包括文档转换工具的自动检测、选择和降级处理。
+本文档定义知识库索引的工具支持策略，包括文档读取策略、工具选择和降级处理。
 
-## 工具矩阵
+## 核心原则
 
-### 支持的文档转换工具
+**零依赖优先**：knowledge-index 优先使用 Claude Code 原生读取能力，不强制依赖任何外部工具。
 
-| 优先级 | 工具 | 支持格式 | 使用场景 | 安装要求 |
-|--------|------|---------|---------|---------|
-| 1 | doc2md skill | PDF, Word, PPT | 已有 doc2md skill 环境 | Claude Code + doc2md skill |
-| 2 | pandoc | PDF, Word, Markdown, HTML, RST | 通用转换，功能强大 | pandoc 可执行文件 |
-| 3 | mineru | PDF | PDF 专用，支持 OCR | Python + mineru 包 |
-| 4 | PyMuPDF | PDF | 纯文本 PDF，快速 | Python + PyMuPDF 包 |
-| 5 | 直接读取 | Markdown | 仅索引 Markdown | 无需额外工具 |
-
-### 工具选择策略
-
-```
-检测可用工具 → 按优先级选择 → 格式匹配 → 执行转换 → 失败 fallback
+```yaml
+优先级:
+  1. Claude Read 工具（原生支持 PDF/Markdown/图片）
+  2. 用户可选配置转换工具（doc2md/pandoc）
+  3. 自动降级保证功能可用
 ```
 
-## 工具检测流程
+## 读取策略矩阵
 
-### 检测逻辑（Python 伪代码）
+### 策略对比
+
+| 策略 | PDF | Word | Markdown | 依赖 | 速度 | 质量 | 推荐场景 |
+|------|-----|------|---------|------|------|------|---------|
+| **direct** | 直接读取 | 尝试读取 | 直接读取 | 无 | ⚡⚡⚡ | ⭐⭐ | 大部分场景 |
+| **convert** | 转换 | 转换 | 直接读取 | doc2md/pandoc | ⚡ | ⭐⭐⭐ | 复杂文档、保留格式 |
+| **hybrid** | 直接读取 | 转换 | 直接读取 | doc2md（可选） | ⚡⚡ | ⭐⭐⭐ | 混合格式知识库（推荐） |
+
+### Claude Read 工具能力
+
+| 文件类型 | 支持状态 | 说明 |
+|---------|---------|------|
+| **Markdown** | ✅ 完全支持 | 原生读取，零依赖 |
+| **PDF** | ✅ 完全支持 | 支持文本提取，可指定页码 |
+| **图片** | ✅ 完全支持 | 视觉分析，自动 OCR |
+| **Word/PPT** | ⚠️ 部分支持 | 建议转换为 PDF 或使用转换工具 |
+| **HTML** | ✅ 完全支持 | 原生读取 |
+
+## 读取策略详解
+
+### 1. Direct 模式（默认，零依赖）
+
+**配置**：
+```yaml
+read_strategy:
+  mode: "direct"
+```
+
+**流程**：
+```python
+def read_document_direct(file_path, file_type):
+    """直接读取模式"""
+    if file_type == 'markdown':
+        return Read(file_path)  # 原生读取
+
+    elif file_type == 'pdf':
+        return Read(file_path)  # 原生读取 PDF
+
+    elif file_type == 'image':
+        return Read(file_path)  # 视觉分析
+
+    elif file_type in ['word', 'ppt']:
+        # 尝试直接读取（可能失败）
+        try:
+            return Read(file_path)
+        except:
+            return None  # 返回 None，后续会提示用户
+```
+
+**优势**：
+- ✅ 零依赖，无需安装任何工具
+- ✅ 速度最快
+- ✅ 适用于大部分场景
+
+**劣势**：
+- ❌ Word/PPT 可能无法读取
+- ❌ 复杂 PDF 结构可能丢失
+
+### 2. Convert 模式（高质量）
+
+**配置**：
+```yaml
+read_strategy:
+  mode: "convert"
+  conversion_tools:
+    - "doc2md"
+    - "pandoc"
+```
+
+**流程**：
+```python
+def read_document_convert(file_path, file_type, tools):
+    """转换后读取模式"""
+    if file_type == 'markdown':
+        return Read(file_path)  # Markdown 无需转换
+
+    # 选择转换工具
+    tool = select_tool(file_type, tools)
+
+    if tool == 'doc2md':
+        markdown = Skill(skill="doc2md", args=file_path)
+    elif tool == 'pandoc':
+        markdown = convert_with_pandoc(file_path)
+    elif tool == 'pymupdf' and file_type == 'pdf':
+        markdown = convert_with_pymupdf(file_path)
+    else:
+        return None
+
+    return markdown
+```
+
+**优势**：
+- ✅ 质量最高，保留结构
+- ✅ 支持 OCR
+- ✅ 支持所有格式
+
+**劣势**：
+- ❌ 需要安装工具
+- ❌ 速度较慢
+
+### 3. Hybrid 模式（推荐）
+
+**配置**：
+```yaml
+read_strategy:
+  mode: "hybrid"
+  formats:
+    pdf: "direct"      # PDF 直接读取
+    word: "convert"    # Word 转换
+    markdown: "direct" # Markdown 直接读取
+  conversion_tools:
+    - "doc2md"
+  on_conversion_failure: "fallback"
+```
+
+**流程**：
+```python
+def read_document_hybrid(file_path, file_type, config):
+    """混合读取模式"""
+    strategy = config['formats'].get(file_type, 'direct')
+
+    if strategy == 'direct' or file_type == 'markdown':
+        # 直接读取
+        return Read(file_path)
+
+    elif strategy == 'convert':
+        # 尝试转换
+        try:
+            markdown = convert_document(file_path, config['conversion_tools'])
+            return markdown
+        except Exception as e:
+            # 降级处理
+            if config.get('on_conversion_failure') == 'fallback':
+                return Read(file_path)
+            else:
+                raise
+```
+
+**优势**：
+- ✅ 平衡速度和质量
+- ✅ 智能降级
+- ✅ 灵活配置
+
+## 工具检测
+
+### 检测逻辑
 
 ```python
 def detect_available_tools():
-    """检测可用的文档转换工具"""
+    """检测可用的转换工具"""
     tools = []
 
-    # 1. 检测 doc2md skill
+    # 1. Claude Read 工具（始终可用）
+    tools.append({
+        'name': 'claude-read',
+        'priority': 0,
+        'formats': ['pdf', 'markdown', 'image', 'html'],
+        'always_available': True
+    })
+
+    # 2. 检测 doc2md skill
     if has_doc2md_skill():
         tools.append({
             'name': 'doc2md',
@@ -37,44 +183,26 @@ def detect_available_tools():
             'formats': ['pdf', 'word', 'ppt']
         })
 
-    # 2. 检测 pandoc
+    # 3. 检测 pandoc
     if is_command_available('pandoc'):
-        version = get_pandoc_version()
         tools.append({
             'name': 'pandoc',
             'priority': 2,
-            'formats': ['pdf', 'word', 'markdown', 'html', 'rst'],
-            'version': version
-        })
-
-    # 3. 检测 mineru
-    if is_python_package_installed('mineru'):
-        tools.append({
-            'name': 'mineru',
-            'priority': 3,
-            'formats': ['pdf']
+            'formats': ['pdf', 'word', 'html', 'markdown']
         })
 
     # 4. 检测 PyMuPDF
-    if is_python_package_installed('fitz'):  # PyMuPDF 的导入名
+    if is_python_package_installed('fitz'):
         tools.append({
             'name': 'pymupdf',
-            'priority': 4,
+            'priority': 3,
             'formats': ['pdf']
         })
-
-    # 5. 始终支持 Markdown
-    tools.append({
-        'name': 'direct',
-        'priority': 5,
-        'formats': ['markdown']
-    })
 
     return tools
 
 def has_doc2md_skill():
     """检测 doc2md skill 是否可用"""
-    # 检查技能目录或技能列表
     import os
     skill_path = os.path.expanduser('~/.claude/skills/doc2md')
     return os.path.exists(skill_path)
@@ -97,16 +225,17 @@ def is_python_package_installed(package):
 
 ```yaml
 工具检测报告:
-  ✓ doc2md skill: 可用 (优先级 1)
-  ✓ pandoc: 可用 v2.19.2 (优先级 2)
-  ✗ mineru: 未安装
-  ✓ PyMuPDF: 可用 v1.23.0 (优先级 4)
-  ✓ 直接读取: 始终可用
+  ✓ Claude Read: 始终可用（原生支持）
+  ✓ doc2md skill: 可用（优先级 1）
+  ✓ pandoc: 可用 v2.19.2（优先级 2）
+  ✗ PyMuPDF: 未安装
 
-推荐工具链:
-  PDF: doc2md → pandoc → PyMuPDF
-  Word: doc2md → pandoc
-  Markdown: 直接读取
+推荐配置:
+  mode: "hybrid"
+  formats:
+    pdf: "direct"      # 使用 Claude Read
+    word: "convert"    # 使用 doc2md
+    markdown: "direct"
 ```
 
 ## 工具选择策略
@@ -114,14 +243,17 @@ def is_python_package_installed(package):
 ### 按文档类型选择
 
 ```python
-def select_tool(doc_type, available_tools):
-    """根据文档类型选择最优工具"""
+def select_conversion_tool(file_type, available_tools):
+    """选择转换工具"""
     # 按优先级排序
-    sorted_tools = sorted(available_tools, key=lambda x: x['priority'])
+    sorted_tools = sorted(
+        [t for t in available_tools if t['name'] != 'claude-read'],
+        key=lambda x: x['priority']
+    )
 
     # 查找支持该格式的工具
     for tool in sorted_tools:
-        if doc_type in tool['formats']:
+        if file_type in tool['formats']:
             return tool['name']
 
     return None  # 无可用工具
@@ -129,28 +261,34 @@ def select_tool(doc_type, available_tools):
 
 ### 选择矩阵
 
-| 文档类型 | 首选工具 | 备选工具 1 | 备选工具 2 |
-|---------|---------|-----------|-----------|
-| PDF | doc2md | pandoc | PyMuPDF |
-| Word (.docx/.doc) | doc2md | pandoc | - |
-| PowerPoint | doc2md | pandoc | - |
-| Markdown | 直接读取 | - | - |
-| HTML | pandoc | - | - |
+| 文档类型 | Claude Read | doc2md | pandoc | PyMuPDF |
+|---------|------------|--------|--------|---------|
+| Markdown | ✅ 首选 | - | - | - |
+| PDF | ✅ 首选 | 备选 | 备选 | 备选 |
+| Word | ⚠️ 尝试 | ✅ 首选 | 备选 | - |
+| PPT | ⚠️ 尝试 | ✅ 首选 | 备选 | - |
+| HTML | ✅ 首选 | - | 备选 | - |
 
 ## 工具使用接口
 
-### doc2md skill 接口
+### Claude Read（原生）
 
 ```python
-def convert_with_doc2md(file_path):
-    """使用 doc2md skill 转换文档"""
-    # 在 Claude Code 中调用 skill
-    # Skill tool: skill="doc2md", args=file_path
-    markdown = call_doc2md_skill(file_path)
-    return markdown
+# 直接使用 Read 工具
+content = Read(file_path="document.pdf")
+
+# PDF 可指定页码
+content = Read(file_path="large.pdf", pages="1-10")
 ```
 
-### pandoc 接口
+### doc2md skill
+
+```python
+# 使用 Skill tool 调用
+markdown = Skill(skill="doc2md", args="document.pdf --tool mineru")
+```
+
+### pandoc
 
 ```python
 import subprocess
@@ -159,7 +297,7 @@ def convert_with_pandoc(file_path, output_format='markdown'):
     """使用 pandoc 转换文档"""
     cmd = [
         'pandoc',
-        '-f', detect_format(file_path),  # 自动检测输入格式
+        '-f', detect_format(file_path),
         '-t', output_format,
         file_path
     ]
@@ -172,7 +310,7 @@ def convert_with_pandoc(file_path, output_format='markdown'):
         raise Exception(f"pandoc 转换失败: {result.stderr}")
 ```
 
-### PyMuPDF 接口
+### PyMuPDF
 
 ```python
 import fitz  # PyMuPDF
@@ -189,128 +327,117 @@ def convert_with_pymupdf(file_path):
     return text
 ```
 
-### mineru 接口
-
-```python
-# 示例接口（具体实现取决于 mineru 的 API）
-def convert_with_mineru(file_path):
-    """使用 mineru 转换 PDF"""
-    from mineru import convert_pdf
-    return convert_pdf(file_path, output_format='markdown')
-```
-
 ## 失败处理和降级
 
-### Fallback 策略
+### 降级策略
 
 ```python
-def convert_document(file_path, available_tools):
-    """转换文档，支持失败降级"""
-    doc_type = detect_document_type(file_path)
-    tools = get_tools_for_format(doc_type, available_tools)
+def read_document_with_fallback(file_path, file_type, config):
+    """带降级的文档读取"""
+    mode = config.get('mode', 'direct')
 
-    errors = []
+    # Direct 模式：直接读取
+    if mode == 'direct':
+        content = Read(file_path)
+        if content:
+            return {'success': True, 'content': content, 'method': 'direct'}
+        else:
+            return {'success': False, 'error': '无法直接读取'}
 
-    for tool_name in tools:
+    # Convert 模式：尝试转换
+    elif mode == 'convert':
         try:
-            # 尝试转换
-            markdown = convert_with_tool(tool_name, file_path)
-
-            # 验证转换结果
-            if is_valid_conversion(markdown):
-                return {
-                    'success': True,
-                    'tool': tool_name,
-                    'content': markdown
-                }
+            tool = select_conversion_tool(file_type, detect_available_tools())
+            if tool:
+                content = convert_with_tool(tool, file_path)
+                return {'success': True, 'content': content, 'method': f'convert:{tool}'}
+            else:
+                # 无可用工具，降级到直接读取
+                content = Read(file_path)
+                return {'success': True, 'content': content, 'method': 'direct(fallback)'}
         except Exception as e:
-            errors.append(f"{tool_name}: {str(e)}")
-            continue
+            # 转换失败，检查是否允许降级
+            if config.get('on_conversion_failure') == 'fallback':
+                content = Read(file_path)
+                if content:
+                    return {'success': True, 'content': content, 'method': 'direct(fallback)'}
+            return {'success': False, 'error': str(e)}
 
-    # 所有工具都失败
-    return {
-        'success': False,
-        'errors': errors,
-        'content': None
-    }
-
-def is_valid_conversion(content):
-    """验证转换结果"""
-    if not content or len(content.strip()) < 100:
-        return False
-    # 可添加更多验证逻辑
-    return True
-```
-
-### 降级处理场景
-
-#### 场景 1: doc2md skill 不可用
-
-```
-首选: doc2md → 降级: pandoc
-```
-
-#### 场景 2: PDF 转换失败
-
-```
-首选: doc2md → 备选: pandoc → 备选: PyMuPDF → 失败: 跳过该文档
-```
-
-#### 场景 3: 所有转换工具不可用
-
-```
-检测: 无可用工具 → 降级: 仅索引 Markdown 文档 → 提示用户安装工具
+    # Hybrid 模式：根据配置选择
+    elif mode == 'hybrid':
+        strategy = config.get('formats', {}).get(file_type, 'direct')
+        if strategy == 'direct':
+            content = Read(file_path)
+            return {'success': True, 'content': content, 'method': 'direct'}
+        else:
+            # 使用 Convert 模式的逻辑
+            return read_document_with_fallback(
+                file_path, file_type,
+                {**config, 'mode': 'convert'}
+            )
 ```
 
 ### 降级提示
 
 ```yaml
-⚠️ 工具降级警告
+⚠️ 工具降级提示
 
-检测到 doc2md skill 不可用，已切换至 pandoc。
+检测到 doc2md skill 不可用，已切换至直接读取模式。
 
-推荐安装 doc2md skill 以获得更好的转换质量：
-  - 支持 PDF/Word/PPT
-  - AI 增强的格式处理
-  - 保留文档结构
+如需更高质量的转换：
+  - 安装 doc2md skill: git clone https://github.com/yourname/doc2md-skill ~/.claude/skills/doc2md
+  - 或安装 pandoc: choco install pandoc (Windows) / brew install pandoc (macOS)
 
-安装方法:
-  git clone https://github.com/yourname/doc2md-skill ~/.claude/skills/doc2md
+当前配置将继续使用 Claude Read 工具直接读取文档。
 ```
 
-## 与 doc2md skill 的协作
+## 与 doc2md skill 的关系
 
-### 协作方式
-
-本 skill **不强制依赖** doc2md skill，但优先使用：
+### 定位
 
 ```yaml
-依赖类型: 软依赖（可选）
-优先级: 最高（如果可用）
+关系类型: 可选增强（非必需）
+优先级: 最高（如果可用且用户配置需要转换）
 ```
 
-### 协作流程
+### 协作场景
 
-```
-1. 检测 doc2md skill 可用性
-2. 如果可用:
-   - 调用 doc2md 转换 PDF/Word/PPT
-   - 使用转换后的 Markdown 生成摘要
-3. 如果不可用:
-   - 使用 pandoc 或其他工具
-   - 继续索引流程
+**场景 1: 用户未配置 read_strategy**
+```yaml
+# 默认使用 direct 模式
+# 不调用 doc2md
 ```
 
-### 调用示例
+**场景 2: 用户配置 convert 模式**
+```yaml
+read_strategy:
+  mode: "convert"
+  conversion_tools:
+    - "doc2md"
 
-在 Claude Code 中调用 doc2md skill:
+# 会尝试使用 doc2md
+# 如果不可用，降级到直接读取
+```
 
-```python
-# 使用 Skill tool
-markdown = Skill(skill="doc2md", args="/path/to/document.pdf")
+**场景 3: 用户配置 hybrid 模式**
+```yaml
+read_strategy:
+  mode: "hybrid"
+  formats:
+    pdf: "direct"      # PDF 不调用 doc2md
+    word: "convert"    # Word 调用 doc2md
+
+# 仅 Word 文档会使用 doc2md
 ```
 
 ## 工具安装指南
+
+### 安装 doc2md skill
+
+```bash
+# 克隆到 Claude Code skills 目录
+git clone https://github.com/yourname/doc2md-skill ~/.claude/skills/doc2md
+```
 
 ### 安装 pandoc
 
@@ -337,42 +464,45 @@ sudo yum install pandoc      # CentOS/RHEL
 pip install PyMuPDF
 ```
 
-### 安装 mineru
-
-```bash
-pip install mineru
-```
-
-### 安装 doc2md skill
-
-```bash
-# 克隆到 Claude Code skills 目录
-git clone https://github.com/yourname/doc2md-skill ~/.claude/skills/doc2md
-```
-
 ## 性能优化
 
-### 工具性能对比
+### 读取性能对比
 
-| 工具 | PDF 转换速度 | 内存占用 | 质量评分 |
+| 方法 | PDF 读取速度 | 内存占用 | 质量评分 |
 |------|-------------|---------|---------|
-| doc2md | 中 | 中 | 9/10 |
-| pandoc | 快 | 低 | 7/10 |
+| Claude Read | 快 | 低 | 7/10 |
+| doc2md | 慢 | 中 | 9/10 |
+| pandoc | 中 | 低 | 7/10 |
 | PyMuPDF | 极快 | 低 | 6/10 |
-| mineru | 慢 | 高 | 8/10 |
 
-### 批量转换优化
+### 缓存策略
+
+```yaml
+read_strategy:
+  mode: "convert"
+  cache:
+    enabled: true
+    directory: ".knowledge-index/cache"
+    max_age_days: 30
+
+# 缓存结构
+.knowledge-index/cache/
+├── a1b2c3d4.md  ← document.pdf 的转换缓存
+└── e5f6g7h8.md  ← document.docx 的转换缓存
+```
+
+### 批量读取优化
 
 ```python
-def batch_convert(file_paths, available_tools, batch_size=50):
-    """批量转换文档"""
+def batch_read(file_paths, config, batch_size=50):
+    """批量读取文档"""
     results = []
 
     for i in range(0, len(file_paths), batch_size):
         batch = file_paths[i:i+batch_size]
 
-        # 并行处理（如支持）
-        batch_results = parallel_convert(batch, available_tools)
+        # 并行处理
+        batch_results = parallel_read(batch, config)
         results.extend(batch_results)
 
         # 进度报告
@@ -381,71 +511,61 @@ def batch_convert(file_paths, available_tools, batch_size=50):
     return results
 ```
 
-## 索引验证工具
-
-### YAML 验证
-
-```python
-import yaml
-
-def validate_yaml(index_path):
-    """验证索引文件的 YAML 语法"""
-    try:
-        with open(index_path, encoding='utf-8') as f:
-            yaml.safe_load(f)
-        return {'valid': True}
-    except yaml.YAMLError as e:
-        return {'valid': False, 'error': str(e)}
-```
-
-### 字段完整性验证
-
-```python
-def validate_index_fields(index_path):
-    """验证索引字段完整性"""
-    with open(index_path, encoding='utf-8') as f:
-        index = yaml.safe_load(f)
-
-    errors = []
-
-    # 检查元数据
-    required_meta = ['version', 'knowledge_base']
-    for field in required_meta:
-        if field not in index:
-            errors.append(f"缺少必填字段: {field}")
-
-    # 检查文档
-    required_doc_fields = ['path', 'filename', 'type', 'summary']
-    for i, doc in enumerate(index.get('documents', [])):
-        for field in required_doc_fields:
-            if field not in doc:
-                errors.append(f"文档 {i} 缺少字段: {field}")
-
-    return {'valid': len(errors) == 0, 'errors': errors}
-```
-
 ## 最佳实践
 
-### 1. 工具选择
+### 1. 配置选择
 
-- 优先使用 doc2md skill（质量最高）
-- 大规模知识库使用 PyMuPDF（速度最快）
-- 复杂格式文档使用 pandoc（兼容性最好）
+| 知识库类型 | 推荐配置 | 理由 |
+|-----------|---------|------|
+| 纯 Markdown | `mode: "direct"` | 零依赖，速度最快 |
+| PDF + Markdown | `mode: "direct"` | Claude Read 原生支持 |
+| 混合格式 | `mode: "hybrid"` | 平衡质量和速度 |
+| 复杂 PDF（表格/OCR） | `mode: "convert"` + doc2md | 保留结构 |
 
 ### 2. 错误处理
 
-- 转换失败时自动切换工具
+- 转换失败时自动降级
 - 记录所有失败信息
-- 在最终报告中汇总失败原因
+- 在最终报告中汇总
 
 ### 3. 性能优化
 
-- 批量处理时使用并行转换
+- 批量处理时使用并行读取
+- 启用缓存避免重复转换
 - 大文件使用流式处理
-- 缓存转换结果避免重复工作
 
 ### 4. 用户提示
 
 - 工具不可用时提供安装指南
 - 转换失败时提供详细错误信息
-- 建议最优工具配置
+- 建议最优配置
+
+## 总结
+
+**knowledge-index 的工具策略**：
+
+```yaml
+核心理念:
+  1. 零依赖优先：默认直接读取，无需任何工具
+  2. 用户可控：通过配置决定是否转换
+  3. 智能降级：工具不可用时自动回退
+  4. 质量可选：提供多种质量等级
+
+推荐配置:
+  大部分场景: mode: "direct"
+  混合格式: mode: "hybrid"
+  复杂文档: mode: "convert" + doc2md
+
+关键优势:
+  - 无需安装任何工具即可使用
+  - 用户完全控制转换策略
+  - 自动降级保证功能可用
+  - 灵活适配不同场景
+```
+
+**doc2md 的角色**：
+
+- **不是必需依赖**
+- **是可选增强工具**
+- **仅在用户配置需要转换时使用**
+- **提供更高质量的文档转换**

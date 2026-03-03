@@ -112,7 +112,7 @@ clusters:
 
 ## 2. 配置文件模板
 
-### 2.1 默认配置模板
+### 2.1 默认配置模板（零依赖）
 
 ```yaml
 # 索引配置
@@ -143,9 +143,13 @@ indexing:
   update_detection:
     method: "mtime"        # mtime 或 hash
     auto_check: true
+
+  # 读取策略（默认：直接读取，零依赖）
+  read_strategy:
+    mode: "direct"  # PDF 和 Markdown 都直接读取，无需任何工具
 ```
 
-### 2.2 高级配置模板
+### 2.2 高级配置模板（混合模式）
 
 ```yaml
 # 高级索引配置
@@ -181,10 +185,24 @@ indexing:
     auto_check: true
     check_interval_hours: 24
 
-  conversion:
-    preferred_tool: "doc2md"  # doc2md, pandoc, pymupdf
-    pdf_ocr_enabled: true
-    timeout_seconds: 30
+  # 读取策略（混合模式，推荐）
+  read_strategy:
+    mode: "hybrid"
+    formats:
+      pdf: "direct"      # PDF 直接读取
+      word: "convert"    # Word 转换后读取
+      markdown: "direct" # Markdown 直接读取
+    conversion_tools:
+      - "doc2md"         # 优先使用 doc2md
+      - "pandoc"         # 备选 pandoc
+    on_conversion_failure: "fallback"  # 转换失败时降级到直接读取
+    pdf:
+      prefer_ocr: false           # PDF 不优先 OCR
+      prefer_structure: false     # PDF 不优先保留结构
+    cache:
+      enabled: true               # 启用转换缓存
+      directory: ".knowledge-index/cache"
+      max_age_days: 30
 
   performance:
     batch_size: 50
@@ -199,7 +217,7 @@ indexing:
 
 ### 2.3 场景配置模板
 
-#### 仅索引 Markdown
+#### 仅索引 Markdown（零依赖）
 
 ```yaml
 indexing:
@@ -210,6 +228,48 @@ indexing:
     - "drafts/"
   summary:
     max_length: 200
+  read_strategy:
+    mode: "direct"  # 无需任何工具
+```
+
+#### PDF 扫描件索引（需要 OCR）
+
+```yaml
+indexing:
+  file_types:
+    - ".pdf"
+  read_strategy:
+    mode: "convert"
+    conversion_tools:
+      - "doc2md"  # 使用 doc2md --tool mineru
+    pdf:
+      prefer_ocr: true        # 优先 OCR
+      prefer_structure: true  # 保留结构
+```
+
+#### 混合格式知识库（推荐配置）
+
+```yaml
+indexing:
+  file_types:
+    - ".md"
+    - ".pdf"
+    - ".docx"
+    - ".doc"
+
+  read_strategy:
+    mode: "hybrid"
+    formats:
+      pdf: "direct"      # PDF 直接读取
+      word: "convert"    # Word 转换
+      markdown: "direct" # Markdown 直接读取
+    conversion_tools:
+      - "doc2md"
+      - "pandoc"
+    on_conversion_failure: "fallback"
+    cache:
+      enabled: true
+      directory: ".knowledge-index/cache"
 ```
 
 #### 大规模知识库优化
@@ -226,6 +286,9 @@ indexing:
 
   update_detection:
     method: "mtime"
+
+  read_strategy:
+    mode: "direct"  # 直接读取，速度最快
 
   performance:
     batch_size: 100
