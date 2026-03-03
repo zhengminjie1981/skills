@@ -405,4 +405,216 @@ def register_all(mcp):
         logger.info(f"搜索表: 关键字 '{keyword}', 找到 {len(results)} 个匹配表")
         return results
 
+    @mcp.tool(annotations={"readOnlyHint": True})
+    def check_capabilities() -> Dict[str, Any]:
+        """
+        检查当前系统的数据库能力
+
+        返回已安装的驱动、配置状态和优化建议
+
+        Returns:
+            包含驱动状态、配置状态和建议的字典
+        """
+        from diagnostics import Diagnostics
+
+        logger.info("检查系统能力")
+
+        # 运行完整诊断
+        diagnostics = Diagnostics.run_full_diagnostics()
+
+        # 添加连接测试（如果有配置）
+        connection_test = None
+        config_status = diagnostics['config']
+
+        if config_status['status'] == 'installed':
+            # 尝试测试默认连接
+            try:
+                connection_test = Diagnostics.test_database_connection('default')
+            except Exception as e:
+                connection_test = {
+                    "success": False,
+                    "error": str(e),
+                    "troubleshooting": "无法测试连接，请检查配置"
+                }
+
+        return {
+            "installed_drivers": diagnostics['drivers'],
+            "config_status": {
+                "status": config_status['status'],
+                "message": config_status['message'],
+                "details": config_status.get('details')
+            },
+            "connection_test": connection_test,
+            "recommendations": diagnostics['recommendations']
+        }
+
+    @mcp.tool()
+    def auto_setup_database(
+        db_type: str,
+        connection_params: Dict[str, Any],
+        config_name: str = 'default'
+    ) -> Dict[str, Any]:
+        """
+        自动配置并测试数据库连接
+
+        步骤:
+        1. 检测并安装所需驱动
+        2. 创建或更新配置文件
+        3. 测试连接
+        4. 验证基本功能
+
+        Args:
+            db_type: 数据库类型 ("mysql" | "postgresql" | "sqlite")
+            connection_params: 连接参数 (host, port, user, password, database)
+            config_name: 配置名称（默认 'default'）
+
+        Returns:
+            包含状态、配置路径和测试结果的字典
+        """
+        import json
+        import tempfile
+        from pathlib import Path
+        from diagnostics import Diagnostics, DriverMissingError
+
+        logger.info(f"自动配置数据库: {db_type}, 配置名: {config_name}")
+
+        result = {
+            "success": False,
+            "driver_installed": False,
+            "config_created": False,
+            "connection_test": None,
+            "error": None,
+            "config_path": None
+        }
+
+        try:
+            # 1. 检查并安装驱动
+            driver_result = Diagnostics.check_database_driver(db_type)
+
+            if driver_result.status.value == 'missing':
+                # 自动安装驱动
+                import subprocess
+                import sys
+
+                logger.info(f"正在安装 {db_type} 驱动...")
+
+                package_map = {
+                    'mysql': 'mysql-connector-python>=8.0.30',
+                    'postgresql': 'psycopg2-binary>=2.9.0'
+                }
+
+                if db_type in package_map:
+                    try:
+                        subprocess.check_call(
+                            [sys.executable, "-m", "pip", "install", package_map[db_type]],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
+                        result["driver_installed"] = True
+                        logger.info(f"{db_type} 驱动安装成功")
+                    except subprocess.CalledProcessError as e:
+                        raise DriverMissingError(
+                            f"自动安装 {db_type} 驱动失败",
+                            fix_command=f"pip install {package_map[db_type]}"
+                        )
+            else:
+                result["driver_installed"] = True
+
+            # 2. 创建或更新配置文件
+            script_dir = Path(__file__).parent.parent.absolute()
+            config_path = script_dir / 'db_config.json'
+
+            # 读取现有配置（如果存在）
+            existing_configs = {}
+            if config_path.exists():
+                try:
+                    with open(config_path, 'r', encoding='utf-8') as f:
+                        existing_configs = json.load(f)
+                except:
+                    pass
+
+            # 准备新配置
+            new_config = {
+                "type": db_type,
+                **connection_params
+            }
+
+            # 合并配置
+            existing_configs[config_name] = new_config
+
+            # 原子写入配置文件
+            temp_path = config_path.with_suffix('.tmp')
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                json.dump(existing_configs, f, indent=2, ensure_ascii=False)
+            temp_path.rename(config_path)
+
+            result["config_created"] = True
+            result["config_path"] = str(config_path)
+            logger.info(f"配置文件已创建: {config_path}")
+
+            # 3. 重置全局配置实例（清除缓存）
+            from config import _global_config
+            global _global_config
+            _global_config = None
+
+            # 4. 测试连接
+            connection_test = Diagnostics.test_database_connection(config_name)
+            result["connection_test"] = connection_test
+
+            if connection_test["success"]:
+                # 5. 验证基本功能（列出表）
+                try:
+                    tables = list_tables(config_name)
+                    result["tables_count"] = len(tables)
+                    result["success"] = True
+                    logger.info(f"自动配置成功，找到 {len(tables)} 个表")
+                except Exception as e:
+                    result["success"] = True  # 连接成功即可
+                    result["warning"] = f"连接成功但无法列出表: {str(e)}"
+                    logger.warning(f"列出表失败: {e}")
+            else:
+                result["error"] = connection_test.get("error")
+                result["troubleshooting"] = connection_test.get("troubleshooting")
+
+        except Exception as e:
+            result["error"] = str(e)
+            logger.error(f"自动配置失败: {e}")
+
+            # 添加修复建议
+            if hasattr(e, 'fix_command'):
+                result["fix_command"] = e.fix_command
+
+        return result
+
+    @mcp.tool(annotations={"readOnlyHint": True})
+    def test_connection(
+        config_name: str = 'default',
+        detailed: bool = False
+    ) -> Dict[str, Any]:
+        """
+        测试数据库连接并返回诊断信息
+
+        Args:
+            config_name: 数据库配置名称
+            detailed: 是否返回详细的服务器信息
+
+        Returns:
+            包含连接状态、延迟和诊断信息的字典
+        """
+        from diagnostics import Diagnostics
+
+        logger.info(f"测试连接: {config_name}")
+
+        result = Diagnostics.test_database_connection(config_name)
+
+        # 如果不需要详细信息，简化返回结果
+        if not detailed and result.get("server_info"):
+            # 只保留基本信息
+            result["server_info"] = {
+                "type": result["server_info"].get("type"),
+                "version": result["server_info"].get("version")
+            }
+
+        return result
+
     logger.info("所有 MCP 工具已注册")

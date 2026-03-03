@@ -52,16 +52,20 @@ ls dev-workflow/references/
 
 ### [db-mcp](./db-mcp/) - Database MCP Service Management
 
-A comprehensive database MCP server skill providing secure database query functionality.
+A comprehensive database MCP server skill with zero-configuration startup and automatic dependency management.
 
 **Features:**
+- **Zero-Configuration Startup** - Server starts without config, auto-setup via AI tools
+- **Auto-Install Dependencies** - Automatically detect and install missing database drivers
+- **Intelligent Diagnostics** - System capability detection and connection testing
 - Support for MySQL, PostgreSQL, and SQLite
-- Automatic dependency detection and one-click installation
 - Secure read-only queries with SQL injection protection
 - Multi-database configuration support
-- Unified command-line tool for MCP service management
 
 **Key Tools:**
+- `check_capabilities()` - Check installed drivers, config status, and get recommendations
+- `auto_setup_database()` - Zero-config setup: auto-install drivers, create config, test connection
+- `test_connection()` - Test database connection with latency and server info
 - `list_tables` - List all tables in the database
 - `describe_table` - View table structure and schema
 - `execute_query` - Execute SELECT queries
@@ -69,11 +73,19 @@ A comprehensive database MCP server skill providing secure database query functi
 - `get_database_info` - Get database information
 - `search_tables` - Search tables by keywords
 
-**Quick Start:**
+**Quick Start (Zero-Config):**
 ```bash
 cd db-mcp
-python scripts/db-mcp.py install    # Auto-install dependencies
-python scripts/db-mcp.py setup      # Install MCP service
+python scripts/db-mcp.py setup    # Install MCP service
+# Restart Claude Code, then in conversation:
+# auto_setup_database(db_type="mysql", connection_params={...})
+```
+
+**Traditional Setup:**
+```bash
+cd db-mcp
+python scripts/db-mcp.py install --db-type mysql  # Install specific driver
+python scripts/db-mcp.py setup                    # Install MCP service
 ```
 
 ### [doc2md](./doc2md/) - Document to Markdown Converter

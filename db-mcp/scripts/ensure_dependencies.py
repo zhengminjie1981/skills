@@ -141,6 +141,26 @@ def detect_database_needs():
 
 def main():
     """主函数"""
+    import argparse
+
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(
+        description='db-mcp 依赖检测和安装工具',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--db-type',
+        choices=['mysql', 'postgresql', 'sqlite', 'all'],
+        help='指定要安装的数据库驱动类型（不指定则自动检测）'
+    )
+    parser.add_argument(
+        '--list-needs',
+        action='store_true',
+        help='仅列出缺失的依赖，不安装'
+    )
+
+    args = parser.parse_args()
+
     print_color("\n" + "="*60, Colors.BOLD)
     print_color("db-mcp 依赖检测工具", Colors.HEADER + Colors.BOLD)
     print_color("="*60 + "\n", Colors.BOLD)
@@ -172,8 +192,16 @@ def main():
         },
     }
 
-    # 检测数据库需求
-    db_needs = detect_database_needs()
+    # 确定需要的数据库驱动
+    if args.db_type:
+        # 使用命令行参数
+        if args.db_type == 'all':
+            db_needs = {'mysql', 'postgresql', 'sqlite'}
+        else:
+            db_needs = {args.db_type, 'sqlite'} if args.db_type != 'sqlite' else {'sqlite'}
+    else:
+        # 自动检测
+        db_needs = detect_database_needs()
 
     # 添加需要的数据库驱动
     for db_type in db_needs:
@@ -223,6 +251,17 @@ def main():
         print_color(status_msg, status_color)
 
     print()
+
+    # 如果只是列出缺失依赖
+    if args.list_needs:
+        if missing_required or missing_optional:
+            print_color("缺失的依赖:", Colors.WARNING + Colors.BOLD)
+            for dep in missing_required + missing_optional:
+                version = dep.get('version', '')
+                print_color(f"  {dep['name']}{version} - {dep['description']}", Colors.OKCYAN)
+        else:
+            print_color("所有依赖都已安装！", Colors.OKGREEN + Colors.BOLD)
+        return 0
 
     # 如果没有缺失依赖
     if not missing_required and not missing_optional:

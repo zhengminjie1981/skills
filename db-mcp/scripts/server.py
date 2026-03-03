@@ -107,21 +107,22 @@ def create_mcp_server():
 def main():
     """MCP 服务器主入口"""
     import sys
-
-    # 检查配置文件
-    import os
     from pathlib import Path
 
+    # 检查配置文件（仅警告，不强制退出）
+    import os
     script_dir = Path(__file__).parent.parent.absolute()
     config_path = os.getenv('CHATBI_CONFIG', script_dir / 'db_config.json')
 
     if not Path(config_path).exists():
-        print(f"错误: 配置文件不存在: {config_path}", file=sys.stderr)
-        print(f"\n请按以下步骤配置：", file=sys.stderr)
-        print(f"1. 从 references/db_config.example.json 复制配置:", file=sys.stderr)
-        print(f"   cp {script_dir / 'references' / 'db_config.example.json'} {config_path}", file=sys.stderr)
-        print(f"\n2. 编辑配置文件，填入数据库连接信息\n", file=sys.stderr)
-        sys.exit(1)
+        print(
+            f"提示: 配置文件不存在: {config_path}\n"
+            f"请使用 auto_setup_database() 工具创建配置，或手动配置:\n"
+            f"1. 从 references/db_config.example.json 复制配置:\n"
+            f"   cp {script_dir / 'references' / 'db_config.example.json'} {config_path}\n"
+            f"2. 编辑配置文件，填入数据库连接信息\n",
+            file=sys.stderr
+        )
 
     # 创建并运行服务器
     mcp = create_mcp_server()

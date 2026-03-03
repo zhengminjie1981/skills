@@ -1,13 +1,46 @@
 ---
 name: db-mcp
-description: 数据库 MCP 服务管理技能。当用户需要查询数据库、管理数据库配置、或使用 MCP 数据库功能时使用此技能。自动检测并安装 MCP 服务，提供便捷的数据库查询接口。
+description: 数据库 MCP 服务管理技能。当用户需要查询数据库、管理数据库配置、或使用 MCP 数据库功能时使用此技能。支持零配置启动，自动安装依赖，提供便捷的数据库查询接口。
 ---
 
 # db-mcp - 数据库 MCP 服务管理
 
 ## 快速开始
 
-### 首次使用（自动依赖检测）
+### 零配置自动启动（推荐）
+
+**首次使用最简单的方式**：
+
+1. **启动服务**: `python scripts/db-mcp.py setup`
+2. **重启 Claude Code**
+3. **自动配置**: 在对话中调用 `auto_setup_database()` 工具
+
+```python
+# 在 Claude Code 对话中直接使用
+auto_setup_database(
+    db_type="mysql",
+    connection_params={
+        "host": "localhost",
+        "port": 3306,
+        "user": "username",
+        "password": "password",
+        "database": "dbname"
+    }
+)
+```
+
+工具会自动完成：
+- ✓ 检测并安装所需的数据库驱动
+- ✓ 创建配置文件
+- ✓ 测试连接
+- ✓ 验证基本功能（列出表）
+
+### 传统手动配置
+
+<details>
+<summary>点击展开传统配置步骤</summary>
+
+#### 首次使用（自动依赖检测）
 
 首次使用本技能时，会自动检测 Python 依赖环境：
 
@@ -23,7 +56,7 @@ python scripts/db-mcp.py install
 - ✓ 一键安装缺失的依赖
 - ✓ 支持核心依赖 + MySQL/PostgreSQL 驱动
 
-### 手动安装依赖
+#### 手动安装依赖
 
 如果自动检测脚本无法使用，可以手动安装：
 
@@ -39,7 +72,7 @@ pip install -r references/requirements-mysql.txt      # MySQL 驱动
 pip install -r references/requirements-postgresql.txt # PostgreSQL 驱动
 ```
 
-### MCP 服务配置
+#### MCP 服务配置
 
 ```bash
 # 检查 MCP 配置状态
@@ -52,20 +85,46 @@ python scripts/db-mcp.py setup
 python scripts/db-mcp.py validate
 ```
 
+</details>
+
 ## 工作流程
 
-### 1. 初始化检查
+### 1. 零配置启动（推荐流程）
 
 当用户首次请求数据库操作时：
+
+1. **启动服务** - 服务器可在无配置时启动（延迟加载）
+2. **自动配置** - 调用 `auto_setup_database()` 工具配置数据库
+3. **自动安装** - 工具自动检测并安装所需的数据库驱动
+4. **立即使用** - 配置完成后直接开始使用数据库工具
+
+**无需手动操作步骤！**
+
+### 2. 传统工作流程
+
+<details>
+<summary>点击展开传统流程</summary>
 
 1. **依赖检测** - 运行 `python scripts/db-mcp.py install` 检查 Python 依赖
 2. **MCP 配置** - 运行 `python scripts/db-mcp.py check` 检查 MCP 配置状态
 3. **安装服务** - 如果未配置，运行 `python scripts/db-mcp.py setup` 自动安装
 4. **重启应用** - 提示用户重启 Claude Code 使配置生效
 
-### 2. 数据库操作
+</details>
+
+### 3. 数据库操作
 
 MCP 服务安装后，可直接使用以下 MCP 工具：
+
+#### 诊断和配置工具（新增）
+
+| MCP 工具 | 功能 | 使用场景 |
+|---------|------|---------|
+| `check_capabilities` | 检查系统能力 | 查看已安装驱动、配置状态、优化建议 |
+| `auto_setup_database` | 自动配置数据库 | 零配置启动，自动安装驱动并创建配置 |
+| `test_connection` | 测试数据库连接 | 诊断连接问题，查看延迟和服务器信息 |
+
+#### 数据库操作工具
 
 | MCP 工具 | 功能 | 使用场景 |
 |---------|------|---------|
@@ -110,6 +169,19 @@ MCP 服务安装后，可直接使用以下 MCP 工具：
 
 ## 典型使用场景
 
+### 场景 0: 零配置首次使用
+
+```
+用户: 我想连接到 MySQL 数据库，地址是 localhost，用户名 root
+→ 使用 check_capabilities() 查看当前系统状态
+→ 使用 auto_setup_database() 自动配置
+   - 自动检测并安装 MySQL 驱动
+   - 创建配置文件
+   - 测试连接
+   - 验证基本功能
+→ 立即开始使用数据库工具
+```
+
 ### 场景 1: 查询用户数据
 
 ```
@@ -136,7 +208,34 @@ MCP 服务安装后，可直接使用以下 MCP 工具：
 → 使用 get_table_count() 获取各表行数统计
 ```
 
+### 场景 4: 连接诊断
+
+```
+用户: 测试数据库连接是否正常
+→ 使用 test_connection() 查看延迟和服务器信息
+→ 使用 check_capabilities() 检查驱动和配置状态
+→ 获取优化建议
+```
+
 ## 故障排除
+
+### 依赖自动安装（新增）
+
+**症状**: 调用工具时提示驱动缺失
+
+**解决方案**: 无需手动操作！系统会自动安装缺失的驱动。
+
+如需手动控制：
+```bash
+# 自动检测并安装
+python scripts/db-mcp.py install
+
+# 指定数据库类型
+python scripts/db-mcp.py install --db-type mysql
+
+# 列出缺失的依赖
+python scripts/db-mcp.py install --list-needs
+```
 
 ### Python 依赖缺失
 
@@ -151,17 +250,38 @@ python scripts/db-mcp.py install
 pip install -r references/requirements-core.txt
 ```
 
+### 配置文件不存在
+
+**症状**: 服务器启动时提示配置文件不存在
+
+**解决方案**:
+
+**方式 1**: 使用 `auto_setup_database()` 工具自动创建配置（推荐）
+
+**方式 2**: 手动创建配置文件
+```bash
+python scripts/db-mcp.py validate
+# 或从示例复制
+cp references/db_config.example.json db_config.json
+```
+
 ### 数据库驱动缺失
 
 **症状**: `ModuleNotFoundError: No module named 'mysql.connector'`
 
 **解决方案**:
-```bash
-# MySQL 驱动
-pip install -r references/requirements-mysql.txt
 
-# PostgreSQL 驱动
-pip install -r references/requirements-postgresql.txt
+**方式 1**: 自动安装（推荐）
+```python
+# 使用 auto_setup_database() 工具会自动安装
+auto_setup_database(db_type="mysql", ...)
+```
+
+**方式 2**: 手动安装
+```bash
+python scripts/db-mcp.py install --db-type mysql
+# 或
+pip install -r references/requirements-mysql.txt
 ```
 
 ### MCP 服务未启动
@@ -173,9 +293,19 @@ pip install -r references/requirements-postgresql.txt
 
 ### 连接失败
 
-1. 验证配置：`python scripts/db-mcp.py validate`
-2. 检查数据库服务是否运行
-3. 检查数据库配置是否正确
+**方式 1**: 使用诊断工具（推荐）
+```python
+# 查看当前状态
+check_capabilities()
+
+# 测试连接
+test_connection(config_name="default", detailed=True)
+```
+
+**方式 2**: 命令行验证
+```bash
+python scripts/db-mcp.py validate
+```
 
 ### 找到 MCP 工具
 
@@ -226,8 +356,16 @@ db-mcp/
 # 显示帮助
 python scripts/db-mcp.py
 
-# 安装依赖
+# 安装依赖（智能检测）
 python scripts/db-mcp.py install
+
+# 指定数据库类型安装
+python scripts/db-mcp.py install --db-type mysql      # 仅 MySQL
+python scripts/db-mcp.py install --db-type postgresql # 仅 PostgreSQL
+python scripts/db-mcp.py install --db-type all        # 所有驱动
+
+# 列出缺失的依赖（不安装）
+python scripts/db-mcp.py install --list-needs
 
 # 检查配置
 python scripts/db-mcp.py check

@@ -13,12 +13,55 @@ logger = logging.getLogger(__name__)
 class ConnectionManager:
     """数据库连接管理器"""
 
-    def __init__(self):
-        """初始化连接管理器"""
+    def __init__(self, auto_install: bool = True):
+        """
+        初始化连接管理器
+
+        Args:
+            auto_install: 是否自动安装缺失的驱动（默认 True）
+        """
         from config import get_config
 
         self.config = get_config()
         self.connections: Dict[str, Any] = {}
+        self.auto_install = auto_install
+
+    def _install_driver(self, db_type: str) -> bool:
+        """
+        自动安装数据库驱动
+
+        Args:
+            db_type: 数据库类型
+
+        Returns:
+            是否安装成功
+        """
+        import subprocess
+        import sys
+
+        package_map = {
+            'mysql': 'mysql-connector-python>=8.0.30',
+            'postgresql': 'psycopg2-binary>=2.9.0'
+        }
+
+        if db_type not in package_map:
+            logger.error(f"不支持的数据库类型: {db_type}")
+            return False
+
+        package = package_map[db_type]
+        logger.info(f"正在自动安装 {package}...")
+
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", package],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            logger.info(f"{package} 安装成功")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"{package} 安装失败: {e}")
+            return False
 
     def get_connection(self, name: str = 'default'):
         """
@@ -82,10 +125,27 @@ class ConnectionManager:
         try:
             import mysql.connector
         except ImportError:
-            raise ImportError(
-                "未安装 mysql-connector-python\n"
-                "请运行: pip install mysql-connector-python"
-            )
+            if self.auto_install:
+                logger.info("MySQL 驱动未安装，尝试自动安装...")
+                if self._install_driver('mysql'):
+                    # 重试导入
+                    try:
+                        import mysql.connector
+                    except ImportError:
+                        raise ImportError(
+                            "自动安装 MySQL 驱动失败\n"
+                            "请手动运行: pip install mysql-connector-python>=8.0.30"
+                        )
+                else:
+                    raise ImportError(
+                        "自动安装 MySQL 驱动失败\n"
+                        "请手动运行: pip install mysql-connector-python>=8.0.30"
+                    )
+            else:
+                raise ImportError(
+                    "未安装 mysql-connector-python\n"
+                    "请运行: pip install mysql-connector-python>=8.0.30"
+                )
 
         try:
             connection = mysql.connector.connect(
@@ -121,10 +181,28 @@ class ConnectionManager:
             import psycopg2
             import psycopg2.extras
         except ImportError:
-            raise ImportError(
-                "未安装 psycopg2-binary\n"
-                "请运行: pip install psycopg2-binary"
-            )
+            if self.auto_install:
+                logger.info("PostgreSQL 驱动未安装，尝试自动安装...")
+                if self._install_driver('postgresql'):
+                    # 重试导入
+                    try:
+                        import psycopg2
+                        import psycopg2.extras
+                    except ImportError:
+                        raise ImportError(
+                            "自动安装 PostgreSQL 驱动失败\n"
+                            "请手动运行: pip install psycopg2-binary>=2.9.0"
+                        )
+                else:
+                    raise ImportError(
+                        "自动安装 PostgreSQL 驱动失败\n"
+                        "请手动运行: pip install psycopg2-binary>=2.9.0"
+                    )
+            else:
+                raise ImportError(
+                    "未安装 psycopg2-binary\n"
+                    "请运行: pip install psycopg2-binary>=2.9.0"
+                )
 
         try:
             connection = psycopg2.connect(

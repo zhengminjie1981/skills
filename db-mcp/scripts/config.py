@@ -5,8 +5,11 @@
 
 import json
 import os
+import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class Config:
@@ -33,8 +36,22 @@ class Config:
             else:
                 self.config_path = self.script_dir / 'db_config.json'
 
-        # 加载配置
-        self.configs = self._load_config()
+        # 延迟加载：不立即调用 _load_config()
+        self._configs = None
+        self._loaded = False
+
+    @property
+    def configs(self) -> Dict[str, Any]:
+        """
+        延迟加载配置
+
+        Returns:
+            配置字典
+        """
+        if not self._loaded:
+            self._configs = self._load_config()
+            self._loaded = True
+        return self._configs
 
     def _load_config(self) -> Dict[str, Any]:
         """
@@ -44,18 +61,27 @@ class Config:
             配置字典
         """
         if not self.config_path.exists():
-            raise FileNotFoundError(
-                f"配置文件不存在: {self.config_path}\n"
-                f"请从 db_config.example.json 复制并配置数据库连接信息"
-            )
+            logger.warning(f"配置文件不存在: {self.config_path}")
+            logger.warning("将使用空配置。请使用 auto_setup_database() 工具创建配置")
+            return {}
 
-        with open(self.config_path, 'r', encoding='utf-8') as f:
-            configs = json.load(f)
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                configs = json.load(f)
 
-        # 验证配置
-        self._validate_config(configs)
+            # 验证配置
+            self._validate_config(configs)
 
-        return configs
+            return configs
+
+        except json.JSONDecodeError as e:
+            logger.error(f"配置文件格式错误: {e}")
+            logger.error("将使用空配置。请检查配置文件格式")
+            return {}
+        except Exception as e:
+            logger.error(f"加载配置文件失败: {e}")
+            logger.error("将使用空配置")
+            return {}
 
     def _validate_config(self, configs: Dict[str, Any]) -> None:
         """
