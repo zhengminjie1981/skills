@@ -1,0 +1,24 @@
+version: '1.0'
+knowledge_base:
+  name: test-kb
+  path: E:\skills\knowledge-index\tests\test-kb
+  created: '2026-03-04T01:34:08.354898+00:00'
+  last_updated: '2026-03-04T01:34:08.354900+00:00'
+  total_documents: 3
+  total_size_mb: 0.0
+documents:
+- path: doc1.md
+  filename: doc1.md
+  type: markdown
+  modified: '2026-03-04T01:33:57.015760+00:00'
+  size: 41
+- path: subfolder1/doc2.md
+  filename: doc2.md
+  type: markdown
+  modified: '2026-03-04T01:33:57.015760+00:00'
+  size: 50
+- path: subfolder2/doc3.md
+  filename: doc3.md
+  type: markdown
+  modified: '2026-03-04T01:33:57.015760+00:00'
+  size: 41

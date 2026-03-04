@@ -1,0 +1,24 @@
+version: '1.0'
+knowledge_base:
+  name: test-parent
+  path: E:\skills\knowledge-index\tests\test-parent
+  created: '2026-03-04T01:34:51.264994+00:00'
+  last_updated: '2026-03-04T01:34:51.264995+00:00'
+  total_documents: 3
+  total_size_mb: 0.0
+documents:
+- path: parent.md
+  filename: parent.md
+  type: markdown
+  modified: '2026-03-04T01:34:38.692346+00:00'
+  size: 12
+- path: sub1/doc1.md
+  filename: doc1.md
+  type: markdown
+  modified: '2026-03-04T01:34:38.692346+00:00'
+  size: 13
+- path: sub2/doc2.md
+  filename: doc2.md
+  type: markdown
+  modified: '2026-03-04T01:34:38.692346+00:00'
+  size: 13

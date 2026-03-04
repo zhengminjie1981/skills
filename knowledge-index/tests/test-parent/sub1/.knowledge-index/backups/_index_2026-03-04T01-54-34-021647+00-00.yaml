@@ -1,0 +1,14 @@
+version: "1.0"
+knowledge_base:
+  name: sub1
+  path: E:/skills/knowledge-index/tests/test-parent/sub1
+  created: "2026-03-04T01:34:51Z"
+  last_updated: "2026-03-04T01:34:51Z"
+  total_documents: 1
+  total_size_mb: 0.0
+documents:
+  - path: doc1.md
+    filename: doc1.md
+    type: markdown
+    modified: "2026-03-04T01:34:51Z"
+    size: 13
