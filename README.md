@@ -129,16 +129,17 @@ python scripts/converter.py "./docs/*.docx" -o ./output/ --relative-images --ski
 Build AI-readable indexes for local document collections with automatic summarization, incremental updates, and intelligent retrieval.
 
 **Core Features:**
-- **Auto Conversion**: Automatically convert 40+ formats (PDF, Word, PPT) to Markdown
+- **Zero-Dependency**: Direct document reading by default, no extra tools required
 - **AI Summarization**: Generate concise summaries (50-500 chars) and keywords (5-10) for each document
 - **Incremental Updates**: Detect file changes and update only modified documents
 - **Intelligent Retrieval**: AI-powered search through index to locate relevant documents
-- **Tool Flexibility**: Auto-detect and select optimal conversion tool (doc2md/pandoc/mineru/PyMuPDF)
+- **Global Registry**: Manage all knowledge bases from `~/.knowledge-index/registry.yaml`
+- **Hierarchy Management**: Auto-promote child indexes to parent level
 
 **Key Principles:**
-- **Document First**: All documents converted to Markdown before indexing
-- **Incremental Priority**: Prefer incremental updates over full rebuilds
-- **Quality Assurance**: Three-layer validation (structure, semantics, completeness)
+- **Zero-Dependency First**: Direct reading, optional conversion tools
+- **User Controllable**: Configurable read strategies (direct/convert/hybrid)
+- **Smart Fallback**: Auto-degrade when tools unavailable
 - **Fault Tolerance**: Single document failure doesn't affect overall workflow
 
 **Trigger Scenarios:**
@@ -150,7 +151,7 @@ Build AI-readable indexes for local document collections with automatic summariz
 **Quick Start:**
 ```bash
 # Build index for a knowledge base
-# AI will: Scan → Convert → Generate summaries → Write _index.yaml
+# AI will: Scan → Generate summaries → Write _index.yaml
 
 # Query the knowledge base
 # AI will: Read index → Match documents → Generate answer
@@ -170,11 +171,19 @@ knowledge-base/
     └── document3.docx
 ```
 
-**Reference Materials:**
-- `references/core/` - Index specification, workflow, quality gates
-- `references/decision/` - Decision trees, quick reference, anti-patterns
-- `references/execution/` - Tools, checklists, templates, troubleshooting
-- `references/advanced/` - Incremental updates, performance tuning, integration
+**Directory Structure:**
+```
+knowledge-index/
+├── SKILL.md              # Entry point (AI-friendly, on-demand loading)
+├── docs/                 # Development docs (design, changelog)
+├── references/           # AI reference docs (on-demand loading)
+│   ├── core/             # Index spec, workflow, quality gates
+│   ├── execution/        # Tools, checklists, templates
+│   ├── decision/         # Decision trees, anti-patterns
+│   └── advanced/         # Global registry, hierarchy management
+├── scripts/              # Utility scripts
+└── tests/                # Test cases
+```
 
 ## Installation
 
