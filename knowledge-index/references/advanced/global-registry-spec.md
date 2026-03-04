@@ -1,6 +1,6 @@
 # 全局注册表规范
 
-> **版本**: 2.1
+> **版本**: 2.2
 > **最后更新**: 2026-03-04
 
 ## 概述
@@ -9,22 +9,63 @@
 
 ## 注册表位置
 
+### 设计原则
+
+**自包含设计**：注册表作为 skill 的运行时数据，存放在 skill 文件夹内，实现：
+- 数据与 skill 绑定，便于管理和迁移
+- 备份 skill 时数据一起备份
+- 用户容易找到注册表位置
+
 ### 默认路径
 
 ```bash
+# 注册表位于 skill 的 data 目录内
+
 # Windows
-C:/Users/{username}/.knowledge-index/registry.yaml
+C:/Users/{username}/.claude/skills/knowledge-index/data/registry.yaml
 
 # Linux/macOS
-~/.knowledge-index/registry.yaml
+~/.claude/skills/knowledge-index/data/registry.yaml
+```
+
+### 目录结构
+
+```
+knowledge-index/                  # Skill 根目录
+├── SKILL.md                      # 入口文档
+├── data/                         # 运行时数据目录
+│   ├── registry.yaml             # 全局注册表
+│   ├── config.yaml               # 全局配置（可选）
+│   └── backups/                  # 注册表备份
+│       └── registry_20260304.yaml
+├── scripts/                      # 工具脚本
+├── references/                   # 参考文档
+└── ...
 ```
 
 ### 环境变量配置（可选）
 
 ```bash
-# 自定义注册表路径
+# 自定义注册表路径（覆盖默认路径）
 export KNOWLEDGE_INDEX_REGISTRY="/custom/path/registry.yaml"
 ```
+
+### 路径获取逻辑
+
+```python
+def get_registry_path() -> str:
+    """获取注册表路径"""
+    import os
+    from pathlib import Path
+
+    # 1. 优先使用环境变量
+    env_path = os.environ.get('KNOWLEDGE_INDEX_REGISTRY')
+    if env_path:
+        return env_path
+
+    # 2. 默认路径：skill 目录下的 data/
+    skill_dir = Path(__file__).parent.parent  # 从 scripts/ 向上两级
+    return str(skill_dir / "data" / "registry.yaml")
 
 ---
 
@@ -36,7 +77,7 @@ export KNOWLEDGE_INDEX_REGISTRY="/custom/path/registry.yaml"
 # 全局注册表
 version: "1.0"
 last_updated: "2026-03-04T10:00:00Z"
-registry_path: "C:/Users/zheng/.knowledge-index/registry.yaml"
+registry_path: "C:/Users/zheng/.claude/skills/knowledge-index/data/registry.yaml"
 
 # 所有知识库列表
 knowledge_bases:
@@ -521,7 +562,7 @@ def search_all_knowledge_bases(query):
 ### 全局配置
 
 ```yaml
-# ~/.knowledge-index/config.yaml
+# data/config.yaml（位于 skill 目录内）
 registry:
   # 自动注册
   auto_register: true
@@ -553,7 +594,8 @@ def backup_registry():
     """备份注册表"""
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_path = f"~/.knowledge-index/backups/registry_{timestamp}.yaml"
+    # 备份路径位于 skill 目录内
+    backup_path = get_skill_dir() / "data" / "backups" / f"registry_{timestamp}.yaml"
 
     shutil.copy(registry_path, backup_path)
 
@@ -642,6 +684,6 @@ def rebuild_registry():
 
 ---
 
-**版本**: 2.1
+**版本**: 2.2
 **最后更新**: 2026-03-04
 **状态**: 规范已定义，待实现

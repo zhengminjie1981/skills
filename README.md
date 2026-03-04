@@ -129,16 +129,16 @@ python scripts/converter.py "./docs/*.docx" -o ./output/ --relative-images --ski
 Build AI-readable indexes for local document collections with automatic summarization, incremental updates, and intelligent retrieval.
 
 **Core Features:**
-- **Zero-Dependency**: Direct document reading by default, no extra tools required
+- **Local-First**: Use local tools to extract text, avoid uploading documents to cloud
 - **AI Summarization**: Generate concise summaries (50-500 chars) and keywords (5-10) for each document
 - **Incremental Updates**: Detect file changes and update only modified documents
 - **Intelligent Retrieval**: AI-powered search through index to locate relevant documents
-- **Global Registry**: Manage all knowledge bases from `~/.knowledge-index/registry.yaml`
+- **Global Registry**: Manage all knowledge bases from skill's `data/registry.yaml`
 - **Hierarchy Management**: Auto-promote child indexes to parent level
 
 **Key Principles:**
-- **Zero-Dependency First**: Direct reading, optional conversion tools
-- **User Controllable**: Configurable read strategies (direct/convert/hybrid)
+- **Local First**: Extract text locally, only send plain text to LLM for summaries
+- **Privacy Protection**: Configurable read strategies (local/direct/hybrid)
 - **Smart Fallback**: Auto-degrade when tools unavailable
 - **Fault Tolerance**: Single document failure doesn't affect overall workflow
 
@@ -175,13 +175,14 @@ knowledge-base/
 ```
 knowledge-index/
 ├── SKILL.md              # Entry point (AI-friendly, on-demand loading)
+├── data/                 # Runtime data (registry, config, backups)
 ├── docs/                 # Development docs (design, changelog)
 ├── references/           # AI reference docs (on-demand loading)
 │   ├── core/             # Index spec, workflow, quality gates
 │   ├── execution/        # Tools, checklists, templates
 │   ├── decision/         # Decision trees, anti-patterns
 │   └── advanced/         # Global registry, hierarchy management
-├── scripts/              # Utility scripts
+├── scripts/              # Utility scripts (extract_text, check_deps)
 └── tests/                # Test cases
 ```
 

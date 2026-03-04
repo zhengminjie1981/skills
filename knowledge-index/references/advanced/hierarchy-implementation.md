@@ -22,9 +22,13 @@ class KnowledgeBaseManager:
 
     @staticmethod
     def get_default_registry_path() -> str:
-        """获取默认注册表路径"""
-        home = Path.home()
-        return str(home / ".knowledge-index" / "registry.yaml")
+        """获取默认注册表路径（位于 skill 目录内）"""
+        from pathlib import Path
+
+        # 注册表位于 skill 的 data 目录
+        # 假设此脚本在 scripts/ 目录下
+        skill_dir = Path(__file__).parent.parent
+        return str(skill_dir / "data" / "registry.yaml")
 
     def load_registry(self) -> Dict:
         """加载注册表"""

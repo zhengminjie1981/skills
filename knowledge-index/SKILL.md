@@ -37,7 +37,7 @@ description: |
 **关键原则**：
 - ✅ 一个索引覆盖该文件夹及所有子文件夹的文档
 - ❌ 不在子文件夹创建独立索引
-- ✅ 全局注册表 `~/.knowledge-index/registry.yaml` 维护所有知识库信息
+- ✅ 全局注册表 `~/.claude/skills/knowledge-index/data/registry.yaml` 维护所有知识库信息
 
 ## 5 个核心功能
 
@@ -86,7 +86,7 @@ documents:
 | 检测到父子冲突 | `references/advanced/hierarchy-management.md` | 8 种场景处理 |
 | 查看所有知识库 | `references/advanced/global-registry-spec.md` | 注册表操作 |
 | 跨知识库检索 | `references/advanced/global-registry-spec.md` | 跨库搜索 |
-| 工具选择 | `references/execution/tools.md` | 读取策略、降级方案 |
+| **配置读取策略** | `references/execution/tools.md` | **本地优先、隐私保护** |
 | 排查错误 | `references/execution/troubleshooting.md` | 常见问题解决 |
 | 配置选项 | `references/execution/config-options.md` | 完整配置说明 |
 
@@ -124,10 +124,11 @@ AI: ✓ 读取全局注册表 → 列出 3 个知识库
 
 | # | 原则 | 说明 |
 |---|------|------|
-| 1 | 零依赖优先 | 默认直接读取文档，无需额外工具 |
-| 2 | 用户可控 | 通过配置控制读取策略 |
-| 3 | 智能降级 | 工具不可用时自动回退 |
-| 4 | 容错设计 | 单个文档失败不影响整体 |
+| 1 | **本地优先** | 优先使用本地工具提取文本，避免上传完整文档 |
+| 2 | 零依赖可用 | 无需安装工具也可使用（降级模式） |
+| 3 | 用户可控 | 通过配置控制读取策略和隐私级别 |
+| 4 | 智能降级 | 工具不可用时自动回退 |
+| 5 | 容错设计 | 单个文档失败不影响整体 |
 
 ## 参考资源
 
