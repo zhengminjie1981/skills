@@ -225,6 +225,23 @@ Contributions are welcome! Feel free to submit issues or pull requests for:
 - Documentation improvements
 - Additional skills
 
+### Creating New Skills
+
+When creating a new skill or modifying existing skills, please follow the [Skills 编写指南](./SKILL-GUIDE.md).
+
+**Key Resources:**
+- [SKILL.md Template](./docs/skill-creation/templates/SKILL.md.template) - Copy and customize
+- [Design Checklist](./docs/skill-creation/checklists/design.md) - Validate before implementation
+- [Implementation Checklist](./docs/skill-creation/checklists/implementation.md) - Verify during development
+- [Release Checklist](./docs/skill-creation/checklists/release.md) - Test before publishing
+- [Design Patterns](./docs/skill-creation/examples/patterns.md) - Universal design patterns
+
+**Quick Start:**
+1. Read [SKILL-GUIDE.md](./SKILL-GUIDE.md) for conventions
+2. Copy the [template](./docs/skill-creation/templates/SKILL.md.template)
+3. Follow the checklists for design → implementation → release
+4. Reference [patterns.md](./docs/skill-creation/examples/patterns.md) for best practices
+
 ## License
 
 This repository is licensed under the MIT License. See individual skill directories for specific license information.
