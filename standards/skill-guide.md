@@ -194,7 +194,7 @@ description: |
 
 **目标**：明确 skill 的职责边界和触发条件
 
-**检查清单**：[design.md](docs/skill-creation/checklists/design.md)
+**检查清单**：[design.md](checklists/design.md)
 
 **关键问题**：
 - [ ] 这个 skill 解决什么问题？
@@ -206,9 +206,9 @@ description: |
 
 **目标**：创建符合模板的 skill 文件
 
-**模板**：[SKILL.md.template](docs/skill-creation/templates/SKILL.md.template)
+**模板**：[SKILL.md.template](templates/SKILL.md.template)
 
-**检查清单**：[implementation.md](docs/skill-creation/checklists/implementation.md)
+**检查清单**：[implementation.md](checklists/implementation.md)
 
 **关键步骤**：
 1. 复制模板，填写 front matter
@@ -220,7 +220,7 @@ description: |
 
 **目标**：验证 skill 能正确触发和执行
 
-**检查清单**：[release.md](docs/skill-creation/checklists/release.md)
+**检查清单**：[release.md](checklists/release.md)
 
 **测试用例**：
 1. 触发测试：说出触发关键词，验证 skill 被加载
@@ -239,7 +239,7 @@ description: |
 5. AI 友好性检查 → 是否有表格/决策树/默认值
 ```
 
-**检查清单**：[compliance.md](docs/skill-creation/checklists/compliance.md)
+**检查清单**：[compliance.md](checklists/compliance.md)
 
 ### 常见问题与优化方案
 
@@ -273,11 +273,11 @@ description: |
 
 | 文件 | 用途 |
 |------|------|
-| [SKILL.md 模板](docs/skill-creation/templates/SKILL.md.template) | 可直接复制使用 |
-| [设计检查清单](docs/skill-creation/checklists/design.md) | 设计阶段验证 |
-| [实现检查清单](docs/skill-creation/checklists/implementation.md) | 实现阶段验证 |
-| [发布检查清单](docs/skill-creation/checklists/release.md) | 发布前验证 |
-| [符合性检查清单](docs/skill-creation/checklists/compliance.md) | 已有 skill 检查和优化 |
+| [SKILL.md 模板](templates/SKILL.md.template) | 可直接复制使用 |
+| [设计检查清单](checklists/design.md) | 设计阶段验证 |
+| [实现检查清单](checklists/implementation.md) | 实现阶段验证 |
+| [发布检查清单](checklists/release.md) | 发布前验证 |
+| [符合性检查清单](checklists/compliance.md) | 已有 skill 检查和优化 |
 
 ## 常见问题
 

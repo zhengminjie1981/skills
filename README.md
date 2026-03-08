@@ -263,25 +263,25 @@ cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 
 ### 创建新 Skill
 
-创建或修改 skill 时，请遵循 [Skills 编写指南](./SKILL-GUIDE.md)。
+创建或修改 skill 时，请遵循 [Skills 编写指南](./standards/skill-guide.md)。
 
 **关键资源：**
-- [SKILL.md 模板](./docs/skill-creation/templates/SKILL.md.template) - 复制并自定义
-- [设计检查清单](./docs/skill-creation/checklists/design.md) - 实现前验证
-- [实现检查清单](./docs/skill-creation/checklists/implementation.md) - 开发时验证
-- [发布检查清单](./docs/skill-creation/checklists/release.md) - 发布前测试
-- [符合性检查清单](./docs/skill-creation/checklists/compliance.md) - 检查现有 skills
-- [设计模式](./docs/skill-creation/examples/patterns.md) - 通用设计模式
+- [SKILL.md 模板](./standards/templates/SKILL.md.template) - 复制并自定义
+- [设计检查清单](./standards/checklists/design.md) - 实现前验证
+- [实现检查清单](./standards/checklists/implementation.md) - 开发时验证
+- [发布检查清单](./standards/checklists/release.md) - 发布前测试
+- [符合性检查清单](./standards/checklists/compliance.md) - 检查现有 skills
+- [设计模式](./standards/examples/patterns.md) - 通用设计模式
 
 **快速开始：**
-1. 阅读 [SKILL-GUIDE.md](./SKILL-GUIDE.md) 了解规范
-2. 复制 [模板](./docs/skill-creation/templates/SKILL.md.template)
+1. 阅读 [standards/skill-guide.md](./standards/skill-guide.md) 了解规范
+2. 复制 [模板](./standards/templates/SKILL.md.template)
 3. 按检查清单完成：设计 → 实现 → 发布
-4. 参考 [patterns.md](./docs/skill-creation/examples/patterns.md) 了解最佳实践
+4. 参考 [patterns.md](./standards/examples/patterns.md) 了解最佳实践
 
 ### 检查现有 Skills
 
-使用 [符合性检查清单](./docs/skill-creation/checklists/compliance.md) 验证现有 skills 是否符合规范：
+使用 [符合性检查清单](./standards/checklists/compliance.md) 验证现有 skills 是否符合规范：
 
 1. **目录结构** - 文件在正确位置
 2. **代码位置** - 可执行代码不在 markdown 中
