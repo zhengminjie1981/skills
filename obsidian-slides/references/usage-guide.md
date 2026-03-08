@@ -4,6 +4,17 @@
 
 ## 一、安装 Slides Extended 插件
 
+### 插件说明
+
+**Slides Extended 与核心 Slides 插件的关系：**
+
+| 插件 | 类型 | 渲染引擎 | 说明 |
+|------|------|---------|------|
+| **核心 Slides** | Obsidian 内置 | Obsidian 原生 | 基础演示，右键标签页 → "开始演示" |
+| **Slides Extended** | 社区插件 | reveal.js | 高级功能（推荐用于复杂幻灯片） |
+
+> 💡 两者**独立运行，互不冲突**，可根据需要选择使用。
+
 ### 步骤 1：开启第三方插件
 
 1. 打开 Obsidian
@@ -66,47 +77,78 @@
 
 ---
 
-## 三、使用示例
+## 三、AI 对话使用示例
 
-### 示例 1：最简单的幻灯片
+> 以下示例展示如何通过与 AI 对话，让 AI 帮你完成 Slides 的创建和美化
+
+### 示例 1：从零创建幻灯片
+
+```
+👤 用户：帮我创建一个产品介绍幻灯片，产品是一个 AI 写作助手
+
+🤖 AI：好的，我来帮你创建产品介绍幻灯片。
+
+请先确认几个信息：
+1. 目标受众是谁？（开发者/普通用户/企业客户）
+2. 演示时长大概多久？（5分钟/10分钟/20分钟）
+3. 风格偏好？（深色科技风/浅色商务风）
+
+👤 用户：面向普通用户，5分钟，浅色商务风
+
+🤖 AI：明白了，我将使用 product-pitch 模板，浅色主题，生成 5 页幻灯片。
+
+[生成 Markdown 文件]
+```
+
+**AI 生成的结果**：
 
 ```markdown
 ---
 slideOptions:
   theme: white
+  transition: slide
 ---
 
-## 欢迎使用 Obsidian Slides
+## AI 写作助手
 
-这是一个简单的演示文稿
+**让每个人都能轻松写出好文章**
+
+演讲者 | 日期
 
 ---
 
-## 第二页
+## 痛点
 
-更多内容...
-```
-
-### 示例 2：带列表和动画
-
-```markdown
----
-slideOptions:
-  theme: night
----
-
-## 项目进展
-
-**本周完成**
+**写作者的困扰**
 
 <ul>
-  <li class="fragment">完成了用户认证模块</li>
-  <li class="fragment">优化了数据库查询</li>
-  <li class="fragment">修复了 3 个 bug</li>
+  <li class="fragment">不知道如何开头</li>
+  <li class="fragment">担心语法和措辞</li>
+  <li class="fragment">效率低下，反复修改</li>
 </ul>
+
+---
+...（后续页面）
 ```
 
-### 示例 3：左右分栏布局
+---
+
+### 示例 2：内容转换
+
+```
+👤 用户：把下面这段内容转成幻灯片：
+
+# 项目周报
+本周完成了用户登录模块的开发，修复了3个bug。
+下周计划完成支付模块。
+遇到的问题是第三方API不稳定。
+
+🤖 AI：好的，我来将这段内容转换为 3 页幻灯片结构。
+
+[生成结果]
+```
+
+**AI 生成的结果**：
 
 ```markdown
 ---
@@ -114,301 +156,322 @@ slideOptions:
   theme: league
 ---
 
-## 产品介绍
+## 项目周报
+
+---
+
+## 本周进展
+
+**已完成**
+
+- ✅ 用户登录模块开发
+- ✅ 修复 3 个 bug
+
+---
+
+## 问题与计划
 
 <split even>
 
 <div>
 
-**核心功能**
-
-- 功能一
-- 功能二
-- 功能三
+**遇到的问题**
+- 第三方 API 不稳定
 
 </div>
 
 <div>
 
-**用户价值**
-
-- 价值一
-- 价值二
-- 价值三
+**下周计划**
+- 完成支付模块
 
 </div>
 
 </split>
 ```
 
-### 示例 4：三栏卡片布局
-
-```markdown
----
-slideOptions:
-  theme: white
 ---
 
-## 方案对比
+### 示例 3：布局优化
 
-<div style="display: flex; gap: 20px;">
-  <div style="flex: 1; background: #f5f5f5; padding: 20px; border-radius: 8px;">
-    <h4>方案 A</h4>
-    <ul>
-      <li>优点一</li>
-      <li>优点二</li>
-    </ul>
-  </div>
-  <div style="flex: 1; background: #e8f5e9; padding: 20px; border-radius: 8px;">
-    <h4>方案 B</h4>
-    <ul>
-      <li>优点一</li>
-      <li>优点二</li>
-    </ul>
-  </div>
-  <div style="flex: 1; background: #e3f2fd; padding: 20px; border-radius: 8px;">
-    <h4>方案 C</h4>
-    <ul>
-      <li>优点一</li>
-      <li>优点二</li>
-    </ul>
-  </div>
-</div>
+```
+👤 用户：这个幻灯片内容太多了，帮我重新排版
+
+[用户粘贴了一页内容很多的幻灯片]
+
+🤖 AI：这页内容确实较多，我建议：
+
+1. **拆分为两页**：第一页放概念，第二页放示例
+2. **使用分栏布局**：左边要点，右边图示
+3. **添加 fragment 动画**：逐条展示，避免信息过载
+
+我帮你重新排版：
 ```
 
-### 示例 5：代码演示
+**AI 优化后的结果**：
 
 ```markdown
----
-slideOptions:
-  theme: black
-  highlightTheme: monokai
----
+<!-- 第一页：概念 -->
+## 核心概念
 
-## 代码示例
+<grid drag="50 100" drop="0 0" flow="col">
 
-**Python 快速排序**
-
-```python
-def quicksort(arr):
-    if len(arr) <= 1:
-        return arr
-    pivot = arr[len(arr) // 2]
-    left = [x for x in arr if x < pivot]
-    right = [x for x in arr if x > pivot]
-    return quicksort(left) + [pivot] + quicksort(right)
-​```
-
----
-
-## 逐行解释
-
-```python [1-2|3-4|5-6|7]
-def quicksort(arr):
-    if len(arr) <= 1:
-        return arr
-    pivot = arr[len(arr) // 2]
-    left = [x for x in arr if x < pivot]
-    right = [x for x in arr if x > pivot]
-    return quicksort(left) + [pivot] + quicksort(right)
-​```
-```
-
-### 示例 6：带背景图片
-
-```markdown
----
-slideOptions:
-  theme: night
----
-
-<section data-background="cover.jpg" data-background-opacity="0.3">
-
-## 年度总结
-
-**2025 年回顾**
-
-<p style="font-size: 24px;">
-  感谢团队的努力付出
-</p>
-
-</section>
-```
-
-### 示例 7：引用和强调
-
-```markdown
----
-slideOptions:
-  theme: white
----
-
-## 设计理念
-
-<grid drag="30 100" drop="0 0">
-
-> "简单是复杂的终极形式。"
->
-> — 达·芬奇
+<ul>
+  <li class="fragment">要点一：简洁说明</li>
+  <li class="fragment">要点二：简洁说明</li>
+  <li class="fragment">要点三：简洁说明</li>
+</ul>
 
 </grid>
 
-<grid drag="70 100" drop="30 0" flow="col">
+<grid drag="50 100" drop="50 0" bg="#f5f5f5">
 
-**核心原则**
-
-1. **简洁**：去除多余元素
-2. **清晰**：信息传达明确
-3. **一致**：风格统一
+[配图区域]
 
 </grid>
+
+---
+
+<!-- 第二页：示例 -->
+## 实际示例
+
+[示例内容...]
 ```
 
-### 示例 8：数据展示
-
-```markdown
----
-slideOptions:
-  theme: league
 ---
 
-## 季度数据
+### 示例 4：主题美化
 
-<div style="display: flex; gap: 24px; margin-top: 30px;">
-  <div style="flex: 1; text-align: center;">
-    <div style="font-size: 48px; font-weight: bold; color: #4CAF50;">+25%</div>
-    <p>用户增长</p>
-  </div>
-  <div style="flex: 1; text-align: center;">
-    <div style="font-size: 48px; font-weight: bold; color: #2196F3;">1.2M</div>
-    <p>活跃用户</p>
-  </div>
-  <div style="flex: 1; text-align: center;">
-    <div style="font-size: 48px; font-weight: bold; color: #FF9800;">98%</div>
-    <p>满意度</p>
-  </div>
-  <div style="flex: 1; text-align: center;">
-    <div style="font-size: 48px; font-weight: bold; color: #9C27B0;">50+</div>
-    <p>新功能</p>
-  </div>
-</div>
+```
+👤 用户：给这个幻灯片换个科技感的深色主题
+
+🤖 AI：好的，我来为你配置深色科技风格。
+
+推荐使用 `night` 主题，并添加自定义配色：
 ```
 
-### 示例 9：时间线
-
-```markdown
----
-slideOptions:
-  theme: white
----
-
-## 项目时间线
-
-| 阶段 | 时间 | 交付物 |
-|------|------|--------|
-| 需求分析 | 1-2 周 | 需求文档 |
-| 设计 | 2-3 周 | 设计稿 |
-| 开发 | 4-6 周 | 功能模块 |
-| 测试 | 2 周 | 测试报告 |
-| 上线 | 1 周 | 正式发布 |
-```
-
-### 示例 10：深色主题完整示例
+**AI 生成的 frontmatter**：
 
 ```markdown
 ---
 slideOptions:
   theme: night
   transition: slide
-  slideNumber: true
   css: |
     .reveal h1, .reveal h2 { color: #58a6ff; }
     .reveal { color: #c9d1d9; }
+    .reveal a { color: #00d9ff; }
+---
+```
+
 ---
 
-## 深色主题演示
+### 示例 5：添加动画效果
 
-适合科技、极简风格
+```
+👤 用户：我想让列表逐条显示，怎么做？
+
+🤖 AI：使用 `fragment` 类即可实现。示例：
+
+```html
+<ul>
+  <li class="fragment">第一条</li>
+  <li class="fragment">第二条</li>
+  <li class="fragment">第三条</li>
+</ul>
+```
+
+更多动画效果：
+
+| 效果 | 代码 |
+|------|------|
+| 从下淡入 | `class="fragment fade-up"` |
+| 放大 | `class="fragment grow"` |
+| 高亮红色 | `class="fragment highlight-red"` |
 
 ---
 
-## 功能亮点
+### 示例 6：特定布局需求
 
-<div style="display: flex; gap: 24px;">
-  <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 24px; border-radius: 12px;">
-    <h4>⚡ 快速</h4>
-    <p style="color: #888;">毫秒级响应</p>
-  </div>
-  <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 24px; border-radius: 12px;">
-    <h4>🔒 安全</h4>
-    <p style="color: #888;">企业级加密</p>
-  </div>
-  <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 24px; border-radius: 12px;">
-    <h4>💡 智能</h4>
-    <p style="color: #888;">AI 驱动</p>
-  </div>
+```
+👤 用户：我需要做一个左右对比的页面，左边是旧方案，右边是新方案
+
+🤖 AI：使用 `<split>` 标签实现左右对比布局：
+```
+
+**AI 生成的代码**：
+
+```markdown
+## 方案对比
+
+<split even>
+
+<div>
+
+### 旧方案
+
+- ❌ 效率低
+- ❌ 成本高
+- ❌ 难维护
+
 </div>
 
----
+<div>
 
-## 联系我们
+### 新方案
 
-<div style="text-align: center;">
-
-**开始使用**
-
-<p style="margin-top: 30px;">
-  <a href="#" style="background: #58a6ff; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none;">
-    立即体验
-  </a>
-</p>
+- ✅ 效率提升 3 倍
+- ✅ 成本降低 50%
+- ✅ 易于扩展
 
 </div>
+
+</split>
 ```
 
 ---
 
-## 四、常见使用场景
-
-### 场景 1：周报汇报
+### 示例 7：代码演示页
 
 ```
-用户: 帮我创建一个周报幻灯片
-AI:
-  1. 读取 assets/templates/meeting-report.md
-  2. 生成包含：标题页、进展、数据、问题、计划的幻灯片
-  3. 询问是否需要深色/浅色主题
+👤 用户：我要展示一段 Python 代码，还需要逐行讲解
+
+🤖 AI：使用代码块 + 行号高亮实现：
 ```
 
-### 场景 2：产品演示
+**AI 生成的代码**：
+
+```markdown
+## 代码演示
+
+### 完整代码
+
+​```python
+def process_data(items):
+    result = []
+    for item in items:
+        if item.valid:
+            result.append(item.value)
+    return result
+​```
+
+---
+
+### 逐行讲解
+
+​```python [1|2-4|5-6]
+def process_data(items):
+    result = []
+    for item in items:
+        if item.valid:
+            result.append(item.value)
+    return result
+​```
+
+- 第 1 行：函数定义
+- 第 2-4 行：遍历并筛选
+- 第 5-6 行：返回结果
+```
+
+---
+
+### 示例 8：使用转换脚本
 
 ```
-用户: 我需要给客户演示我们的新产品
-AI:
-  1. 询问产品名称和核心卖点
-  2. 使用 product-pitch 模板
-  3. 生成：痛点 → 方案 → 优势 → 演示 → CTA 结构
+👤 用户：我有一个很长的 Markdown 文档，想快速转成幻灯片
+
+🤖 AI：可以使用 `md2slides.py` 脚本自动转换：
+
+```bash
+python scripts/md2slides.py your-doc.md -o slides.md --theme dark
 ```
 
-### 场景 3：技术分享
+脚本会：
+- 自动按 H2 标题分页
+- 添加 frontmatter 配置
+- 使用指定的深色主题
+
+---
+
+### 示例 9：复制模板快速开始
 
 ```
-用户: 帮我做一个技术分享的幻灯片，主题是 Docker
-AI:
-  1. 使用 technical 模板
-  2. 生成：背景 → 架构 → 代码 → 演示 → 总结
-  3. 添加代码高亮配置
+👤 用户：我要做一个技术分享，有没有现成的模板？
+
+🤖 AI：有！推荐使用 `technical.md` 模板，结构为：
+
+1. 标题页
+2. 背景（为什么重要）
+3. 架构图
+4. 核心代码
+5. 演示
+6. 总结
+7. Q&A
+
+你可以直接复制：
+`assets/templates/technical.md`
+
+然后替换 `{{技术主题}}` 等占位符即可。
 ```
 
-### 场景 4：从文档转换
+---
+
+### 示例 10：深浅主题切换
 
 ```
-用户: 把这篇笔记转成幻灯片
-AI:
-  1. 分析文档结构
-  2. 按 H2 标题分页
-  3. 应用默认主题
-  4. 或使用命令：python scripts/md2slides.py input.md -o slides.md
+👤 用户：模板里的深色版本和浅色版本怎么用？
+
+🤖 AI：模板文件中包含两个版本的代码：
+
+**使用方法**：
+1. 打开模板文件（如 `product-pitch.md`）
+2. 找到 `<!-- 深色版本 - DARK -->` 部分 → 复制使用
+3. 或找到 `<!-- 浅色版本 - LIGHT -->` 部分 → 复制使用
+
+**快速切换**：只需修改 frontmatter 的 `theme` 值：
+- 深色：`theme: night` 或 `theme: black`
+- 浅色：`theme: white` 或 `theme: league`
+```
+
+---
+
+## 四、快速参考卡
+
+### 分页
+
+```markdown
+---
+```
+
+### Fragment 动画
+
+```html
+<li class="fragment">逐条显示</li>
+<li class="fragment fade-up">从下淡入</li>
+```
+
+### 左右分栏
+
+```html
+<split even>
+  <div>左</div>
+  <div>右</div>
+</split>
+```
+
+### 背景
+
+```html
+<section data-background="#1a1a2e">深色背景</section>
+<section data-background="image.jpg">图片背景</section>
+```
+
+### 代码高亮
+
+```markdown
+​```python [1-2|3-4]
+代码
+​```
 ```
 
 ---
@@ -460,47 +523,7 @@ slideOptions:
 
 ---
 
-## 六、快速参考卡
-
-### 分页
-
-```markdown
----
-```
-
-### Fragment 动画
-
-```html
-<li class="fragment">逐条显示</li>
-<li class="fragment fade-up">从下淡入</li>
-```
-
-### 左右分栏
-
-```html
-<split even>
-  <div>左</div>
-  <div>右</div>
-</split>
-```
-
-### 背景
-
-```html
-<section data-background="#1a1a2e">深色背景</section>
-<section data-background="image.jpg">图片背景</section>
-```
-
-### 代码高亮
-
-```markdown
-​```python [1-2|3-4]
-代码
-​```
-```
-
----
-
 **参考资源**：
 - [Slides Extended 插件](https://github.com/ebullient/obsidian-slides-extended)
 - [reveal.js 文档](https://revealjs.com/)
+- [核心 Slides 插件帮助](https://help.obsidian.md/plugins/slides)
