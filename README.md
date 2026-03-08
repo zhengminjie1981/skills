@@ -146,6 +146,45 @@ AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
 
 ---
 
+### [obsidian-slides](./obsidian-slides/) - Obsidian Slides 排版美化
+
+帮助用户创建、排版和美化 Obsidian Slides Extended（reveal.js）演示文稿。
+
+**Features:**
+- **布局生成**: 生成 grid/split 布局代码
+- **主题配置**: 10 个内置主题 + 深浅主题适配
+- **模板库**: 5 个预制模板（产品介绍、会议汇报、教程演示、技术分享、公告通知）
+- **代码片段**: fragment 动画、背景设置、代码高亮等
+- **转换脚本**: Markdown 自动转 Slides 骨架
+- **PDF 导出**: 插件自带 PDF/HTML 导出功能
+
+**Trigger Scenarios:**
+- 创建幻灯片：创建 Obsidian 幻灯片、新建 slides、制作演示文稿
+- 排版布局：幻灯片排版、slides 布局、grid 布局、分栏
+- 美化样式：美化幻灯片、幻灯片主题、slides 样式
+- 内容转换：转成幻灯片、文字转 slides
+
+**Quick Start:**
+```bash
+# 转换 Markdown 为 Slides
+cd obsidian-slides
+python scripts/md2slides.py document.md -o slides.md --theme dark
+
+# 或使用模板
+# 复制 assets/templates/product-pitch.md 到你的 vault
+```
+
+**Templates:**
+| 模板 | 用途 | 深浅适配 |
+|------|------|---------|
+| `product-pitch.md` | 产品介绍 | ✅ dark/light |
+| `meeting-report.md` | 会议汇报 | ✅ dark/light |
+| `tutorial.md` | 教程演示 | ✅ dark/light |
+| `technical.md` | 技术分享 | 内置主题 |
+| `announcement.md` | 公告通知 | 内置主题 |
+
+---
+
 ### [knowledge-index](./knowledge-index/) - Local Knowledge Base Intelligent Indexing
 
 Build AI-readable indexes for local document collections with automatic summarization, incremental updates, and intelligent retrieval.
@@ -232,6 +271,10 @@ cp -r knowledge-index ~/.claude/skills/                     # Linux/Mac
 # Install template-filler skill
 xcopy template-filler %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r template-filler ~/.claude/skills/                     # Linux/Mac
+
+# Install obsidian-slides skill
+xcopy obsidian-slides %USERPROFILE%\.claude\skills\ /E /I  # Windows
+cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 ```
 
 ## Usage
@@ -243,6 +286,7 @@ Each skill has its own `SKILL.md` file with detailed instructions:
 - `doc2md/SKILL.md` - Document conversion workflow
 - `knowledge-index/SKILL.md` - Knowledge base indexing guide
 - `template-filler/SKILL.md` - 对话式模板文档填写
+- `obsidian-slides/SKILL.md` - Obsidian Slides 排版美化
 
 ## Contributing
 
