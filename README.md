@@ -124,6 +124,28 @@ python scripts/converter.py document.pdf --tool auto --relative-images
 python scripts/converter.py "./docs/*.docx" -o ./output/ --relative-images --skip-toc
 ```
 
+### [template-filler](./template-filler/) - 对话式模板文档填写
+
+通过对话访谈方式引导用户按 Markdown 模板逐步填写内容，最终自动生成并保存完整文档文件。
+
+**Features:**
+- **分段访谈**: 逐章节（H2/H3）提问，每节不超过 3 个问题
+- **分段预览**: 每章节完成后展示草稿，确认后继续
+- **灵活控制**: 支持跳过章节、返回修改、一次性提供全部信息
+- **自动保存**: 全部章节确认后，写入指定路径（默认去掉 `.template` 后缀）
+
+**Trigger Scenarios:**
+- 填写模板、按模板写、根据模板生成文档
+- 引导我填写、对话式写文档、访谈式写文档
+
+**Quick Start:**
+```
+用户: 帮我按这个模板写文档 /path/to/template.md
+AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
+```
+
+---
+
 ### [knowledge-index](./knowledge-index/) - Local Knowledge Base Intelligent Indexing
 
 Build AI-readable indexes for local document collections with automatic summarization, incremental updates, and intelligent retrieval.
@@ -206,6 +228,10 @@ cp -r doc2md ~/.claude/skills/                     # Linux/Mac
 # Install knowledge-index skill
 xcopy knowledge-index %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r knowledge-index ~/.claude/skills/                     # Linux/Mac
+
+# Install template-filler skill
+xcopy template-filler %USERPROFILE%\.claude\skills\ /E /I  # Windows
+cp -r template-filler ~/.claude/skills/                     # Linux/Mac
 ```
 
 ## Usage
@@ -216,6 +242,7 @@ Each skill has its own `SKILL.md` file with detailed instructions:
 - `db-mcp/SKILL.md` - Database management usage guide
 - `doc2md/SKILL.md` - Document conversion workflow
 - `knowledge-index/SKILL.md` - Knowledge base indexing guide
+- `template-filler/SKILL.md` - 对话式模板文档填写
 
 ## Contributing
 
