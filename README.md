@@ -1,144 +1,128 @@
-# Skills - AI Skills Collection
+# Skills - AI Skills 集合
 
-A collection of AI skills for Claude Code, each designed to enhance productivity and automate common tasks.
+为 Claude Code 设计的 AI skills 集合，旨在提升效率并自动化常见任务。
 
-## Available Skills
+## 可用 Skills
 
-### [dev-workflow](./dev-workflow/) - Document-Driven Development Workflow
+### [dev-workflow](./dev-workflow/) - 文档驱动开发工作流
 
-A comprehensive development workflow specification enforcing document-driven development: no code without documentation, no code changes without documentation updates.
+强制执行文档驱动开发的综合工作流规范：没有文档不写代码，没有文档更新不改代码。
 
-**Core Principles:**
-- **Documentation First**: Any module or feature implementation must have technical documentation completed before coding
-- **Change Tracking**: Any iterative modification must update related documentation and complete impact analysis before code changes
-- **Modular Boundaries**: Modules interact through data structure specifications and interface specifications
-- **Consistency Maintenance**: After documentation updates, synchronize all references
-- **Centralized Progress**: All work plans and progress recorded in unified project planning documents
+**核心原则：**
+- **文档优先**：任何模块或功能实现前，必须先完成技术文档
+- **变更追踪**：任何迭代修改前，必须更新相关文档并完成影响分析
+- **模块边界**：模块间通过数据结构规范和接口规范交互
+- **一致性维护**：文档更新后，同步检查所有引用
+- **集中进展**：所有工作计划和进展记录在统一的项目规划文档中
 
-**Key Features:**
-- 5-tier document hierarchy (System → Specs → Modules → Validation → Reports)
-- Quality gates for pre-coding and pre-commit checkpoints
-- Automated consistency checking tools
-- Complete templates and checklists for new module development and iteration changes
-- Temporary file isolation and management
+**主要特性：**
+- 5 层文档层级（系统 → 规范 → 模块 → 验证 → 报告）
+- 编码前和提交前的质量门禁
+- 自动化一致性检查工具
+- 完整的新模块开发和迭代变更模板与检查清单
 
-**Trigger Scenarios:**
-1. Creating new modules or features
-2. Modifying existing code, data structures, or interfaces
-3. Iterative changes or refactoring
-4. Documentation consistency checks
-5. Module design, data structure specifications, interface specifications
+**触发场景：**
+- 创建新模块或功能
+- 修改现有代码、数据结构或接口
+- 迭代变更或重构
+- 文档一致性检查
+- 模块设计、数据结构规范、接口规范
 
-**Quick Start:**
-```bash
-# View complete specification
-cat dev-workflow/SKILL.md
+**快速开始：**
+```
+用户: 帮我开发一个用户认证模块
+AI: [加载 dev-workflow skill] 好的，根据文档驱动开发规范，我们需要先...
 
-# Reference materials
-ls dev-workflow/references/
-# - full-spec.md: Detailed examples, anti-patterns, flowcharts, AI execution flows
-# - checklist.md: New module and iteration checklists
-# - quality-gates.md: Quality standards for each phase
-# - decision-tree.md: Common scenario decision flows
-# - anti-patterns.md: Anti-pattern examples with correct approaches
-# - conversation-examples.md: Example AI-user interactions
-# - quick-reference.md: Quick lookup tables and decision charts
-# - ai-checklist.md: Pre-execution checkpoints for AI
-# - git-integration.md: Git workflow integration
-# - doc-generation-guide.md: Document generation assistance
-# - templates.md: Document templates
-# - tools.md: Document maintenance scripts
+用户: 帮我重构这个模块
+AI: [加载 dev-workflow skill] 在修改代码前，请先确认相关文档...
 ```
 
-### [db-mcp](./db-mcp/) - Database MCP Service Management
+---
 
-A comprehensive database MCP server skill with zero-configuration startup and automatic dependency management.
+### [db-mcp](./db-mcp/) - 数据库 MCP 服务管理
 
-**Features:**
-- **Zero-Configuration Startup** - Server starts without config, auto-setup via AI tools
-- **Auto-Install Dependencies** - Automatically detect and install missing database drivers
-- **Intelligent Diagnostics** - System capability detection and connection testing
-- Support for MySQL, PostgreSQL, and SQLite
-- Secure read-only queries with SQL injection protection
-- Multi-database configuration support
+支持零配置启动和自动依赖管理的数据库 MCP 服务。
 
-**Key Tools:**
-- `check_capabilities()` - Check installed drivers, config status, and get recommendations
-- `auto_setup_database()` - Zero-config setup: auto-install drivers, create config, test connection
-- `test_connection()` - Test database connection with latency and server info
-- `list_tables` - List all tables in the database
-- `describe_table` - View table structure and schema
-- `execute_query` - Execute SELECT queries
-- `get_table_count` - Get table row counts
-- `get_database_info` - Get database information
-- `search_tables` - Search tables by keywords
+**特性：**
+- **零配置启动** - 无需配置文件即可启动，通过 AI 工具自动设置
+- **自动安装依赖** - 自动检测并安装缺失的数据库驱动
+- **智能诊断** - 系统能力检测和连接测试
+- 支持 MySQL、PostgreSQL 和 SQLite
+- 安全的只读查询，带 SQL 注入防护
 
-**Quick Start (Zero-Config):**
-```bash
-cd db-mcp
-python scripts/db-mcp.py setup    # Install MCP service
-# Restart Claude Code, then in conversation:
-# auto_setup_database(db_type="mysql", connection_params={...})
+**主要工具：**
+- `check_capabilities()` - 检查已安装驱动、配置状态，获取建议
+- `auto_setup_database()` - 零配置设置：自动安装驱动、创建配置、测试连接
+- `test_connection()` - 测试数据库连接，返回延迟和服务器信息
+- `list_tables` - 列出数据库中所有表
+- `describe_table` - 查看表结构和 schema
+- `execute_query` - 执行 SELECT 查询
+
+**快速开始：**
+```
+# 首次使用需安装 MCP 服务（仅需一次）
+cd db-mcp && python scripts/db-mcp.py setup
+# 然后重启 Claude Code
+
+# 安装后，通过对话使用：
+用户: 帮我连接到 MySQL 数据库，主机是 localhost
+AI: [调用 check_capabilities 检查状态]
+    [调用 auto_setup_database 自动安装驱动并配置]
+    连接成功！数据库版本：8.0
+
+用户: 查看有哪些表
+AI: [调用 list_tables] 找到 5 个表：users, orders, products...
 ```
 
-**Traditional Setup:**
-```bash
-cd db-mcp
-python scripts/db-mcp.py install --db-type mysql  # Install specific driver
-python scripts/db-mcp.py setup                    # Install MCP service
+---
+
+### [doc2md](./doc2md/) - 文档转 Markdown
+
+使用 Pandoc 和 MinerU 将 40+ 种文档格式转换为 Markdown。
+
+**特性：**
+- **Pandoc**：通用转换器，支持 DOCX、EPUB、HTML、PPTX、LaTeX 等
+- **MinerU**：高级 PDF 解析器，支持 OCR、表格提取、版面识别
+- **PyMuPDF**：快速轻量的 PDF 转换器
+- 支持 glob 模式批量处理
+- 灵活的图片处理（相对路径或 Base64 嵌入）
+
+**支持格式：**
+- 文档：DOCX、DOC、ODT、RTF、PDF
+- 电子书：EPUB、FB2
+- 演示文稿：PPTX
+- 网页：HTML、XHTML、XML
+- 学术：LaTeX、TeX
+- 以及 30+ 种其他格式
+
+**快速开始：**
+```
+用户: 帮我把这个 Word 文档转成 Markdown
+AI: [加载 doc2md skill] 好的，我来转换...
+    python scripts/converter.py document.docx --relative-images --skip-toc
+
+用户: 这个 PDF 有表格，能保留吗？
+AI: 可以，使用 MinerU 工具处理表格...
+    python scripts/converter.py document.pdf --tool mineru --relative-images
 ```
 
-### [doc2md](./doc2md/) - Document to Markdown Converter
-
-Convert 40+ document formats to Markdown using Pandoc and MinerU.
-
-**Features:**
-- **Pandoc**: Universal converter for DOCX, EPUB, HTML, PPTX, LaTeX, and more
-- **MinerU**: Advanced PDF parser with OCR, table extraction, and layout recognition
-- **PyMuPDF**: Fast and lightweight PDF converter
-- Batch processing with glob patterns
-- Flexible image handling (relative paths or Base64 embedding)
-- TOC removal and post-processing
-
-**Supported Formats:**
-- Documents: DOCX, DOC, ODT, RTF, PDF
-- E-books: EPUB, FB2
-- Presentations: PPTX
-- Web: HTML, XHTML, XML
-- Academic: LaTeX, TeX
-- And 30+ more formats
-
-**Quick Start:**
-```bash
-cd doc2md
-# Check environment status
-python scripts/converter.py --status
-
-# Convert Word document
-python scripts/converter.py document.docx --relative-images --skip-toc
-
-# Convert PDF (with auto tool selection)
-python scripts/converter.py document.pdf --tool auto --relative-images
-
-# Batch convert
-python scripts/converter.py "./docs/*.docx" -o ./output/ --relative-images --skip-toc
-```
+---
 
 ### [template-filler](./template-filler/) - 对话式模板文档填写
 
 通过对话访谈方式引导用户按 Markdown 模板逐步填写内容，最终自动生成并保存完整文档文件。
 
-**Features:**
-- **分段访谈**: 逐章节（H2/H3）提问，每节不超过 3 个问题
-- **分段预览**: 每章节完成后展示草稿，确认后继续
-- **灵活控制**: 支持跳过章节、返回修改、一次性提供全部信息
-- **自动保存**: 全部章节确认后，写入指定路径（默认去掉 `.template` 后缀）
+**特性：**
+- **分段访谈**：逐章节（H2/H3）提问，每节不超过 3 个问题
+- **分段预览**：每章节完成后展示草稿，确认后继续
+- **灵活控制**：支持跳过章节、返回修改、一次性提供全部信息
+- **自动保存**：全部章节确认后，写入指定路径（默认去掉 `.template` 后缀）
 
-**Trigger Scenarios:**
+**触发场景：**
 - 填写模板、按模板写、根据模板生成文档
 - 引导我填写、对话式写文档、访谈式写文档
 
-**Quick Start:**
+**快速开始：**
 ```
 用户: 帮我按这个模板写文档 /path/to/template.md
 AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
@@ -150,31 +134,34 @@ AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
 
 帮助用户创建、排版和美化 Obsidian Slides Extended（reveal.js）演示文稿。
 
-**Features:**
-- **布局生成**: 生成 grid/split 布局代码
-- **主题配置**: 10 个内置主题 + 深浅主题适配
-- **模板库**: 5 个预制模板（产品介绍、会议汇报、教程演示、技术分享、公告通知）
-- **代码片段**: fragment 动画、背景设置、代码高亮等
-- **转换脚本**: Markdown 自动转 Slides 骨架
-- **PDF 导出**: 插件自带 PDF/HTML 导出功能
+**特性：**
+- **布局生成**：生成 grid/split 布局代码
+- **主题配置**：10 个内置主题 + 深浅主题适配
+- **模板库**：5 个预制模板（产品介绍、会议汇报、教程演示、技术分享、公告通知）
+- **代码片段**：fragment 动画、背景设置、代码高亮等
+- **转换脚本**：Markdown 自动转 Slides 骨架
+- **PDF 导出**：插件自带 PDF/HTML 导出功能
 
-**Trigger Scenarios:**
+**触发场景：**
 - 创建幻灯片：创建 Obsidian 幻灯片、新建 slides、制作演示文稿
 - 排版布局：幻灯片排版、slides 布局、grid 布局、分栏
 - 美化样式：美化幻灯片、幻灯片主题、slides 样式
 - 内容转换：转成幻灯片、文字转 slides
 
-**Quick Start:**
-```bash
-# 转换 Markdown 为 Slides
-cd obsidian-slides
-python scripts/md2slides.py document.md -o slides.md --theme dark
+**快速开始：**
+```
+用户: 帮我创建一个产品介绍幻灯片
+AI: [加载 obsidian-slides skill] 好的，我来帮你创建...
+    - 询问目标受众和演示时长
+    - 选择模板和主题风格
+    - 生成完整 Markdown 文件
 
-# 或使用模板
-# 复制 assets/templates/product-pitch.md 到你的 vault
+用户: 这个幻灯片内容太挤了，帮我重新排版
+AI: 我来优化布局，使用 grid 分栏...
 ```
 
-**Templates:**
+**模板列表：**
+
 | 模板 | 用途 | 深浅适配 |
 |------|------|---------|
 | `product-pitch.md` | 产品介绍 | ✅ dark/light |
@@ -185,145 +172,123 @@ python scripts/md2slides.py document.md -o slides.md --theme dark
 
 ---
 
-### [knowledge-index](./knowledge-index/) - Local Knowledge Base Intelligent Indexing
+### [knowledge-index](./knowledge-index/) - 本地知识库智能索引
 
-Build AI-readable indexes for local document collections with automatic summarization, incremental updates, and intelligent retrieval.
+为本地文档集合构建 AI 可读的索引，支持自动摘要、增量更新和智能检索。
 
-**Core Features:**
-- **Local-First**: Use local tools to extract text, avoid uploading documents to cloud
-- **AI Summarization**: Generate concise summaries (50-500 chars) and keywords (5-10) for each document
-- **Incremental Updates**: Detect file changes and update only modified documents
-- **Intelligent Retrieval**: AI-powered search through index to locate relevant documents
-- **Global Registry**: Manage all knowledge bases from skill's `data/registry.yaml`
-- **Hierarchy Management**: Auto-promote child indexes to parent level
+**核心特性：**
+- **本地优先**：使用本地工具提取文本，避免上传文档到云端
+- **AI 摘要**：为每个文档生成简洁摘要（50-500 字）和关键词（5-10 个）
+- **增量更新**：检测文件变更，仅更新修改过的文档
+- **智能检索**：通过索引 AI 驱动搜索，定位相关文档
+- **全局注册表**：从 skill 的 `data/registry.yaml` 管理所有知识库
 
-**Key Principles:**
-- **Local First**: Extract text locally, only send plain text to LLM for summaries
-- **Privacy Protection**: Configurable read strategies (local/direct/hybrid)
-- **Smart Fallback**: Auto-degrade when tools unavailable
-- **Fault Tolerance**: Single document failure doesn't affect overall workflow
+**核心原则：**
+- **本地优先**：本地提取文本，仅发送纯文本给 LLM 生成摘要
+- **隐私保护**：可配置读取策略（local/direct/hybrid）
+- **智能降级**：工具不可用时自动降级
+- **容错机制**：单个文档失败不影响整体流程
 
-**Trigger Scenarios:**
-1. "Build index for [knowledge-base]"
-2. "Update [knowledge-base] index"
-3. "Search in knowledge base for..."
-4. "Check which knowledge bases need updates"
+**触发场景：**
+- "给 [知识库] 建立索引"
+- "更新 [知识库] 索引"
+- "在知识库中搜索..."
+- "检查哪些知识库需要更新"
 
-**Quick Start:**
-```bash
-# Build index for a knowledge base
-# AI will: Scan → Generate summaries → Write _index.yaml
+**快速开始：**
+```
+用户: 帮我给这个知识库建立索引 /path/to/knowledge-base
+AI: [加载 knowledge-index skill] 好的，我来扫描文档并生成索引...
+    - 扫描目录结构
+    - 提取文本内容
+    - 生成摘要和关键词
+    - 写入 _index.yaml
 
-# Query the knowledge base
-# AI will: Read index → Match documents → Generate answer
-
-# Update index incrementally
-# AI will: Detect changes → Process new/modified files → Update index
+用户: 在知识库中搜索关于"机器学习"的内容
+AI: 我来查询索引并匹配相关文档...
+    - 找到 5 个相关文档
+    - 按相关度排序返回
 ```
 
-**Index Structure:**
-```
-knowledge-base/
-├── _index.yaml          # AI-readable index file
-├── _index_config.yaml   # Configuration (optional)
-├── document1.md
-├── document2.pdf
-└── subfolder/
-    └── document3.docx
-```
+---
 
-**Directory Structure:**
-```
-knowledge-index/
-├── SKILL.md              # Entry point (AI-friendly, on-demand loading)
-├── data/                 # Runtime data (registry, config, backups)
-├── docs/                 # Development docs (design, changelog)
-├── references/           # AI reference docs (on-demand loading)
-│   ├── core/             # Index spec, workflow, quality gates
-│   ├── execution/        # Tools, checklists, templates
-│   ├── decision/         # Decision trees, anti-patterns
-│   └── advanced/         # Global registry, hierarchy management
-├── scripts/              # Utility scripts (extract_text, check_deps)
-└── tests/                # Test cases
-```
+## 安装
 
-## Installation
-
-Each skill can be installed independently:
+每个 skill 可以独立安装：
 
 ```bash
-# Install dev-workflow skill
+# 安装 dev-workflow skill
 xcopy dev-workflow %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r dev-workflow ~/.claude/skills/                     # Linux/Mac
 
-# Install db-mcp skill
+# 安装 db-mcp skill
 xcopy db-mcp %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r db-mcp ~/.claude/skills/                     # Linux/Mac
 
-# Install doc2md skill
+# 安装 doc2md skill
 xcopy doc2md %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r doc2md ~/.claude/skills/                     # Linux/Mac
 
-# Install knowledge-index skill
+# 安装 knowledge-index skill
 xcopy knowledge-index %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r knowledge-index ~/.claude/skills/                     # Linux/Mac
 
-# Install template-filler skill
+# 安装 template-filler skill
 xcopy template-filler %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r template-filler ~/.claude/skills/                     # Linux/Mac
 
-# Install obsidian-slides skill
+# 安装 obsidian-slides skill
 xcopy obsidian-slides %USERPROFILE%\.claude\skills\ /E /I  # Windows
 cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 ```
 
-## Usage
+## 使用方法
 
-Each skill has its own `SKILL.md` file with detailed instructions:
+每个 skill 都有自己的 `SKILL.md` 文件，包含详细说明：
 
-- `dev-workflow/SKILL.md` - Document-driven development workflow specification
-- `db-mcp/SKILL.md` - Database management usage guide
-- `doc2md/SKILL.md` - Document conversion workflow
-- `knowledge-index/SKILL.md` - Knowledge base indexing guide
+- `dev-workflow/SKILL.md` - 文档驱动开发工作流规范
+- `db-mcp/SKILL.md` - 数据库管理使用指南
+- `doc2md/SKILL.md` - 文档转换工作流
+- `knowledge-index/SKILL.md` - 知识库索引指南
 - `template-filler/SKILL.md` - 对话式模板文档填写
 - `obsidian-slides/SKILL.md` - Obsidian Slides 排版美化
 
-## Contributing
+## 贡献
 
-Contributions are welcome! Feel free to submit issues or pull requests for:
-- Bug fixes
-- New features
-- Documentation improvements
-- Additional skills
+欢迎贡献！可以提交 issue 或 pull request：
+- Bug 修复
+- 新功能
+- 文档改进
+- 新增 skills
 
-### Creating New Skills
+### 创建新 Skill
 
-When creating a new skill or modifying existing skills, please follow the [Skills 编写指南](./SKILL-GUIDE.md).
+创建或修改 skill 时，请遵循 [Skills 编写指南](./SKILL-GUIDE.md)。
 
-**Key Resources:**
-- [SKILL.md Template](./docs/skill-creation/templates/SKILL.md.template) - Copy and customize
-- [Design Checklist](./docs/skill-creation/checklists/design.md) - Validate before implementation
-- [Implementation Checklist](./docs/skill-creation/checklists/implementation.md) - Verify during development
-- [Release Checklist](./docs/skill-creation/checklists/release.md) - Test before publishing
-- [Compliance Checklist](./docs/skill-creation/checklists/compliance.md) - Check existing skills
-- [Design Patterns](./docs/skill-creation/examples/patterns.md) - Universal design patterns
+**关键资源：**
+- [SKILL.md 模板](./docs/skill-creation/templates/SKILL.md.template) - 复制并自定义
+- [设计检查清单](./docs/skill-creation/checklists/design.md) - 实现前验证
+- [实现检查清单](./docs/skill-creation/checklists/implementation.md) - 开发时验证
+- [发布检查清单](./docs/skill-creation/checklists/release.md) - 发布前测试
+- [符合性检查清单](./docs/skill-creation/checklists/compliance.md) - 检查现有 skills
+- [设计模式](./docs/skill-creation/examples/patterns.md) - 通用设计模式
 
-**Quick Start:**
-1. Read [SKILL-GUIDE.md](./SKILL-GUIDE.md) for conventions
-2. Copy the [template](./docs/skill-creation/templates/SKILL.md.template)
-3. Follow the checklists for design → implementation → release
-4. Reference [patterns.md](./docs/skill-creation/examples/patterns.md) for best practices
+**快速开始：**
+1. 阅读 [SKILL-GUIDE.md](./SKILL-GUIDE.md) 了解规范
+2. 复制 [模板](./docs/skill-creation/templates/SKILL.md.template)
+3. 按检查清单完成：设计 → 实现 → 发布
+4. 参考 [patterns.md](./docs/skill-creation/examples/patterns.md) 了解最佳实践
 
-### Checking Existing Skills
+### 检查现有 Skills
 
-Use the [Compliance Checklist](./docs/skill-creation/checklists/compliance.md) to verify existing skills conform to the specification:
+使用 [符合性检查清单](./docs/skill-creation/checklists/compliance.md) 验证现有 skills 是否符合规范：
 
-1. **Directory structure** - Files in correct locations
-2. **Code placement** - No executable code in markdown
-3. **Front matter** - Trigger scenarios defined
-4. **On-demand loading** - SKILL.md under 500 lines
-5. **AI-friendly** - Decision trees, tables, defaults
+1. **目录结构** - 文件在正确位置
+2. **代码位置** - 可执行代码不在 markdown 中
+3. **Front Matter** - 触发场景已定义
+4. **按需加载** - SKILL.md 不超过 500 行
+5. **AI 友好** - 有决策树、表格、默认值
 
-## License
+## 许可证
 
-This repository is licensed under the MIT License. See individual skill directories for specific license information.
+本仓库采用 MIT 许可证。各 skill 目录中的特定许可证信息请参阅对应文件。
