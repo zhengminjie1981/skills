@@ -1,0 +1,16 @@
+# Knowledge Index - 运行时数据排除
+
+# 全局注册表（运行时生成）
+registry.yaml
+
+# 全局配置（用户自定义）
+config.yaml
+
+# 备份文件
+backups/
+
+# 缓存
+cache/
+
+# 保留目录结构（但排除内容）
+!.gitkeep
