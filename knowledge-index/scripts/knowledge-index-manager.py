@@ -8,12 +8,23 @@ Knowledge Index Manager - 知识库索引管理器
 2. 更新索引（增量）
 3. 全局注册表管理
 4. 层级冲突检测和处理
+5. AI 摘要生成（需 ANTHROPIC_API_KEY）
+6. Wikilink 解析（Obsidian 支持）
+7. 智能检索
 
 使用方法：
-    python knowledge-index-manager.py build <知识库路径>
-    python knowledge-index-manager.py update <知识库路径>
+    python knowledge-index-manager.py build <知识库路径> [--force] [--no-ai]
+    python knowledge-index-manager.py update <知识库路径> [--no-ai]
     python knowledge-index-manager.py list
-    python knowledge-index-manager.py search <查询>
+    python knowledge-index-manager.py search <查询> [--kb <知识库路径>]
+    python knowledge-index-manager.py info <知识库路径>
+
+参数：
+    --force     强制创建索引（忽略父索引）
+    --no-ai     禁用 AI 摘要生成
+    --kb        指定搜索的知识库路径
+
+索引版本: 2.0（文档分类索引结构）
 """
 
 import os
@@ -21,23 +32,32 @@ import sys
 import yaml
 import json
 import shutil
+import re
+import hashlib
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 
 class KnowledgeBaseManager:
     """知识库管理器"""
 
-    def __init__(self, registry_path: str = None):
+    # Wikilink 正则模式：匹配 [[link]], [[link#section]], [[link|alias]], [[link#section|alias]]
+    WIKILINK_PATTERN = re.compile(r'\[\[([^\]\|#]+)(?:#([^\]\|]+))?(?:\|([^\]]+))?\]\]')
+
+    def __init__(self, registry_path: str = None, enable_ai_summary: bool = True):
         """
         初始化管理器
 
         Args:
             registry_path: 注册表路径（默认 ~/.knowledge-index/registry.yaml）
+            enable_ai_summary: 是否启用 AI 摘要（默认 True）
         """
         self.registry_path = registry_path or self.get_default_registry_path()
         self.registry = self.load_registry()
+        self.enable_ai_summary = enable_ai_summary
+        self._ai_cache = {}  # 内存缓存
+        self._cache_dir = None
 
     @staticmethod
     def get_default_registry_path() -> str:
@@ -46,6 +66,183 @@ class KnowledgeBaseManager:
         registry_dir = home / ".knowledge-index"
         registry_dir.mkdir(parents=True, exist_ok=True)
         return str(registry_dir / "registry.yaml")
+
+    @property
+    def cache_dir(self) -> str:
+        """获取缓存目录"""
+        if self._cache_dir is None:
+            home = Path.home()
+            self._cache_dir = str(home / ".knowledge-index" / "cache")
+            os.makedirs(self._cache_dir, exist_ok=True)
+        return self._cache_dir
+
+    def get_content_hash(self, content: str) -> str:
+        """计算内容哈希"""
+        return hashlib.md5(content.encode('utf-8')).hexdigest()[:16]
+
+    def get_cached_summary(self, content_hash: str) -> Optional[Dict]:
+        """从缓存获取摘要"""
+        # 先检查内存缓存
+        if content_hash in self._ai_cache:
+            return self._ai_cache[content_hash]
+
+        # 检查文件缓存
+        cache_file = os.path.join(self.cache_dir, f"{content_hash}.json")
+        if os.path.exists(cache_file):
+            try:
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self._ai_cache[content_hash] = data
+                    return data
+            except:
+                pass
+        return None
+
+    def save_cached_summary(self, content_hash: str, summary_data: Dict):
+        """保存摘要到缓存"""
+        self._ai_cache[content_hash] = summary_data
+        cache_file = os.path.join(self.cache_dir, f"{content_hash}.json")
+        try:
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                json.dump(summary_data, f, ensure_ascii=False, indent=2)
+        except:
+            pass
+
+    def generate_ai_summary(self, content: str, doc_path: str = "") -> Dict[str, Any]:
+        """
+        生成 AI 摘要和关键词
+
+        Args:
+            content: 文档内容
+            doc_path: 文档路径（用于日志）
+
+        Returns:
+            {"summary": "...", "keywords": [...], "topics": [...]}
+        """
+        # 检查缓存
+        content_hash = self.get_content_hash(content)
+        cached = self.get_cached_summary(content_hash)
+        if cached:
+            print(f"    ✓ 使用缓存: {doc_path}")
+            return cached
+
+        # 如果禁用 AI 摘要，返回基础信息
+        if not self.enable_ai_summary:
+            return self._generate_basic_summary(content)
+
+        # 尝试调用 Claude API
+        try:
+            result = self._call_claude_api(content)
+            if result:
+                self.save_cached_summary(content_hash, result)
+                return result
+        except Exception as e:
+            print(f"    ⚠️ AI 摘要失败 ({doc_path}): {e}")
+
+        # 降级为基础摘要
+        return self._generate_basic_summary(content)
+
+    def _call_claude_api(self, content: str) -> Optional[Dict]:
+        """调用 Claude API 生成摘要"""
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            return None
+
+        # 截断过长内容
+        max_chars = 8000
+        if len(content) > max_chars:
+            content = content[:max_chars] + "\n... (内容已截断)"
+
+        prompt = f"""请分析以下文档，生成：
+1. 一句话摘要（50-100字）
+2. 5-10个关键词（具有检索价值）
+3. 3-5个主题标签（反映文档类别）
+
+文档内容：
+{content}
+
+请严格按以下 YAML 格式输出（不要有其他内容）：
+summary: "摘要内容"
+keywords:
+  - 关键词1
+  - 关键词2
+topics:
+  - 主题1
+  - 主题2"""
+
+        try:
+            import anthropic
+
+            client = anthropic.Anthropic(api_key=api_key)
+            message = client.messages.create(
+                model="claude-sonnet-4-6-20250514",
+                max_tokens=500,
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            response_text = message.content[0].text
+
+            # 解析 YAML 响应
+            # 移除可能的 markdown 代码块标记
+            if "```yaml" in response_text:
+                response_text = response_text.split("```yaml")[1].split("```")[0]
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0]
+
+            result = yaml.safe_load(response_text.strip())
+
+            # 验证结果
+            if isinstance(result, dict) and "summary" in result:
+                return {
+                    "summary": result.get("summary", ""),
+                    "keywords": result.get("keywords", []),
+                    "topics": result.get("topics", [])
+                }
+        except ImportError:
+            # anthropic 包未安装
+            pass
+        except Exception as e:
+            raise e
+
+        return None
+
+    def _generate_basic_summary(self, content: str) -> Dict[str, Any]:
+        """生成基础摘要（无 AI 时降级）"""
+        # 提取前 200 字符作为摘要
+        lines = content.strip().split('\n')
+        # 尝试找标题
+        title = ""
+        for line in lines[:10]:
+            if line.startswith('# '):
+                title = line[2:].strip()
+                break
+
+        # 提取前几段作为摘要
+        paragraphs = []
+        for line in lines:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                paragraphs.append(line)
+                if len(' '.join(paragraphs)) > 200:
+                    break
+
+        summary = ' '.join(paragraphs)[:200]
+        if title:
+            summary = f"【{title}】{summary}"
+
+        # 从内容中提取可能的关键词（简单实现）
+        keywords = []
+        # 提取代码相关词
+        code_patterns = ['API', 'HTTP', 'JSON', 'REST', 'Git', 'Docker', 'Python', 'JavaScript']
+        for pattern in code_patterns:
+            if pattern.lower() in content.lower():
+                keywords.append(pattern)
+
+        return {
+            "summary": summary or "（无摘要）",
+            "keywords": keywords[:5],
+            "topics": []
+        }
 
     def load_registry(self) -> Dict:
         """加载注册表"""
@@ -294,11 +491,19 @@ class KnowledgeBaseManager:
 
         return success
 
-    def suggest_update_parent(self, current_path: str, parent_index_path: str) -> bool:
+    def suggest_update_parent(self, current_path: str, parent_index_path: str,
+                             force: bool = False, update_parent: bool = True) -> bool:
         """
-        建议更新父索引
+        建议更新父索引（支持非交互式）
 
-        场景 3, 7: 当前无索引，父有索引
+        Args:
+            current_path: 当前知识库路径
+            parent_index_path: 父索引路径
+            force: 强制创建子索引
+            update_parent: 更新父索引（默认 True）
+
+        Returns:
+            是否成功
         """
         print(f"\n{'='*60}")
         print("检测到父索引存在")
@@ -309,40 +514,26 @@ class KnowledgeBaseManager:
         print(f"  - 当前文件夹: {current_path}")
         print(f"  - 当前文件夹已包含在父索引中")
 
-        print("\n建议操作：")
-        print("  1. 更新父索引（推荐）")
-        print("  2. 强制在当前文件夹创建独立索引（不推荐）")
+        if force:
+            # 非交互式：强制创建子索引
+            print("\n[非交互模式] 强制创建子索引...")
+            success = self.create_index(current_path, force=True)
+            if success:
+                print("\n✓ 已创建索引（子级别）")
+                print("  建议: 在父索引的 _index_config.yaml 中排除此文件夹")
+            return success
 
-        try:
-            choice = input("\n请选择 (1/2): ").strip()
-        except KeyboardInterrupt:
-            print("\n\n操作已取消")
-            return False
-
-        if choice == "1":
+        if update_parent:
+            # 非交互式：更新父索引
+            print("\n[非交互模式] 更新父索引...")
             parent_path = os.path.dirname(parent_index_path)
             success = self.update_index(parent_path)
             if success:
                 print(f"\n✓ 已更新父索引: {parent_index_path}")
             return success
-        else:
-            print("\n⚠️ 警告: 将在子级别创建独立索引")
-            print("  这将导致文档重复索引")
-            try:
-                confirm = input("是否继续？(y/N): ").strip().lower()
-            except KeyboardInterrupt:
-                print("\n\n操作已取消")
-                return False
 
-            if confirm == 'y':
-                success = self.create_index(current_path, force=True)
-                if success:
-                    print("\n✓ 已创建索引（子级别）")
-                    print("  建议: 在父索引的 _index_config.yaml 中排除此文件夹")
-                return success
-            else:
-                print("\n操作已取消")
-                return False
+        print("\n操作已取消")
+        return False
 
     # ========== 基础操作方法 ==========
 
@@ -359,31 +550,40 @@ class KnowledgeBaseManager:
             print("  使用 update 命令更新索引")
             return False
 
-        # 扫描文档
+        # 扫描文档（分类结构）
         print("[1/3] 扫描文档...")
-        documents = self.scan_documents(kb_path)
+        markdown_docs, other_docs = self.scan_documents(kb_path, generate_summaries=self.enable_ai_summary)
 
-        if not documents:
+        total_docs = len(markdown_docs) + len(other_docs)
+        if total_docs == 0:
             print("⚠️ 未找到任何文档")
             return False
 
-        print(f"  - 找到 {len(documents)} 个文档")
+        print(f"  - Markdown 文档: {len(markdown_docs)} 个")
+        print(f"  - 其他格式文档: {len(other_docs)} 个")
+
+        # 检测 Obsidian
+        has_obsidian = os.path.exists(os.path.join(kb_path, '.obsidian'))
+        kb_type = "obsidian" if has_obsidian else "generic"
 
         # 生成索引内容
         print("\n[2/3] 生成索引...")
-        total_size = sum(doc['size'] for doc in documents)
+        total_size = sum(doc['size'] for doc in markdown_docs + other_docs)
 
         index_data = {
-            "version": "1.0",
+            "version": "2.0",
             "knowledge_base": {
                 "name": os.path.basename(kb_path),
                 "path": kb_path,
+                "type": kb_type,
+                "has_obsidian": has_obsidian,
                 "created": self.get_timestamp(),
                 "last_updated": self.get_timestamp(),
-                "total_documents": len(documents),
+                "total_documents": total_docs,
                 "total_size_mb": round(total_size / (1024 * 1024), 2)
             },
-            "documents": documents
+            "markdown_documents": markdown_docs,
+            "other_documents": other_docs
         }
 
         # 写入文件
@@ -400,7 +600,9 @@ class KnowledgeBaseManager:
         print("✓ 索引创建完成")
         print(f"{'='*60}")
         print(f"  - 知识库: {os.path.basename(kb_path)}")
-        print(f"  - 文档数量: {len(documents)}")
+        print(f"  - 类型: {kb_type}")
+        print(f"  - Markdown 文档: {len(markdown_docs)} 个")
+        print(f"  - 其他格式文档: {len(other_docs)} 个")
         print(f"  - 总大小: {round(total_size / (1024 * 1024), 2)} MB")
         print(f"  - 索引文件: {index_path}")
 
@@ -420,7 +622,7 @@ class KnowledgeBaseManager:
             return False
 
         # 读取现有索引
-        print("[1/3] 读取现有索引...")
+        print("[1/4] 读取现有索引...")
         try:
             with open(index_path, 'r', encoding='utf-8') as f:
                 old_index = yaml.safe_load(f)
@@ -429,22 +631,33 @@ class KnowledgeBaseManager:
             return False
 
         # 检测变更
-        print("\n[2/3] 检测变更...")
-        current_docs = self.scan_documents(kb_path)
-        old_docs = {doc['path']: doc for doc in old_index.get('documents', [])}
+        print("\n[2/4] 检测变更...")
+        markdown_docs, other_docs = self.scan_documents(kb_path, generate_summaries=self.enable_ai_summary)
+        current_docs = {doc['path']: doc for doc in markdown_docs + other_docs}
+
+        # 兼容旧版索引格式
+        old_docs = {}
+        if 'documents' in old_index:
+            old_docs = {doc['path']: doc for doc in old_index.get('documents', [])}
+        else:
+            # 新版分类索引
+            for doc in old_index.get('markdown_documents', []):
+                old_docs[doc['path']] = doc
+            for doc in old_index.get('other_documents', []):
+                old_docs[doc['path']] = doc
 
         changes = {"added": [], "modified": [], "deleted": []}
 
         # 检测新增和修改
-        for doc in current_docs:
-            if doc['path'] not in old_docs:
+        for doc_path, doc in current_docs.items():
+            if doc_path not in old_docs:
                 changes["added"].append(doc)
-            elif doc['modified'] > old_docs[doc['path']]['modified']:
+            elif doc['modified'] > old_docs[doc_path]['modified']:
                 changes["modified"].append(doc)
 
         # 检测删除
         for doc_path in old_docs:
-            if not any(doc['path'] == doc_path for doc in current_docs):
+            if doc_path not in current_docs:
                 changes["deleted"].append(doc_path)
 
         print(f"  - 新增: {len(changes['added'])} 个")
@@ -456,21 +669,34 @@ class KnowledgeBaseManager:
             return True
 
         # 更新索引
-        print("\n[3/3] 更新索引文件...")
-        old_index['documents'] = current_docs
+        print("\n[3/4] 更新索引文件...")
+        total_size = sum(doc['size'] for doc in markdown_docs + other_docs)
+
+        # 检测 Obsidian
+        has_obsidian = os.path.exists(os.path.join(kb_path, '.obsidian'))
+        kb_type = "obsidian" if has_obsidian else "generic"
+
+        old_index['version'] = '2.0'
+        old_index['knowledge_base']['type'] = kb_type
+        old_index['knowledge_base']['has_obsidian'] = has_obsidian
         old_index['knowledge_base']['last_updated'] = self.get_timestamp()
-        old_index['knowledge_base']['total_documents'] = len(current_docs)
-        old_index['knowledge_base']['total_size_mb'] = round(
-            sum(doc['size'] for doc in current_docs) / (1024 * 1024), 2
-        )
+        old_index['knowledge_base']['total_documents'] = len(markdown_docs) + len(other_docs)
+        old_index['knowledge_base']['total_size_mb'] = round(total_size / (1024 * 1024), 2)
+
+        # 使用分类索引结构
+        old_index['markdown_documents'] = markdown_docs
+        old_index['other_documents'] = other_docs
+        if 'documents' in old_index:
+            del old_index['documents']
 
         # 写入
         with open(index_path, 'w', encoding='utf-8') as f:
             yaml.dump(old_index, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
         # 更新注册表
+        print("\n[4/4] 更新注册表...")
         self.update_registry_entry(kb_path, {
-            "document_count": len(current_docs),
+            "document_count": len(markdown_docs) + len(other_docs),
             "last_updated": self.get_timestamp()
         })
 
@@ -480,7 +706,7 @@ class KnowledgeBaseManager:
         print(f"  - 新增: {len(changes['added'])} 个文档")
         print(f"  - 修改: {len(changes['modified'])} 个文档")
         print(f"  - 删除: {len(changes['deleted'])} 个文档")
-        print(f"  - 当前总数: {len(current_docs)} 个文档")
+        print(f"  - 当前总数: {len(markdown_docs) + len(other_docs)} 个文档")
 
         return True
 
@@ -595,10 +821,28 @@ class KnowledgeBaseManager:
 
     # ========== 工具方法 ==========
 
-    def scan_documents(self, kb_path: str) -> List[Dict]:
-        """扫描文档"""
-        documents = []
-        supported_extensions = ['.md', '.markdown', '.pdf', '.docx', '.doc', '.txt']
+    def scan_documents(self, kb_path: str, generate_summaries: bool = True) -> Tuple[List[Dict], List[Dict]]:
+        """
+        扫描文档，返回分类结构（markdown_documents, other_documents）
+
+        Args:
+            kb_path: 知识库路径
+            generate_summaries: 是否生成 AI 摘要
+
+        Returns:
+            (markdown_documents, other_documents)
+        """
+        markdown_docs = []
+        other_docs = []
+        supported_extensions = {
+            'markdown': ['.md', '.markdown'],
+            'pdf': ['.pdf'],
+            'word': ['.docx', '.doc'],
+            'text': ['.txt']
+        }
+
+        # 检测是否有 Obsidian
+        has_obsidian = os.path.exists(os.path.join(kb_path, '.obsidian'))
 
         for root, dirs, files in os.walk(kb_path):
             # 跳过隐藏文件夹和特殊文件夹
@@ -611,28 +855,97 @@ class KnowledgeBaseManager:
 
                 # 检查文件扩展名
                 ext = os.path.splitext(file)[1].lower()
-                if ext not in supported_extensions:
+
+                # 确定文件类型
+                doc_type = None
+                for type_name, extensions in supported_extensions.items():
+                    if ext in extensions:
+                        doc_type = type_name
+                        break
+
+                if not doc_type:
                     continue
 
                 file_path = os.path.join(root, file)
-                rel_path = os.path.relpath(file_path, kb_path)
+                rel_path = os.path.relpath(file_path, kb_path).replace(os.sep, '/')
 
                 # 获取文件信息
                 try:
                     stat = os.stat(file_path)
-
-                    documents.append({
-                        "path": rel_path.replace(os.sep, '/'),  # 使用正斜杠
+                    doc_info = {
+                        "path": rel_path,
                         "filename": file,
-                        "type": self.get_file_type(file),
+                        "type": doc_type,
                         "modified": self.get_file_modified(stat),
                         "size": stat.st_size
-                    })
+                    }
+
+                    if doc_type == 'markdown':
+                        # Markdown 文档：提取 wikilink、tags、生成摘要
+                        content = self._read_file_content(file_path)
+
+                        if content:
+                            # 提取 wikilinks
+                            if has_obsidian:
+                                doc_info['links'] = self.extract_wikilinks(content)
+
+                            # 提取 tags
+                            tags = self.extract_frontmatter_tags(content)
+                            tags.extend(self.extract_content_tags(content))
+                            if tags:
+                                doc_info['tags'] = list(set(tags))
+
+                            # 生成 AI 摘要
+                            if generate_summaries:
+                                summary_data = self.generate_ai_summary(content, rel_path)
+                                doc_info['summary'] = summary_data.get('summary', '')
+                                doc_info['keywords'] = summary_data.get('keywords', [])
+                                if summary_data.get('topics'):
+                                    doc_info['topics'] = summary_data['topics']
+
+                        markdown_docs.append(doc_info)
+                    else:
+                        # 其他格式文档：基础信息
+                        other_docs.append(doc_info)
+
                 except Exception as e:
                     print(f"⚠️ 跳过文件: {file_path} ({e})")
                     continue
 
-        return documents
+        # 计算反向链接
+        if has_obsidian and markdown_docs:
+            backlinks = self.calculate_backlinks(markdown_docs)
+            for doc in markdown_docs:
+                doc_path = doc.get('path', '')
+                # 尝试多种匹配方式
+                backlink_paths = backlinks.get(doc_path, [])
+                if not backlink_paths:
+                    # 尝试不带扩展名匹配
+                    base_name = doc_path.rsplit('.', 1)[0]
+                    backlink_paths = backlinks.get(f"{base_name}.md", [])
+                if backlink_paths:
+                    doc['backlinks'] = list(set(backlink_paths))
+
+        return markdown_docs, other_docs
+
+    def _read_file_content(self, file_path: str) -> Optional[str]:
+        """读取文件内容"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except UnicodeDecodeError:
+            try:
+                with open(file_path, 'r', encoding='gbk') as f:
+                    return f.read()
+            except:
+                return None
+        except:
+            return None
+
+    def scan_documents_old(self, kb_path: str) -> List[Dict]:
+        """扫描文档（旧方法，保持兼容）"""
+        markdown_docs, other_docs = self.scan_documents(kb_path, generate_summaries=True)
+        return markdown_docs + other_docs
 
     def backup_index(self, kb_path: str):
         """备份索引"""
@@ -686,7 +999,14 @@ class KnowledgeBaseManager:
         try:
             with open(index_path, 'r', encoding='utf-8') as f:
                 index_data = yaml.safe_load(f)
-            return len(index_data.get('documents', []))
+
+            # 兼容新旧格式
+            if 'documents' in index_data:
+                return len(index_data.get('documents', []))
+            else:
+                md_count = len(index_data.get('markdown_documents', []))
+                other_count = len(index_data.get('other_documents', []))
+                return md_count + other_count
         except:
             return 0
 
@@ -727,7 +1047,363 @@ class KnowledgeBaseManager:
 
         return relative.count(os.sep)
 
+    def extract_wikilinks(self, content: str) -> List[str]:
+        """
+        提取文档中的所有 wikilink
+
+        Args:
+            content: 文档内容
+
+        Returns:
+            链接目标列表（不含 #section 和 |alias）
+        """
+        matches = self.WIKILINK_PATTERN.findall(content)
+        return [m[0].strip() for m in matches if m[0].strip()]
+
+    def calculate_backlinks(self, documents: List[Dict]) -> Dict[str, List[str]]:
+        """
+        计算每个文档的反向链接
+
+        Args:
+            documents: 文档列表（每个文档需包含 'path' 和 'links' 字段）
+
+        Returns:
+            {文档路径: [引用它的文档路径列表]}
+        """
+        backlinks = {}
+
+        for doc in documents:
+            doc_path = doc.get('path', '')
+            links = doc.get('links', [])
+
+            for link in links:
+                # 规范化链接目标
+                link_target = self._normalize_link_target(link, doc_path)
+                if link_target not in backlinks:
+                    backlinks[link_target] = []
+                backlinks[link_target].append(doc_path)
+
+        return backlinks
+
+    def _normalize_link_target(self, link: str, source_path: str) -> str:
+        """
+        规范化链接目标
+
+        将 wikilink 转换为相对路径格式
+        """
+        # 移除扩展名（如果有）
+        if link.endswith('.md'):
+            return link
+
+        # 尝试添加 .md 扩展名
+        return f"{link}.md"
+
+    def extract_frontmatter_tags(self, content: str) -> List[str]:
+        """
+        提取 YAML frontmatter 中的 tags
+
+        Args:
+            content: 文档内容
+
+        Returns:
+            标签列表
+        """
+        tags = []
+
+        # 检查是否有 frontmatter
+        if not content.startswith('---'):
+            return tags
+
+        parts = content.split('---', 2)
+        if len(parts) < 3:
+            return tags
+
+        try:
+            frontmatter = yaml.safe_load(parts[1])
+            if isinstance(frontmatter, dict):
+                # 支持 tags 和 tag 字段
+                raw_tags = frontmatter.get('tags', frontmatter.get('tag', []))
+                if isinstance(raw_tags, str):
+                    tags.append(raw_tags)
+                elif isinstance(raw_tags, list):
+                    tags.extend(raw_tags)
+        except:
+            pass
+
+        return tags
+
+    def extract_content_tags(self, content: str) -> List[str]:
+        """
+        提取内容中的 #tag 格式标签
+
+        Args:
+            content: 文档内容
+
+        Returns:
+            标签列表（去重）
+        """
+        # 匹配 #tag 格式（排除 wikilink 中的 #section）
+        pattern = r'(?<!\[\[)#([a-zA-Z\u4e00-\u9fa5][a-zA-Z0-9\u4e00-\u9fa5_]*)'
+        matches = re.findall(pattern, content)
+        return list(set(matches))
+
     # ========== 其他命令 ==========
+
+    def search_index(self, query: str, kb_path: str, top_k: int = 10) -> List[Dict]:
+        """
+        智能检索
+
+        Args:
+            query: 查询文本
+            kb_path: 知识库路径
+            top_k: 返回结果数量
+
+        Returns:
+            排序后的结果列表
+        """
+        index_path = os.path.join(kb_path, "_index.yaml")
+
+        if not os.path.exists(index_path):
+            return []
+
+        try:
+            with open(index_path, 'r', encoding='utf-8') as f:
+                index_data = yaml.safe_load(f)
+        except:
+            return []
+
+        # 提取查询关键词
+        query_keywords = self._extract_query_keywords(query)
+
+        results = []
+
+        # 统一检索 Markdown 文档
+        md_docs = index_data.get('markdown_documents', [])
+        for doc in md_docs:
+            score = self._calculate_relevance_score(doc, query_keywords)
+            if score > 0:
+                doc_copy = doc.copy()
+                doc_copy['score'] = score * 1.1  # Markdown 软加权 +10%
+                doc_copy['doc_type'] = 'markdown'
+                results.append(doc_copy)
+
+        # 利用 wikilink 扩展相关文档
+        if results:
+            results = self._expand_by_links(results, md_docs, query_keywords)
+
+        # 检索其他格式文档
+        other_docs = index_data.get('other_documents', [])
+        for doc in other_docs:
+            score = self._calculate_relevance_score(doc, query_keywords, is_markdown=False)
+            if score > 0:
+                doc_copy = doc.copy()
+                doc_copy['score'] = score  # 其他格式不加权
+                doc_copy['doc_type'] = doc.get('type', 'other')
+                results.append(doc_copy)
+
+        # 兼容旧版索引格式
+        if not results and 'documents' in index_data:
+            for doc in index_data.get('documents', []):
+                score = self._calculate_relevance_score(doc, query_keywords, is_markdown=False)
+                if score > 0:
+                    doc_copy = doc.copy()
+                    doc_copy['score'] = score
+                    doc_copy['doc_type'] = doc.get('type', 'unknown')
+                    results.append(doc_copy)
+
+        # 按分数排序，同名文件 Markdown 优先
+        def sort_key(x):
+            type_priority = 0 if x.get('doc_type') == 'markdown' else 1
+            return (x['score'], -type_priority)
+
+        results.sort(key=sort_key, reverse=True)
+
+        return results[:top_k]
+
+    def _extract_query_keywords(self, query: str) -> List[str]:
+        """从查询中提取关键词"""
+        # 简单实现：按空格和标点分割
+        import re
+        keywords = re.split(r'[\s,，、。？！;；：:\+\-\*]+', query)
+        return [k.strip().lower() for k in keywords if k.strip() and len(k.strip()) > 1]
+
+    def _calculate_relevance_score(self, doc: Dict, query_keywords: List[str],
+                                   is_markdown: bool = True) -> float:
+        """
+        计算文档相关度分数
+
+        权重：
+        - title/filename: 0.4
+        - summary: 0.3
+        - keywords: 0.3
+        """
+        score = 0.0
+
+        # 文件名匹配
+        filename = doc.get('filename', doc.get('path', '')).lower()
+        for keyword in query_keywords:
+            if keyword in filename:
+                score += 0.4
+
+        # 摘要匹配（仅 Markdown）
+        if is_markdown:
+            summary = doc.get('summary', '').lower()
+            for keyword in query_keywords:
+                if keyword in summary:
+                    score += 0.3
+
+            # 关键词匹配
+            doc_keywords = [k.lower() for k in doc.get('keywords', [])]
+            for keyword in query_keywords:
+                if keyword in doc_keywords:
+                    score += 0.3
+
+            # 标签匹配
+            tags = [t.lower() for t in doc.get('tags', [])]
+            for keyword in query_keywords:
+                if keyword in tags:
+                    score += 0.2
+
+        return score
+
+    def _expand_by_links(self, results: List[Dict], all_docs: List[Dict],
+                         query_keywords: List[str]) -> List[Dict]:
+        """通过 wikilink 扩展相关文档"""
+        result_paths = {r['path'] for r in results}
+        expanded = []
+
+        for result in results:
+            # 查找出链文档
+            links = result.get('links', [])
+            for link in links:
+                # 规范化链接
+                link_path = self._normalize_link_target(link, result['path'])
+
+                # 查找链接的文档
+                for doc in all_docs:
+                    if doc['path'] not in result_paths:
+                        doc_path = doc['path']
+                        # 尝试多种匹配
+                        if doc_path == link_path or doc_path == link or \
+                           doc_path.rsplit('.', 1)[0] == link_path.rsplit('.', 1)[0]:
+                            # 计算链接文档的分数（略低）
+                            link_score = self._calculate_relevance_score(doc, query_keywords)
+                            if link_score > 0:
+                                doc_copy = doc.copy()
+                                doc_copy['score'] = (link_score * 0.5 + result['score'] * 0.1) * 1.1  # Markdown 软加权
+                                doc_copy['doc_type'] = 'markdown'
+                                doc_copy['linked_from'] = result['path']
+                                expanded.append(doc_copy)
+                                result_paths.add(doc['path'])
+                            break
+
+        results.extend(expanded)
+        return results
+
+    def search_cli(self, query: str, kb_path: str = None):
+        """CLI 搜索命令"""
+        print(f"\n{'='*60}")
+        print(f"搜索: {query}")
+        print(f"{'='*60}\n")
+
+        # 确定搜索范围
+        if kb_path:
+            # 指定知识库
+            results = self.search_index(query, kb_path)
+            kb_name = os.path.basename(kb_path)
+            print(f"知识库: {kb_name}")
+        else:
+            # 全局搜索
+            results = []
+            for kb in self.registry.get('knowledge_bases', []):
+                if kb.get('status') != 'active':
+                    continue
+                kb_results = self.search_index(query, kb['path'])
+                for r in kb_results:
+                    r['kb_name'] = kb['name']
+                results.extend(kb_results)
+
+            results.sort(key=lambda x: x['score'], reverse=True)
+            results = results[:10]
+            print("搜索范围: 所有知识库")
+
+        if not results:
+            print("\n未找到相关文档")
+            return
+
+        print(f"\n找到 {len(results)} 个相关文档:\n")
+
+        for i, doc in enumerate(results, 1):
+            kb_name = doc.get('kb_name', os.path.basename(kb_path) if kb_path else '')
+            score = doc.get('score', 0)
+            path = doc.get('path', '')
+            summary = doc.get('summary', '')[:100] + '...' if doc.get('summary') else ''
+
+            print(f"{i}. [{score:.2f}] {path}")
+            if kb_name:
+                print(f"   知识库: {kb_name}")
+            if summary:
+                print(f"   摘要: {summary}")
+            if doc.get('keywords'):
+                print(f"   关键词: {', '.join(doc['keywords'][:5])}")
+            if doc.get('linked_from'):
+                print(f"   关联自: {doc['linked_from']}")
+            print()
+
+    def show_info(self, kb_path: str):
+        """显示知识库信息"""
+        index_path = os.path.join(kb_path, "_index.yaml")
+
+        if not os.path.exists(index_path):
+            print(f"❌ 知识库未索引: {kb_path}")
+            return
+
+        try:
+            with open(index_path, 'r', encoding='utf-8') as f:
+                index_data = yaml.safe_load(f)
+        except Exception as e:
+            print(f"❌ 读取索引失败: {e}")
+            return
+
+        kb_info = index_data.get('knowledge_base', {})
+
+        print(f"\n{'='*60}")
+        print("知识库信息")
+        print(f"{'='*60}\n")
+
+        print(f"名称: {kb_info.get('name', 'N/A')}")
+        print(f"路径: {kb_info.get('path', kb_path)}")
+        print(f"类型: {kb_info.get('type', 'generic')}")
+        print(f"Obsidian: {'是' if kb_info.get('has_obsidian') else '否'}")
+        print(f"创建时间: {kb_info.get('created', 'N/A')[:19]}")
+        print(f"更新时间: {kb_info.get('last_updated', 'N/A')[:19]}")
+
+        md_docs = index_data.get('markdown_documents', [])
+        other_docs = index_data.get('other_documents', [])
+
+        print(f"\n文档统计:")
+        print(f"  - Markdown: {len(md_docs)} 个")
+        print(f"  - 其他格式: {len(other_docs)} 个")
+        print(f"  - 总大小: {kb_info.get('total_size_mb', 0)} MB")
+
+        # 统计链接
+        if md_docs:
+            total_links = sum(len(d.get('links', [])) for d in md_docs)
+            total_backlinks = sum(len(d.get('backlinks', [])) for d in md_docs)
+            print(f"\n链接统计:")
+            print(f"  - 出链: {total_links} 个")
+            print(f"  - 反向链接: {total_backlinks} 个")
+
+            # 统计标签
+            all_tags = []
+            for doc in md_docs:
+                all_tags.extend(doc.get('tags', []))
+            if all_tags:
+                from collections import Counter
+                tag_counts = Counter(all_tags)
+                print(f"\n热门标签:")
+                for tag, count in tag_counts.most_common(10):
+                    print(f"  - {tag}: {count}")
 
     def list_knowledge_bases(self):
         """列出所有知识库"""
@@ -758,11 +1434,15 @@ def main():
         sys.exit(1)
 
     command = sys.argv[1]
-    manager = KnowledgeBaseManager()
+
+    # 解析通用参数
+    enable_ai = "--no-ai" not in sys.argv
+
+    manager = KnowledgeBaseManager(enable_ai_summary=enable_ai)
 
     if command == "build":
         if len(sys.argv) < 3:
-            print("用法: python knowledge-index-manager.py build <知识库路径>")
+            print("用法: python knowledge-index-manager.py build <知识库路径> [--force] [--no-ai]")
             sys.exit(1)
 
         kb_path = sys.argv[2]
@@ -771,7 +1451,7 @@ def main():
 
     elif command == "update":
         if len(sys.argv) < 3:
-            print("用法: python knowledge-index-manager.py update <知识库路径>")
+            print("用法: python knowledge-index-manager.py update <知识库路径> [--no-ai]")
             sys.exit(1)
 
         kb_path = sys.argv[2]
@@ -779,6 +1459,29 @@ def main():
 
     elif command == "list":
         manager.list_knowledge_bases()
+
+    elif command == "search":
+        if len(sys.argv) < 3:
+            print("用法: python knowledge-index-manager.py search <查询> [--kb <知识库路径>]")
+            sys.exit(1)
+
+        query = sys.argv[2]
+        kb_path = None
+
+        if "--kb" in sys.argv:
+            kb_idx = sys.argv.index("--kb")
+            if kb_idx + 1 < len(sys.argv):
+                kb_path = sys.argv[kb_idx + 1]
+
+        manager.search_cli(query, kb_path)
+
+    elif command == "info":
+        if len(sys.argv) < 3:
+            print("用法: python knowledge-index-manager.py info <知识库路径>")
+            sys.exit(1)
+
+        kb_path = sys.argv[2]
+        manager.show_info(kb_path)
 
     else:
         print(f"未知命令: {command}")

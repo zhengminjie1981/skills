@@ -1,6 +1,6 @@
 ---
 name: knowledge-index
-description: |
+description: |-
   本地知识库智能索引技能。自动扫描文档、生成AI摘要、维护增量索引，支持AI智能检索。
 
   **触发场景**（包含以下关键词）：
@@ -37,9 +37,22 @@ description: |
 **关键原则**：
 - ✅ 一个索引覆盖该文件夹及所有子文件夹的文档
 - ❌ 不在子文件夹创建独立索引
-- ✅ 全局注册表 `~/.claude/skills/knowledge-index/data/registry.yaml` 维护所有知识库信息
+- ✅ 全局注册表 `~/.knowledge-index/registry.yaml` 维护所有知识库信息
 
-## 5 个核心功能
+## 索引版本 2.0
+
+**文档分类索引**：
+- `markdown_documents`：Markdown 文档（含 summary、keywords、links、backlinks、tags）
+- `other_documents`：其他格式（PDF、Word 等）
+
+**检索策略**：统一检索 + 软加权
+- 所有文档统一检索
+- Markdown 软加权 +10%（因为有 links/tags 额外信息）
+- 按相关度排序，同名文件 Markdown 优先
+
+详细结构见：`references/core/index-spec.md`
+
+## 6 个核心功能
 
 | 功能 | 说明 | 触发示例 |
 |------|------|---------|
@@ -48,6 +61,34 @@ description: |
 | 智能检索 | 通过索引定位相关文档 | "在知识库中查找 GitLab 配置" |
 | 全局管理 | 列出所有知识库，跨库检索 | "查看所有知识库" |
 | 层级提升 | 自动处理父子索引冲突 | 构建索引时自动执行 |
+| AI 摘要 | 生成文档摘要和关键词 | 构建索引时自动执行 |
+
+## CLI 命令
+
+```bash
+# 构建索引
+python scripts/knowledge-index-manager.py build <知识库路径> [--force] [--no-ai]
+
+# 更新索引
+python scripts/knowledge-index-manager.py update <知识库路径> [--no-ai]
+
+# 查看所有知识库
+python scripts/knowledge-index-manager.py list
+
+# 智能检索
+python scripts/knowledge-index-manager.py search <查询> [--kb <知识库路径>]
+
+# 查看知识库信息
+python scripts/knowledge-index-manager.py info <知识库路径>
+```
+
+### 参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `--force` | 强制创建索引（忽略父索引） |
+| `--no-ai` | 禁用 AI 摘要生成 |
+| `--kb` | 指定搜索的知识库路径 |
 
 ## 3 步快速流程
 
@@ -56,24 +97,6 @@ description: |
 | **首次构建** | 扫描文档 → 生成摘要 → 写入 `_index.yaml` |
 | **增量更新** | 检测变更 → 增量处理 → 更新索引 |
 | **智能检索** | 读取索引 → 匹配文档 → 生成回答 |
-
-## 索引文件结构
-
-```yaml
-# _index.yaml
-version: "1.0"
-knowledge_base:
-  name: "知识库名称"
-  total_documents: 15
-  last_updated: "2026-03-04T10:00:00Z"
-
-documents:
-  - path: "相对路径/文档名.md"
-    type: "markdown"           # markdown, pdf, word
-    summary: "AI 生成的摘要（50-500字符）"
-    keywords: ["关键词1", "关键词2"]  # 5-10个
-    topics: ["主题1", "主题2"]        # 3-5个
-```
 
 ## 按需加载指南
 
@@ -130,6 +153,25 @@ AI: ✓ 读取全局注册表 → 列出 3 个知识库
 | 4 | 智能降级 | 工具不可用时自动回退 |
 | 5 | 容错设计 | 单个文档失败不影响整体 |
 
+## AI 摘要说明
+
+### 启用 AI 摘要
+
+设置环境变量 `ANTHROPIC_API_KEY` 后，构建索引时会自动调用 Claude API 生成：
+- 文档摘要（50-100字）
+- 关键词（5-10个）
+- 主题标签（3-5个）
+
+### 缓存机制
+
+摘要结果会缓存到 `~/.knowledge-index/cache/`，避免重复调用 API。
+
+### 降级模式
+
+无 API 或禁用时，会使用基础摘要：
+- 提取文档前 200 字符
+- 匹配常见技术关键词
+
 ## 参考资源
 
 ### 核心规范
@@ -149,4 +191,4 @@ AI: ✓ 读取全局注册表 → 列出 3 个知识库
 
 ---
 
-**版本**: 2.0 | **最后更新**: 2026-03-04
+**版本**: 2.0 | **最后更新**: 2026-03-09

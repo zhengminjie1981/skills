@@ -2,6 +2,17 @@
 
 本文档详细定义知识库索引文件的完整格式规范。
 
+## 索引版本
+
+当前版本：**2.0**（文档分类索引）
+
+### 版本 2.0 特性
+
+- **文档分类**：`markdown_documents` + `other_documents` 两个列表
+- Wikilink 支持：`links` 和 `backlinks` 字段
+- Obsidian 集成：自动检测 `.obsidian` 文件夹
+- AI 摘要：`summary`、`keywords`、`topics` 字段
+
 ## 索引文件位置
 
 - **文件名**: `_index.yaml`
@@ -9,38 +20,64 @@
 - **编码**: UTF-8
 - **格式**: YAML
 
-## 完整格式规范
+## 完整格式规范（v2.0）
 
 ```yaml
 # ===== 索引元数据 =====
-version: "1.0"
+version: "2.0"
 knowledge_base:
   name: "知识库名称"
-  path: "相对路径"
+  path: "绝对路径"
+  type: "obsidian"                    # obsidian 或 generic
+  has_obsidian: true                  # 是否有 .obsidian 文件夹
   created: "2026-03-03T10:00:00Z"      # ISO 8601 格式
   last_updated: "2026-03-03T15:30:00Z"
   total_documents: 15
   total_size_mb: 2.5
 
-# ===== 文档索引 =====
-documents:
+# ===== Markdown 文档 =====
+markdown_documents:
   - path: "相对路径/文档名.md"
     filename: "文档名.md"
-    type: "markdown"                   # markdown, pdf, word
+    type: "markdown"
     modified: "2026-02-28T10:30:00Z"
-    size: 15234                        # 字节数
-    hash: "a1b2c3d4"                   # 可选：用于精确变更检测
-    summary: |
-      文档摘要内容
-      支持多行文本
+    size: 15234
+    # AI 生成的摘要和关键词
+    summary: "文档摘要内容（50-500字符）"
     keywords: ["关键词1", "关键词2"]    # 5-10个
-    topics: ["主题1", "主题2"]          # 3-5个主题标签
+    topics: ["主题1", "主题2"]          # 3-5个
+    # Obsidian 特有字段（has_obsidian=true 时）
+    links: ["config.md", "security.md"]      # 出链（wikilink）
+    backlinks: ["index.md", "tutorial.md"]   # 反向链接
+    tags: ["#api", "#security"]              # 标签
 
-# ===== 检索增强（可选） =====
-clusters:
-  - name: "聚类名称"
-    documents: ["文档1.md", "文档2.pdf"]
+# ===== 其他格式文档 =====
+other_documents:
+  - path: "相对路径/报告.pdf"
+    filename: "报告.pdf"
+    type: "pdf"                        # pdf, word, text
+    modified: "2026-02-28T10:30:00Z"
+    size: 102400
 ```
+
+## 兼容性说明
+
+### 版本 1.0 兼容
+
+系统同时支持读取旧版 1.0 格式索引：
+
+```yaml
+# v1.0 格式（已弃用但仍可读取）
+version: "1.0"
+documents:
+  - path: "文档.md"
+    type: "markdown"
+    # ...
+```
+
+### 升级路径
+
+当更新 v1.0 索引时，会自动升级为 v2.0 格式。
 
 ## 字段说明
 
@@ -48,35 +85,43 @@ clusters:
 
 | 字段 | 类型 | 说明 | 示例 |
 |------|------|------|------|
-| `version` | string | 索引格式版本 | `"1.0"` |
+| `version` | string | 索引格式版本 | `"2.0"` |
 | `knowledge_base.name` | string | 知识库显示名称 | `"信息化知识库"` |
-| `knowledge_base.path` | string | 知识库相对路径 | `"信息化"` |
+| `knowledge_base.path` | string | 知识库绝对路径 | `"E:/知识库/信息化"` |
+| `knowledge_base.type` | string | 知识库类型 | `"obsidian"` 或 `"generic"` |
+| `knowledge_base.has_obsidian` | bool | 是否有 Obsidian | `true` / `false` |
 | `knowledge_base.created` | datetime | 索引创建时间 | `"2026-03-03T10:00:00Z"` |
 | `knowledge_base.last_updated` | datetime | 最后更新时间 | `"2026-03-03T15:30:00Z"` |
 | `knowledge_base.total_documents` | integer | 文档总数 | `15` |
 | `knowledge_base.total_size_mb` | float | 总大小（MB） | `2.5` |
 
-### 文档字段（必填）
+### Markdown 文档字段
 
-| 字段 | 类型 | 说明 | 必填 |
+| 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `path` | string | 文档相对路径 | ✅ |
-| `filename` | string | 文件名（含扩展名） | ✅ |
-| `type` | string | 文档类型 | ✅ |
-| `modified` | datetime | 最后修改时间 | ✅ |
-| `size` | integer | 文件大小（字节） | ✅ |
-| `hash` | string | 文件内容哈希 | ❌ |
-| `summary` | string | AI 生成的摘要 | ✅ |
-| `keywords` | array | 关键词列表 | ✅ |
-| `topics` | array | 主题标签列表 | ✅ |
+| `path` | string | ✅ | 文档相对路径 |
+| `filename` | string | ✅ | 文件名（含扩展名） |
+| `type` | string | ✅ | 固定为 `"markdown"` |
+| `modified` | datetime | ✅ | 最后修改时间 |
+| `size` | integer | ✅ | 文件大小（字节） |
+| `summary` | string | ❌ | AI 生成的摘要（需启用 AI） |
+| `keywords` | array | ❌ | 关键词列表（5-10个，需启用 AI） |
+| `topics` | array | ❌ | 主题标签列表（3-5个） |
+| `links` | array | ❌ | 出链列表（Obsidian） |
+| `backlinks` | array | ❌ | 反向链接列表（Obsidian） |
+| `tags` | array | ❌ | 标签列表（Obsidian） |
 
-### 检索增强字段（可选）
+### 其他格式文档字段
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `clusters` | array | 主题聚类列表 |
-| `clusters[].name` | string | 聚类名称 |
-| `clusters[].documents` | array | 属于该聚类的文档路径列表 |
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `path` | string | ✅ | 文档相对路径 |
+| `filename` | string | ✅ | 文件名（含扩展名） |
+| `type` | string | ✅ | 文档类型：`pdf`、`word`、`text` |
+| `modified` | datetime | ✅ | 最后修改时间 |
+| `size` | integer | ✅ | 文件大小（字节） |
+| `summary` | string | ❌ | AI 生成的摘要（需启用 AI） |
+| `keywords` | array | ❌ | 关键词列表（需启用 AI） |
 
 ## 摘要质量要求
 
@@ -108,11 +153,30 @@ summary: |
 - **特性**: 反映文档类别和所属领域
 - **示例**: `["配置管理", "协作开发", "持续集成"]`
 
+## Wikilink 解析规则
+
+### 支持的格式
+
+| 格式 | 解析结果 |
+|------|---------|
+| `[[文档名]]` | `文档名.md` |
+| `[[文档名#标题]]` | `文档名.md`（忽略标题） |
+| `[[文档名\|别名]]` | `文档名.md`（忽略别名） |
+| `[[folder/文档名]]` | `folder/文档名.md` |
+
+### 反向链接计算
+
+反向链接在索引构建时自动计算：
+1. 扫描所有 Markdown 文档
+2. 提取每个文档的 `links`
+3. 构建反向链接映射
+4. 写入每个文档的 `backlinks` 字段
+
 ## 索引更新规则
 
 ### 文档新增
 
-1. 扫描到新文档时，添加到 `documents` 列表末尾
+1. 扫描到新文档时，添加到对应列表
 2. 生成摘要、关键词、主题标签
 3. 更新 `total_documents` 和 `total_size_mb`
 4. 更新 `last_updated`
@@ -127,23 +191,37 @@ summary: |
 ### 文档删除
 
 1. 检测到文件不存在
-2. 从 `documents` 列表中移除
+2. 从对应列表中移除
 3. 更新 `total_documents` 和 `total_size_mb`
 4. 更新 `last_updated`
 
-## 主题聚类维护
+## 检索策略
 
-### 自动生成规则
+**统一检索 + 软加权**：所有文档统一检索，Markdown 因有 links/tags 额外信息获得 +10% 软加权，最终按相关度分数排序。
 
-- AI 分析所有文档的 `topics` 字段
-- 识别高频主题（出现 ≥ 2 次）
-- 将相关文档归入同一聚类
+```
+用户查询 → 统一检索所有文档
+                ↓
+           Markdown 软加权 +10%
+                ↓
+           按相关度分数排序
+```
 
-### 聚类命名
+### 相关度计算
 
-- 使用简洁的主题名称
-- 避免过长的聚类名称
-- 示例：✅ `"开发工具"` ❌ `"软件开发和协作工具集合"`
+| 匹配字段 | 权重 |
+|---------|------|
+| 文件名 | 0.4 |
+| 摘要 | 0.3 |
+| 关键词 | 0.3 |
+| 标签 | 0.2（Markdown 额外加分） |
+
+### 软加权说明
+
+- **Markdown +10%**：因为包含 links、backlinks、tags 等额外信息
+- **其他格式**：基础分数，不加权
+- **同名优先**：同名文件 Markdown 优先
+- **目的**：不阻断其他格式，让相关度决定排序
 
 ## 编码和格式
 

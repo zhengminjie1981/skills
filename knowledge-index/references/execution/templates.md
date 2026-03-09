@@ -4,93 +4,54 @@
 
 ## 1. 索引文件模板
 
-### 1.1 最小索引模板
+### 1.1 最小索引模板（v2.0）
 
 ```yaml
-version: "1.0"
+version: "2.0"
 knowledge_base:
   name: "知识库名称"
-  path: "相对路径"
+  path: "绝对路径"
+  type: "generic"                     # obsidian 或 generic
+  has_obsidian: false
   created: "2026-03-03T10:00:00Z"
   last_updated: "2026-03-03T10:00:00Z"
   total_documents: 0
   total_size_mb: 0
 
-documents: []
+markdown_documents: []
+other_documents: []
 ```
 
-### 1.2 完整索引模板
+### 1.2 完整索引模板（v2.0）
 
 ```yaml
-version: "1.0"
+version: "2.0"
 knowledge_base:
   name: "信息化知识库"
-  path: "信息化"
-  description: "企业信息化建设相关文档"
+  path: "E:/知识库/信息化"
+  type: "generic"
+  has_obsidian: false
   created: "2026-03-03T10:00:00Z"
   last_updated: "2026-03-03T15:30:00Z"
-  total_documents: 15
-  total_size_mb: 2.5
-  maintainer: "IT部门"
+  total_documents: 3
+  total_size_mb: 0.3
 
-documents:
-  # Markdown 文档示例
+markdown_documents:
   - path: "GitLab 完整指南.md"
-    filename: "GitLab 完整指南 - 从配置管理到协作开发.md"
+    filename: "GitLab 完整指南.md"
     type: "markdown"
     modified: "2026-02-28T10:30:00Z"
     size: 15234
-    hash: "a1b2c3d4"
-    summary: |
-      本文档详细介绍 GitLab 的完整使用流程：
-      1. 配置管理：SSH密钥、项目设置
-      2. 协作开发：分支策略、Merge Request
-      3. CI/CD：流水线配置、自动化部署
+    summary: "GitLab 完整使用流程：配置管理、协作开发、CI/CD"
     keywords: ["GitLab", "CI/CD", "版本控制", "DevOps"]
     topics: ["配置管理", "协作开发", "持续集成"]
 
-  # PDF 文档示例
-  - path: "迅蚁无人机对接需求.pdf"
-    filename: "迅蚁无人机对接需求.pdf"
+other_documents:
+  - path: "报告.pdf"
+    filename: "报告.pdf"
     type: "pdf"
     modified: "2026-01-15T09:00:00Z"
     size: 245678
-    hash: "e5f6g7h8"
-    summary: |
-      迅蚁无人机系统对接需求文档，包含：
-      - API接口规范
-      - 数据交换格式
-      - 安全认证机制
-    keywords: ["无人机", "API", "对接", "迅蚁"]
-    topics: ["接口规范", "数据交换"]
-
-  # Word 文档示例
-  - path: "ERP现状-戴鸿.docx"
-    filename: "ERP现状-戴鸿.docx"
-    type: "word"
-    modified: "2026-01-20T14:00:00Z"
-    size: 87654
-    hash: "i9j0k1l2"
-    summary: |
-      ERP系统现状分析报告：
-      - 系统架构和模块
-      - 使用情况和问题
-      - 改进建议
-    keywords: ["ERP", "系统分析", "企业管理"]
-    topics: ["业务系统", "信息化现状"]
-
-# 主题聚类（可选）
-clusters:
-  - name: "开发工具"
-    description: "软件开发和协作工具"
-    documents:
-      - "GitLab 完整指南.md"
-      - "AI辅助文档编写指南.md"
-  - name: "业务系统"
-    description: "企业业务系统文档"
-    documents:
-      - "ERP现状-戴鸿.docx"
-      - "前台信息化系统情况-小雄.md"
 ```
 
 ### 1.3 文档条目模板
