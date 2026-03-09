@@ -130,23 +130,21 @@ AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
 
 ---
 
-### [obsidian-slides](./obsidian-slides/) - Obsidian Slides 排版美化
+### [obsidian-slides](./obsidian-slides/) - Obsidian Slides 配置生成
 
-帮助用户创建、排版和美化 Obsidian Slides Extended（reveal.js）演示文稿。
+帮助用户生成 Obsidian Slides Extended（reveal.js）演示文稿的布局代码、主题配置和动画语法。
 
-**特性：**
-- **布局生成**：生成 grid/split 布局代码
-- **主题配置**：10 个内置主题 + 深浅主题适配
-- **模板库**：5 个预制模板（产品介绍、会议汇报、教程演示、技术分享、公告通知）
-- **代码片段**：fragment 动画、背景设置、代码高亮等
-- **转换脚本**：Markdown 自动转 Slides 骨架
-- **PDF 导出**：插件自带 PDF/HTML 导出功能
+**核心能力（AI 可靠执行）：**
+- **幻灯片生成**：新建幻灯片 / 内容转换
+- **布局生成**：grid/split 布局代码
+- **主题配置**：frontmatter 主题设置（含 transition）
+- **动画语法**：fragment 类名
 
 **触发场景：**
-- 创建幻灯片：创建 Obsidian 幻灯片、新建 slides、制作演示文稿
-- 排版布局：幻灯片排版、slides 布局、grid 布局、分栏
-- 美化样式：美化幻灯片、幻灯片主题、slides 样式
-- 内容转换：转成幻灯片、文字转 slides
+- 幻灯片生成：创建幻灯片、新建 slides、转成幻灯片、Markdown 转 slides
+- 布局生成：幻灯片布局、grid 布局、分栏布局
+- 主题配置：幻灯片主题、换主题、深色主题
+- 动画效果：逐条显示、fragment、动画
 
 **快速开始：**
 ```
@@ -156,8 +154,11 @@ AI: [加载 obsidian-slides skill] 好的，我来帮你创建...
     - 选择模板和主题风格
     - 生成完整 Markdown 文件
 
-用户: 这个幻灯片内容太挤了，帮我重新排版
-AI: 我来优化布局，使用 grid 分栏...
+用户: 帮我做一个左右分栏布局
+AI: 询问比例后，生成 split 布局代码...
+
+用户: 配置一个深色主题
+AI: 列出深色主题选项（black/night/moon），用户选择后生成 frontmatter...
 ```
 
 **模板列表：**
@@ -181,7 +182,7 @@ AI: 我来优化布局，使用 grid 分栏...
 - **AI 摘要**：为每个文档生成简洁摘要（50-500 字）和关键词（5-10 个）
 - **增量更新**：检测文件变更，仅更新修改过的文档
 - **智能检索**：通过索引 AI 驱动搜索，定位相关文档
-- **全局注册表**：从 skill 的 `data/registry.yaml` 管理所有知识库
+- **全局注册表**：从 `~/.knowledge-index/registry.yaml` 管理所有知识库
 
 **核心原则：**
 - **本地优先**：本地提取文本，仅发送纯文本给 LLM 生成摘要
@@ -251,7 +252,7 @@ cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 - `doc2md/SKILL.md` - 文档转换工作流
 - `knowledge-index/SKILL.md` - 知识库索引指南
 - `template-filler/SKILL.md` - 对话式模板文档填写
-- `obsidian-slides/SKILL.md` - Obsidian Slides 排版美化
+- `obsidian-slides/SKILL.md` - Obsidian Slides 配置生成
 
 ## 贡献
 

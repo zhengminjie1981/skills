@@ -1,25 +1,30 @@
 ---
 name: obsidian-slides
 description: |
-  帮助用户创建、排版和美化 Obsidian Slides Extended（reveal.js）演示文稿。
+  帮助用户生成 Obsidian Slides Extended（reveal.js）演示文稿的布局代码、主题配置和动画语法。
 
-  **触发场景**（包含以下关键词）：
-  - 创建幻灯片：创建 Obsidian 幻灯片、新建 slides、制作演示文稿、生成幻灯片
-  - 排版布局：幻灯片排版、slides 布局、grid 布局、分栏、重新排版
-  - 美化样式：美化幻灯片、幻灯片主题、slides 样式、换主题
-  - 内容转换：转成幻灯片、文字转 slides、Markdown 转 slides
+  **核心能力**（AI 可靠执行）：
+  - 幻灯片生成：新建幻灯片 / 内容转换
+  - 布局生成：grid/split 布局代码
+  - 主题配置：frontmatter 主题设置（含 transition）
+  - 动画语法：fragment 类名
+
+  **触发场景**：
+  - 幻灯片生成：创建幻灯片、新建 slides、转成幻灯片、Markdown 转 slides
+  - 布局生成：幻灯片布局、grid 布局、分栏布局
+  - 主题配置：幻灯片主题、换主题、深色主题
+  - 动画效果：逐条显示、fragment、动画
 
   **不触发场景**：
-  - 纯 PowerPoint/Keynote 相关（非 Obsidian）
-  - 纯 Markdown 格式问题（非幻灯片）
-  - 其他 Obsidian 插件问题
+  - 纯 PowerPoint/Keynote 相关
+  - 纯 Markdown 格式问题
 ---
 
-# Obsidian Slides 排版美化
+# Obsidian Slides 配置生成
 
 ## 一行总结
 
-> 帮助用户创建、排版和美化 Obsidian Slides Extended（reveal.js）演示文稿
+> 帮助用户生成 Obsidian Slides Extended（reveal.js）的布局代码、主题配置和动画语法
 
 ## 快速开始
 
@@ -30,11 +35,11 @@ description: |
 AI: 询问主题/风格 → 选择模板 → 生成完整 Markdown
 ```
 
-### 排版优化
+### 布局生成
 
 ```
-用户: 这个幻灯片内容太挤，帮我重新排版
-AI: 分析内容结构 → 推荐 grid/split 布局 → 重新组织
+用户: 帮我做一个左右分栏布局，左边放文字，右边放图片
+AI: 询问比例 → 生成 split 代码
 ```
 
 ### 批量转换
@@ -48,33 +53,31 @@ python scripts/md2slides.py input.md --theme dark
 
 | 功能 | 说明 | 触发示例 |
 |------|------|---------|
-| 布局生成 | 生成 grid/split 布局代码 | "帮我做一个左右分栏" |
-| 主题配置 | 推荐 frontmatter 主题设置 | "换个专业风格" |
-| 模板生成 | 基于预制模板快速创建 | "生成一个学术报告模板" |
-| 内容转换 | Markdown 自动分页布局 | "把这段文字转成 3 页幻灯片" |
-| 样式美化 | CSS 自定义样式建议 | "给标题加个渐变色" |
+| 幻灯片生成 | 新建或转换幻灯片 | "帮我创建一个产品介绍幻灯片" |
+| 布局生成 | 生成 grid/split 布局代码 | "做一个左右分栏" |
+| 主题配置 | 生成 frontmatter 主题设置 | "配置深色主题" |
+| 动画语法 | 生成 fragment 类名 | "让列表逐条显示" |
 
 ## 决策树
 
 ```
 用户需求？
-├─ 新建幻灯片
-│   ├─ 知道模板类型？ → 使用对应模板
-│   └─ 不确定？ → 询问：产品/会议/教程/技术/公告
+├─ 幻灯片生成
+│   ├─ 有现成内容？ → 转换格式（md2slides 或手动分段）
+│   └─ 从零开始？ → 询问用途 → 选择模板 → 填充占位符
 │
-├─ 排版优化
-│   ├─ 内容多且挤？ → 推荐 grid 分栏布局
-│   ├─ 图文混排？ → 推荐 split 左右布局
-│   └─ 单页简单内容？ → 居中布局
+├─ 布局生成
+│   ├─ 左右分栏？ → 询问比例 → 生成 split 代码
+│   ├─ 多栏网格？ → 询问栏数和比例 → 生成 grid 代码
+│   └─ 图文混排？ → 生成 split 代码
 │
-├─ 美化样式
-│   ├─ 快速换风格？ → 推荐 10 个内置主题
-│   ├─ 需要自定义？ → 读取 themes.md 提供 CSS 方案
-│   └─ 深色/浅色？ → 提供两种配色方案
+├─ 主题配置
+│   ├─ 快速换风格？ → 列出 10 个内置主题 → 用户选择 → 生成 frontmatter
+│   └─ 深色/浅色？ → 列出对应主题 → 用户选择
 │
-└─ 内容转换
-    ├─ 有现成 Markdown？ → 使用 md2slides.py
-    └─ 口述内容？ → 自动分段 + 应用布局
+└─ 动画效果
+    ├─ 逐条显示？ → 生成 fragment 类名
+    └─ 其他效果？ → 列出可用效果 → 用户选择 → 生成代码
 ```
 
 ## 前置要求
@@ -100,28 +103,22 @@ AI:
      - CTA 页
 ```
 
-### 场景2: 排版优化
+### 场景2: 布局生成
 
 ```
-用户: 这个幻灯片内容太多了，帮我重新排版
+用户: 帮我做一个左右对比的布局
 AI:
-  1. 分析内容结构
-  2. 读取 references/layout-syntax.md
-  3. 推荐布局方案：
-     - 使用 <grid> 分栏
-     - 拆分为多页
-     - 使用 fragment 逐步展示
+  1. 询问：左右比例？（50/50 或 60/40）
+  2. 生成 split 布局代码
 ```
 
-### 场景3: 主题美化
+### 场景3: 主题配置
 
 ```
-用户: 给这个幻灯片换个专业风格
+用户: 给这个幻灯片配置一个深色主题
 AI:
-  1. 读取 references/themes.md
-  2. 推荐：black/white/league 主题
-  3. 生成 frontmatter 配置
-  4. 可选：提供自定义 CSS 片段
+  1. 列出深色主题选项：black / night / moon
+  2. 用户选择后，生成 frontmatter 配置
 ```
 
 ## 常用布局速查
@@ -150,10 +147,10 @@ AI:
 |------|------|---------|
 | `references/usage-guide.md` | **安装教程、使用示例、导出 PDF** | 首次使用或需要示例时 |
 | `references/layout-syntax.md` | grid/split 完整语法 | 需要复杂布局时 |
-| `references/themes.md` | 主题配置和自定义 CSS | 需要样式美化时 |
+| `references/themes.md` | 主题配置和 CSS 选项 | 需要配置主题时 |
 | `references/templates.md` | 5 个模板详细说明 | 需要了解模板结构时 |
-| `references/snippets.md` | fragment、background 等片段 | 需要特效功能时 |
+| `references/snippets.md` | fragment、background 等片段 | 需要动画效果时 |
 
 ---
 
-**版本**: 1.1 | **最后更新**: 2026-03-08
+**版本**: 2.0 | **最后更新**: 2026-03-09

@@ -1,8 +1,8 @@
-# Obsidian Slides 排版美化 Skill 设计文档
+# Obsidian Slides 配置生成 Skill 设计文档
 
 ## 概述
 
-本 Skill 帮助用户创建、排版和美化 Obsidian Slides Extended（reveal.js）演示文稿。
+本 Skill 帮助用户生成 Obsidian Slides Extended（reveal.js）演示文稿的布局代码、主题配置和动画语法。
 
 ## 目标用户
 
@@ -12,11 +12,10 @@
 
 ## 核心功能
 
-1. **布局生成**：生成 grid/split 布局代码
-2. **主题配置**：推荐 frontmatter 主题设置
-3. **模板生成**：基于预制模板快速创建
-4. **内容转换**：Markdown 自动分页布局
-5. **样式美化**：CSS 自定义样式建议
+1. **幻灯片生成**：新建幻灯片 / 内容转换
+2. **布局生成**：生成 grid/split 布局代码
+3. **主题配置**：生成 frontmatter 主题设置（含 transition）
+4. **动画语法**：生成 fragment 类名
 
 ## 技术栈
 
@@ -56,20 +55,20 @@ obsidian-slides/
 ## 触发场景设计
 
 **触发关键词**：
-- 创建幻灯片：创建 Obsidian 幻灯片、新建 slides、制作演示文稿
-- 排版布局：幻灯片排版、slides 布局、grid 布局、分栏
-- 美化样式：美化幻灯片、幻灯片主题、slides 样式
-- 内容转换：转成幻灯片、文字转 slides
+- 幻灯片生成：创建幻灯片、新建 slides、转成幻灯片、Markdown 转 slides
+- 布局生成：幻灯片布局、grid 布局、分栏布局
+- 主题配置：幻灯片主题、换主题、深色主题
+- 动画效果：逐条显示、fragment、动画
 
 **不触发场景**：
 - 纯 PowerPoint/Keynote 相关
 - 纯 Markdown 格式问题
-- 其他 Obsidian 插件问题
 
 ## 变更日志
 
 | 日期 | 版本 | 变更 |
 |------|------|------|
+| 2026-03-09 | 2.0 | 功能定位调整：移除"美化"，聚焦配置生成 |
 | 2026-03-08 | 1.0 | 初始版本 |
 
 ---
