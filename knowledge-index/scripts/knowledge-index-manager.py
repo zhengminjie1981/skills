@@ -24,7 +24,7 @@ Knowledge Index Manager - 知识库索引管理器
     --no-ai     禁用 AI 摘要生成
     --kb        指定搜索的知识库路径
 
-索引版本: 2.0（文档分类索引结构）
+索引版本: 2.1（文档分类索引结构，支持 folders/categories）
 """
 
 import os
@@ -34,9 +34,86 @@ import json
 import shutil
 import re
 import hashlib
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any, Tuple
+
+
+class ProgressReporter:
+    """
+    进度报告器
+
+    用于长时间任务（索引构建、检索）时给用户实时进度反馈。
+    显示格式：[任务名] 当前/总数 (百分比), 预计剩余 XXs
+    """
+
+    def __init__(self, total: int, task_name: str = "处理中"):
+        """
+        初始化进度报告器
+
+        Args:
+            total: 总任务数
+            task_name: 任务名称（显示在进度前缀）
+        """
+        self.total = total
+        self.current = 0
+        self.task_name = task_name
+        self.start_time = time.time()
+        self._last_message = ""
+
+    def update(self, increment: int = 1, message: str = None) -> None:
+        """
+        更新进度
+
+        Args:
+            increment: 增量（默认 1）
+            message: 附加消息（可选）
+        """
+        self.current += increment
+        percentage = (self.current / self.total) * 100
+        elapsed = time.time() - self.start_time
+
+        # 估算剩余时间
+        if self.current > 0 and self.current < self.total:
+            eta = (elapsed / self.current) * (self.total - self.current)
+            eta_str = f", 预计剩余 {eta:.0f}s"
+        else:
+            eta_str = ""
+
+        msg = f"\r[{self.task_name}] {self.current}/{self.total} ({percentage:.1f}%){eta_str}"
+        if message:
+            msg += f" - {message}"
+
+        # 清除之前的输出（如果新消息更短）
+        if len(self._last_message) > len(msg):
+            msg += " " * (len(self._last_message) - len(msg))
+
+        self._last_message = msg
+        print(msg, end="", flush=True)
+
+    def complete(self, message: str = "完成") -> float:
+        """
+        完成进度
+
+        Args:
+            message: 完成消息
+
+        Returns:
+            总耗时（秒）
+        """
+        elapsed = time.time() - self.start_time
+
+        # 清除之前的输出
+        clear_msg = "\r" + " " * len(self._last_message) + "\r"
+        print(clear_msg, end="")
+
+        print(f"[{self.task_name}] {self.total}/{self.total} (100%) - {message}，耗时 {elapsed:.1f}s")
+        return elapsed
+
+    def skip(self) -> None:
+        """跳过进度（无需处理时调用）"""
+        print(f"[{self.task_name}] 跳过（共 {self.total} 项）")
 
 
 class KnowledgeBaseManager:
@@ -570,8 +647,12 @@ topics:
         print("\n[2/3] 生成索引...")
         total_size = sum(doc['size'] for doc in markdown_docs + other_docs)
 
+        # 生成文件夹分区索引和语义分类索引
+        folders = self._generate_folder_index(markdown_docs, other_docs)
+        categories = self._generate_category_index(markdown_docs, other_docs, folders)
+
         index_data = {
-            "version": "2.0",
+            "version": "2.1",
             "knowledge_base": {
                 "name": os.path.basename(kb_path),
                 "path": kb_path,
@@ -582,6 +663,8 @@ topics:
                 "total_documents": total_docs,
                 "total_size_mb": round(total_size / (1024 * 1024), 2)
             },
+            "folders": folders,
+            "categories": categories,
             "markdown_documents": markdown_docs,
             "other_documents": other_docs
         }
@@ -676,12 +759,20 @@ topics:
         has_obsidian = os.path.exists(os.path.join(kb_path, '.obsidian'))
         kb_type = "obsidian" if has_obsidian else "generic"
 
-        old_index['version'] = '2.0'
+        # 生成文件夹分区索引和语义分类索引
+        folders = self._generate_folder_index(markdown_docs, other_docs)
+        categories = self._generate_category_index(markdown_docs, other_docs, folders)
+
+        old_index['version'] = '2.1'
         old_index['knowledge_base']['type'] = kb_type
         old_index['knowledge_base']['has_obsidian'] = has_obsidian
         old_index['knowledge_base']['last_updated'] = self.get_timestamp()
         old_index['knowledge_base']['total_documents'] = len(markdown_docs) + len(other_docs)
         old_index['knowledge_base']['total_size_mb'] = round(total_size / (1024 * 1024), 2)
+
+        # 添加文件夹和分类索引
+        old_index['folders'] = folders
+        old_index['categories'] = categories
 
         # 使用分类索引结构
         old_index['markdown_documents'] = markdown_docs
@@ -821,13 +912,15 @@ topics:
 
     # ========== 工具方法 ==========
 
-    def scan_documents(self, kb_path: str, generate_summaries: bool = True) -> Tuple[List[Dict], List[Dict]]:
+    def scan_documents(self, kb_path: str, generate_summaries: bool = True,
+                       progress: bool = True) -> Tuple[List[Dict], List[Dict]]:
         """
         扫描文档，返回分类结构（markdown_documents, other_documents）
 
         Args:
             kb_path: 知识库路径
             generate_summaries: 是否生成 AI 摘要
+            progress: 是否显示进度
 
         Returns:
             (markdown_documents, other_documents)
@@ -844,6 +937,8 @@ topics:
         # 检测是否有 Obsidian
         has_obsidian = os.path.exists(os.path.join(kb_path, '.obsidian'))
 
+        # Phase 1: 快速扫描获取文件列表（用于进度显示）
+        all_files = []
         for root, dirs, files in os.walk(kb_path):
             # 跳过隐藏文件夹和特殊文件夹
             dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['.git', '.obsidian', '__pycache__', 'node_modules']]
@@ -863,54 +958,69 @@ topics:
                         doc_type = type_name
                         break
 
-                if not doc_type:
-                    continue
+                if doc_type:
+                    all_files.append((root, file, doc_type))
 
-                file_path = os.path.join(root, file)
-                rel_path = os.path.relpath(file_path, kb_path).replace(os.sep, '/')
+        # 初始化进度报告器
+        reporter = None
+        if progress and len(all_files) > 10:
+            reporter = ProgressReporter(len(all_files), "扫描文档")
 
-                # 获取文件信息
-                try:
-                    stat = os.stat(file_path)
-                    doc_info = {
-                        "path": rel_path,
-                        "filename": file,
-                        "type": doc_type,
-                        "modified": self.get_file_modified(stat),
-                        "size": stat.st_size
-                    }
+        # Phase 2: 逐个处理文件
+        for idx, (root, file, doc_type) in enumerate(all_files):
+            file_path = os.path.join(root, file)
+            rel_path = os.path.relpath(file_path, kb_path).replace(os.sep, '/')
 
-                    if doc_type == 'markdown':
-                        # Markdown 文档：提取 wikilink、tags、生成摘要
-                        content = self._read_file_content(file_path)
+            # 更新进度
+            if reporter:
+                reporter.update(1, rel_path[:40] + ('...' if len(rel_path) > 40 else ''))
 
-                        if content:
-                            # 提取 wikilinks
-                            if has_obsidian:
-                                doc_info['links'] = self.extract_wikilinks(content)
+            # 获取文件信息
+            try:
+                stat = os.stat(file_path)
+                doc_info = {
+                    "path": rel_path,
+                    "filename": file,
+                    "type": doc_type,
+                    "modified": self.get_file_modified(stat),
+                    "size": stat.st_size
+                }
 
-                            # 提取 tags
-                            tags = self.extract_frontmatter_tags(content)
-                            tags.extend(self.extract_content_tags(content))
-                            if tags:
-                                doc_info['tags'] = list(set(tags))
+                if doc_type == 'markdown':
+                    # Markdown 文档：提取 wikilink、tags、生成摘要
+                    content = self._read_file_content(file_path)
 
-                            # 生成 AI 摘要
-                            if generate_summaries:
-                                summary_data = self.generate_ai_summary(content, rel_path)
-                                doc_info['summary'] = summary_data.get('summary', '')
-                                doc_info['keywords'] = summary_data.get('keywords', [])
-                                if summary_data.get('topics'):
-                                    doc_info['topics'] = summary_data['topics']
+                    if content:
+                        # 提取 wikilinks
+                        if has_obsidian:
+                            doc_info['links'] = self.extract_wikilinks(content)
 
-                        markdown_docs.append(doc_info)
-                    else:
-                        # 其他格式文档：基础信息
-                        other_docs.append(doc_info)
+                        # 提取 tags
+                        tags = self.extract_frontmatter_tags(content)
+                        tags.extend(self.extract_content_tags(content))
+                        if tags:
+                            doc_info['tags'] = list(set(tags))
 
-                except Exception as e:
-                    print(f"⚠️ 跳过文件: {file_path} ({e})")
-                    continue
+                        # 生成 AI 摘要
+                        if generate_summaries:
+                            summary_data = self.generate_ai_summary(content, rel_path)
+                            doc_info['summary'] = summary_data.get('summary', '')
+                            doc_info['keywords'] = summary_data.get('keywords', [])
+                            if summary_data.get('topics'):
+                                doc_info['topics'] = summary_data['topics']
+
+                    markdown_docs.append(doc_info)
+                else:
+                    # 其他格式文档：基础信息
+                    other_docs.append(doc_info)
+
+            except Exception as e:
+                print(f"\n⚠️ 跳过文件: {file_path} ({e})")
+                continue
+
+        # 完成进度
+        if reporter:
+            reporter.complete(f"发现 {len(markdown_docs)} 个 Markdown, {len(other_docs)} 个其他文档")
 
         # 计算反向链接
         if has_obsidian and markdown_docs:
@@ -941,6 +1051,123 @@ topics:
                 return None
         except:
             return None
+
+    def _generate_folder_index(self, markdown_docs: List[Dict],
+                               other_docs: List[Dict]) -> List[Dict]:
+        """
+        生成文件夹分区索引
+
+        Args:
+            markdown_docs: Markdown 文档列表
+            other_docs: 其他格式文档列表
+
+        Returns:
+            文件夹索引列表
+        """
+        # 按文件夹分组
+        folder_map: Dict[str, Dict] = {}
+
+        all_docs = markdown_docs + other_docs
+        for doc in all_docs:
+            path = doc.get('path', '')
+            parts = path.split('/')
+            if len(parts) <= 1:
+                # 根目录文件，跳过
+                continue
+
+            # 提取文件夹路径（排除文件名）
+            folder_path = '/'.join(parts[:-1])
+            if not folder_path:
+                continue
+
+            if folder_path not in folder_map:
+                folder_map[folder_path] = {
+                    'path': folder_path + '/',
+                    'document_count': 0,
+                    'keywords_aggregated': set(),
+                    'topics_aggregated': set()
+                }
+
+            folder_map[folder_path]['document_count'] += 1
+
+            # 聚合关键词和主题
+            for kw in doc.get('keywords', []):
+                folder_map[folder_path]['keywords_aggregated'].add(kw.lower())
+            for topic in doc.get('topics', []):
+                folder_map[folder_path]['topics_aggregated'].add(topic)
+
+        # 转换为列表格式
+        folders = []
+        for folder_path in sorted(folder_map.keys()):
+            folder = folder_map[folder_path]
+            folders.append({
+                'path': folder['path'],
+                'document_count': folder['document_count'],
+                'keywords_aggregated': list(folder['keywords_aggregated'])[:20],  # 限制数量
+                'topics_aggregated': list(folder['topics_aggregated'])[:10]
+            })
+
+        return folders
+
+    def _generate_category_index(self, markdown_docs: List[Dict],
+                                 other_docs: List[Dict],
+                                 folder_index: List[Dict]) -> List[Dict]:
+        """
+        生成语义分类索引（从 topics 自动聚合）
+
+        Args:
+            markdown_docs: Markdown 文档列表
+            other_docs: 其他格式文档列表
+            folder_index: 文件夹索引
+
+        Returns:
+            分类索引列表
+        """
+        # 按主题分组
+        category_map: Dict[str, Dict] = {}
+
+        all_docs = markdown_docs + other_docs
+        for doc in all_docs:
+            topics = doc.get('topics', [])
+            keywords = doc.get('keywords', [])
+            path = doc.get('path', '')
+
+            # 提取文件夹
+            parts = path.split('/')
+            folder = '/'.join(parts[:-1]) + '/' if len(parts) > 1 else ''
+
+            for topic in topics:
+                topic_lower = topic.lower()
+                if topic_lower not in category_map:
+                    category_map[topic_lower] = {
+                        'name': topic,
+                        'keywords': set(),
+                        'document_count': 0,
+                        'folders': set()
+                    }
+
+                category_map[topic_lower]['document_count'] += 1
+                category_map[topic_lower]['folders'].add(folder)
+
+                # 聚合关键词
+                for kw in keywords:
+                    category_map[topic_lower]['keywords'].add(kw.lower())
+
+        # 转换为列表格式，按文档数排序
+        categories = []
+        for topic in sorted(category_map.keys(),
+                           key=lambda t: category_map[t]['document_count'],
+                           reverse=True):
+            cat = category_map[topic]
+            if cat['document_count'] >= 2:  # 至少 2 个文档才创建分类
+                categories.append({
+                    'name': cat['name'],
+                    'keywords': list(cat['keywords'])[:15],
+                    'document_count': cat['document_count'],
+                    'folders': [f for f in cat['folders'] if f]
+                })
+
+        return categories[:20]  # 限制分类数量
 
     def scan_documents_old(self, kb_path: str) -> List[Dict]:
         """扫描文档（旧方法，保持兼容）"""
@@ -1149,7 +1376,8 @@ topics:
 
     # ========== 其他命令 ==========
 
-    def search_index(self, query: str, kb_path: str, top_k: int = 10) -> List[Dict]:
+    def search_index(self, query: str, kb_path: str, top_k: int = 10,
+                     show_progress: bool = True) -> List[Dict]:
         """
         智能检索
 
@@ -1157,6 +1385,7 @@ topics:
             query: 查询文本
             kb_path: 知识库路径
             top_k: 返回结果数量
+            show_progress: 是否显示进度（文档数 > 100 时生效）
 
         Returns:
             排序后的结果列表
@@ -1177,8 +1406,18 @@ topics:
 
         results = []
 
-        # 统一检索 Markdown 文档
+        # 统计文档总数（用于进度显示）
         md_docs = index_data.get('markdown_documents', [])
+        other_docs = index_data.get('other_documents', [])
+        total_docs = len(md_docs) + len(other_docs)
+
+        # 初始化进度报告器（文档数 > 100 时显示）
+        reporter = None
+        if show_progress and total_docs > 100:
+            reporter = ProgressReporter(total_docs, "检索中")
+
+        # 统一检索 Markdown 文档
+        processed = 0
         for doc in md_docs:
             score = self._calculate_relevance_score(doc, query_keywords)
             if score > 0:
@@ -1187,12 +1426,15 @@ topics:
                 doc_copy['doc_type'] = 'markdown'
                 results.append(doc_copy)
 
+            processed += 1
+            if reporter and processed % 10 == 0:
+                reporter.update(10, f"扫描 {processed}/{total_docs}")
+
         # 利用 wikilink 扩展相关文档
         if results:
             results = self._expand_by_links(results, md_docs, query_keywords)
 
         # 检索其他格式文档
-        other_docs = index_data.get('other_documents', [])
         for doc in other_docs:
             score = self._calculate_relevance_score(doc, query_keywords, is_markdown=False)
             if score > 0:
@@ -1200,6 +1442,14 @@ topics:
                 doc_copy['score'] = score  # 其他格式不加权
                 doc_copy['doc_type'] = doc.get('type', 'other')
                 results.append(doc_copy)
+
+            processed += 1
+            if reporter and processed % 10 == 0:
+                reporter.update(10, f"扫描 {processed}/{total_docs}")
+
+        # 完成进度
+        if reporter:
+            reporter.complete(f"找到 {len(results)} 个匹配")
 
         # 兼容旧版索引格式
         if not results and 'documents' in index_data:
@@ -1233,9 +1483,11 @@ topics:
         计算文档相关度分数
 
         权重：
-        - title/filename: 0.4
-        - summary: 0.3
-        - keywords: 0.3
+        - filename: 0.4（文件名匹配）
+        - path: 0.15（路径文件夹匹配，排除文件名）
+        - summary: 0.3（摘要匹配）
+        - keywords: 0.3（关键词匹配）
+        - tags: 0.2（标签匹配）
         """
         score = 0.0
 
@@ -1244,6 +1496,15 @@ topics:
         for keyword in query_keywords:
             if keyword in filename:
                 score += 0.4
+
+        # 路径匹配（新增：文件夹路径权重）
+        path = doc.get('path', '').lower()
+        path_parts = [p for p in path.split('/') if p]
+        for keyword in query_keywords:
+            # 只匹配路径中的文件夹部分（排除文件名本身）
+            for part in path_parts[:-1] if len(path_parts) > 1 else []:
+                if keyword in part:
+                    score += 0.15
 
         # 摘要匹配（仅 Markdown）
         if is_markdown:

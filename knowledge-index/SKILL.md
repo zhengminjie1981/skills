@@ -39,7 +39,7 @@ description: |-
 - ❌ 不在子文件夹创建独立索引
 - ✅ 全局注册表 `~/.knowledge-index/registry.yaml` 维护所有知识库信息
 
-## 索引版本 2.0
+## 索引版本 2.1
 
 **文档分类索引**：
 - `markdown_documents`：Markdown 文档（含 summary、keywords、links、backlinks、tags）
@@ -191,4 +191,4 @@ AI: ✓ 读取全局注册表 → 列出 3 个知识库
 
 ---
 
-**版本**: 2.0 | **最后更新**: 2026-03-09
+**版本**: 2.1 | **最后更新**: 2026-03-11
