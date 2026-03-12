@@ -188,6 +188,64 @@ description: |
 - 变更日志 → `docs/changelog.md`
 - 归档文档 → `docs/_archive/`
 
+### 斜杠指令设计规范
+
+**是否需要创建斜杠指令？**
+
+| 功能数量 | 是否创建指令 | 说明 |
+|---------|-------------|------|
+| 1 个 | ❌ 不创建 | 直接用 skill 名称调用 |
+| 2+ 个 | ✅ 创建 | 为每个功能创建子指令 |
+
+**命名原则**：
+
+1. **简短**：指令名称 1-2 个单词
+2. **动作导向**：使用动词（build、search、convert）
+3. **避免重复**：子指令名称不应重复 skill 名称
+
+**示例**：
+
+```
+❌ 错误（重复表达）：
+/knowledge-index:knowledge-search
+/doc2md:doc2md-convert
+
+✅ 正确（简短、无重复）：
+/knowledge-index:search
+/doc2md:convert
+```
+
+**单功能 skill 示例**：
+
+```
+template-filler 只有一个功能 → 不创建子指令
+调用方式：/template-filler（直接用 skill 名称）
+```
+
+**多功能 skill 示例**：
+
+```
+knowledge-index 有 4 个功能 → 创建子指令
+├── /knowledge-index:build
+├── /knowledge-index:update
+├── /knowledge-index:search
+└── /knowledge-index:list
+```
+
+**目录结构**：
+
+```
+# 多功能 skill
+.claude/commands/
+└── skill-name/
+    ├── subcommand1.md
+    └── subcommand2.md
+
+# 单功能 skill
+.claude/commands/
+└── skill-name.md    # 直接用 skill 名称，无子目录
+```
+
 ## 快速流程
 
 ### 1. 设计阶段
@@ -322,4 +380,4 @@ references/
 
 ---
 
-*版本: 1.3 | 最后更新: 2026-03-05*
+*版本: 1.4 | 最后更新: 2026-03-12*

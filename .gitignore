@@ -1,4 +1,7 @@
-.claude/
+# Claude Code local settings (but keep commands)
+.claude/*
+!.claude/commands/
+
 .obsidian/
 
 # Python bytecode cache

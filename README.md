@@ -248,6 +248,45 @@ cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 - `template-filler/SKILL.md` - 对话式模板文档填写
 - `obsidian-slides/SKILL.md` - Obsidian Slides 配置生成
 
+## 斜杠指令
+
+部分 skill 提供了斜杠指令，支持显式调用和预授权工具：
+
+| Skill | 指令 | 说明 |
+|-------|------|------|
+| dev-workflow | `/dev-workflow:new` | 启动新模块开发 |
+| | `/dev-workflow:change` | 修改现有模块 |
+| | `/dev-workflow:check` | 验证文档一致性 |
+| db-mcp | `/db-mcp:connect` | 连接数据库 |
+| | `/db-mcp:query` | 执行只读查询 |
+| doc2md | `/doc2md:convert` | 转换文档为 Markdown |
+| | `/doc2md:batch` | 批量转换文档 |
+| knowledge-index | `/knowledge-index:build` | 构建知识索引 |
+| | `/knowledge-index:update` | 增量更新索引 |
+| | `/knowledge-index:search` | 搜索知识库 |
+| | `/knowledge-index:list` | 列出所有知识库 |
+| template-filler | `/template-filler` | 对话式填写模板 |
+| obsidian-slides | `/obsidian-slides:new` | 创建演示文稿 |
+| | `/obsidian-slides:layout` | 生成幻灯片布局 |
+| | `/obsidian-slides:theme` | 配置主题样式 |
+
+**设计原则**：
+- 单功能 skill 直接用 skill 名称（如 `/template-filler`）
+- 多功能 skill 使用子指令（如 `/knowledge-index:search`）
+- 指令名称简短、动作导向、避免与 skill 名称重复
+
+详见 [Skills 编写指南 - 斜杠指令设计规范](./standards/skill-guide.md#斜杠指令设计规范)。
+
+### 安装斜杠指令（全局使用）
+
+项目内已包含斜杠指令，clone 后可直接使用。如需在其他项目中使用：
+
+```bash
+# 复制到全局目录
+cp -r .claude/commands/* ~/.claude/commands/        # Linux/Mac
+xcopy .claude\commands\ %USERPROFILE%\.claude\commands\ /E /I  # Windows
+```
+
 ## 贡献
 
 欢迎贡献！可以提交 issue 或 pull request：
