@@ -209,33 +209,35 @@ AI: 检索索引，找到 5 个相关文档，按相关度排序返回
 
 ## 安装
 
-每个 skill 可以独立安装：
+### 安装 Skills
+
+将需要的 skill 目录复制到 Claude Code 的 skills 目录：
 
 ```bash
-# 安装 dev-workflow skill
-xcopy dev-workflow %USERPROFILE%\.claude\skills\ /E /I  # Windows
-cp -r dev-workflow ~/.claude/skills/                     # Linux/Mac
+# 安装单个 skill
+cp -r <skill-name> ~/.claude/skills/                     # Linux/Mac
+xcopy <skill-name> %USERPROFILE%\.claude\skills\ /E /I  # Windows
 
-# 安装 db-mcp skill
-xcopy db-mcp %USERPROFILE%\.claude\skills\ /E /I  # Windows
-cp -r db-mcp ~/.claude/skills/                     # Linux/Mac
-
-# 安装 doc2md skill
-xcopy doc2md %USERPROFILE%\.claude\skills\ /E /I  # Windows
-cp -r doc2md ~/.claude/skills/                     # Linux/Mac
-
-# 安装 knowledge-index skill
-xcopy knowledge-index %USERPROFILE%\.claude\skills\ /E /I  # Windows
-cp -r knowledge-index ~/.claude/skills/                     # Linux/Mac
-
-# 安装 template-filler skill
-xcopy template-filler %USERPROFILE%\.claude\skills\ /E /I  # Windows
-cp -r template-filler ~/.claude/skills/                     # Linux/Mac
-
-# 安装 obsidian-slides skill
-xcopy obsidian-slides %USERPROFILE%\.claude\skills\ /E /I  # Windows
-cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
+# 安装全部 skills
+cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目根目录执行）
 ```
+
+### 安装斜杠指令（可选）
+
+项目已包含斜杠指令文件（`.claude/commands/`），有两种使用方式：
+
+| 方式 | 说明 |
+|------|------|
+| **项目内使用** | 无需安装，clone 项目后在项目目录内即可使用 |
+| **全局使用** | 复制到全局目录，可在任意项目使用 |
+
+```bash
+# 全局安装（可选）
+cp -r .claude/commands/* ~/.claude/commands/              # Linux/Mac
+xcopy .claude\commands\ %USERPROFILE%\.claude\commands\ /E /I  # Windows
+```
+
+**注意**：斜杠指令为可选功能，不影响 skill 的正常触发和使用。
 
 ## 使用方法
 
@@ -248,7 +250,7 @@ cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 - `template-filler/SKILL.md` - 对话式模板文档填写
 - `obsidian-slides/SKILL.md` - Obsidian Slides 配置生成
 
-## 斜杠指令
+## 斜杠指令列表
 
 部分 skill 提供了斜杠指令，支持显式调用和预授权工具：
 
@@ -270,22 +272,7 @@ cp -r obsidian-slides ~/.claude/skills/                     # Linux/Mac
 | | `/obsidian-slides:layout` | 生成幻灯片布局 |
 | | `/obsidian-slides:theme` | 配置主题样式 |
 
-**设计原则**：
-- 单功能 skill 直接用 skill 名称（如 `/template-filler`）
-- 多功能 skill 使用子指令（如 `/knowledge-index:search`）
-- 指令名称简短、动作导向、避免与 skill 名称重复
-
-详见 [Skills 编写指南 - 斜杠指令设计规范](./standards/skill-guide.md#斜杠指令设计规范)。
-
-### 安装斜杠指令（全局使用）
-
-项目内已包含斜杠指令，clone 后可直接使用。如需在其他项目中使用：
-
-```bash
-# 复制到全局目录
-cp -r .claude/commands/* ~/.claude/commands/        # Linux/Mac
-xcopy .claude\commands\ %USERPROFILE%\.claude\commands\ /E /I  # Windows
-```
+**设计原则**：单功能 skill 直接用名称，多功能 skill 使用子指令。详见 [斜杠指令设计规范](./standards/skill-guide.md#斜杠指令设计规范)。
 
 ## 贡献
 
