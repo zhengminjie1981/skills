@@ -42,13 +42,6 @@ AI: 询问主题/风格 → 选择模板 → 生成完整 Markdown
 AI: 询问比例 → 生成 split 代码
 ```
 
-### 批量转换
-
-```bash
-# 将普通 Markdown 转换为 Slides 骨架
-python scripts/md2slides.py input.md --theme dark
-```
-
 ## 核心功能
 
 | 功能 | 说明 | 触发示例 |

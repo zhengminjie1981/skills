@@ -10,21 +10,31 @@ Knowledge Index Manager - 知识库索引管理器
 4. 层级冲突检测和处理
 5. AI 摘要生成（需 ANTHROPIC_API_KEY）
 6. Wikilink 解析（Obsidian 支持）
-7. 智能检索
+7. 智能检索（支持 Obsidian CLI）
 
 使用方法：
     python knowledge-index-manager.py build <知识库路径> [--force] [--no-ai]
     python knowledge-index-manager.py update <知识库路径> [--no-ai]
     python knowledge-index-manager.py list
-    python knowledge-index-manager.py search <查询> [--kb <知识库路径>]
+    python knowledge-index-manager.py search <查询> [--kb <知识库路径>] [--prefer-obsidian] [--no-obsidian]
     python knowledge-index-manager.py info <知识库路径>
 
 参数：
-    --force     强制创建索引（忽略父索引）
-    --no-ai     禁用 AI 摘要生成
-    --kb        指定搜索的知识库路径
+    --force             强制创建索引（忽略父索引）
+    --no-ai             禁用 AI 摘要生成
+    --kb                指定搜索的知识库路径
+    --prefer-obsidian   优先使用 Obsidian CLI 搜索（需桌面应用运行中）
+    --no-obsidian       禁用 Obsidian CLI，仅使用索引搜索
+
+Obsidian CLI 集成：
+    当 Obsidian 桌面应用运行时，可使用原生搜索能力：
+    - 自动检测 CLI 可用性
+    - CLI 不可用时自动回退到索引搜索
+    - 使用 --prefer-obsidian 强制优先使用 CLI
+    - 使用 --no-obsidian 禁用 CLI
 
 索引版本: 2.1（文档分类索引结构，支持 folders/categories）
+Obsidian CLI: 支持（搜索功能增强）
 """
 
 import os
@@ -35,9 +45,117 @@ import shutil
 import re
 import hashlib
 import time
+import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any, Tuple
+
+
+class ObsidianCLIClient:
+    """
+    Obsidian CLI 客户端
+
+    用于检测和使用 Obsidian 官方 CLI 进行搜索。
+    CLI 需要 Obsidian 桌面应用正在运行。
+
+    命令格式：
+        obsidian search query="test" format=json limit=5
+        obsidian search query="GitLab" path="子系统/" format=json
+    """
+
+    def __init__(self, vault_path: str = None):
+        """
+        初始化 Obsidian CLI 客户端
+
+        Args:
+            vault_path: 知识库路径（用于路径转换）
+        """
+        self.vault_path = vault_path
+        self._available = None
+
+    def is_available(self) -> bool:
+        """
+        检测 Obsidian CLI 是否可用
+
+        Returns:
+            bool: CLI 是否可用
+        """
+        if self._available is not None:
+            return self._available
+
+        try:
+            result = subprocess.run(
+                ["obsidian", "vault"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            )
+            self._available = result.returncode == 0
+        except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+            self._available = False
+
+        return self._available
+
+    def search(self, query: str, path: str = None, limit: int = 10) -> List[str]:
+        """
+        执行搜索并返回结果列表
+
+        Args:
+            query: 搜索查询
+            path: 限制搜索路径（可选）
+            limit: 返回结果数量限制
+
+        Returns:
+            匹配的文件路径列表
+        """
+        if not self.is_available():
+            return []
+
+        cmd = ["obsidian", "search", f"query={query}", "format=json", f"limit={limit}"]
+
+        if path:
+            # 确保路径格式正确
+            path = path.replace("\\", "/").rstrip("/")
+            cmd.append(f"path={path}")
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            )
+
+            if result.returncode == 0 and result.stdout.strip():
+                # 解析 JSON 数组输出
+                return json.loads(result.stdout.strip())
+        except (json.JSONDecodeError, subprocess.TimeoutExpired, Exception):
+            pass
+
+        return []
+
+    def search_with_fallback(self, query: str, path: str = None,
+                             limit: int = 10) -> Tuple[List[str], str]:
+        """
+        执行搜索，返回结果和来源标识
+
+        Args:
+            query: 搜索查询
+            path: 限制搜索路径
+            limit: 结果数量限制
+
+        Returns:
+            (结果列表, 来源标识)
+            来源标识: "obsidian_cli" 或 "unavailable"
+        """
+        if self.is_available():
+            results = self.search(query, path, limit)
+            if results:
+                return results, "obsidian_cli"
+
+        return [], "unavailable"
 
 
 class ProgressReporter:
@@ -122,19 +240,33 @@ class KnowledgeBaseManager:
     # Wikilink 正则模式：匹配 [[link]], [[link#section]], [[link|alias]], [[link#section|alias]]
     WIKILINK_PATTERN = re.compile(r'\[\[([^\]\|#]+)(?:#([^\]\|]+))?(?:\|([^\]]+))?\]\]')
 
-    def __init__(self, registry_path: str = None, enable_ai_summary: bool = True):
+    def __init__(self, registry_path: str = None, enable_ai_summary: bool = True,
+                 obsidian_cli_mode: str = "auto"):
         """
         初始化管理器
 
         Args:
             registry_path: 注册表路径（默认 ~/.knowledge-index/registry.yaml）
             enable_ai_summary: 是否启用 AI 摘要（默认 True）
+            obsidian_cli_mode: Obsidian CLI 模式
+                - "auto": 自动检测，CLI 可用时优先使用（默认）
+                - "prefer": 优先使用 CLI，结果与索引合并
+                - "disabled": 禁用 CLI，仅使用索引
         """
         self.registry_path = registry_path or self.get_default_registry_path()
         self.registry = self.load_registry()
         self.enable_ai_summary = enable_ai_summary
         self._ai_cache = {}  # 内存缓存
         self._cache_dir = None
+        self.obsidian_cli_mode = obsidian_cli_mode
+        self._obsidian_cli = None
+
+    @property
+    def obsidian_cli(self) -> ObsidianCLIClient:
+        """获取 Obsidian CLI 客户端（延迟初始化）"""
+        if self._obsidian_cli is None:
+            self._obsidian_cli = ObsidianCLIClient()
+        return self._obsidian_cli
 
     @staticmethod
     def get_default_registry_path() -> str:
@@ -1561,20 +1693,60 @@ topics:
         results.extend(expanded)
         return results
 
-    def search_cli(self, query: str, kb_path: str = None):
-        """CLI 搜索命令"""
+    def search_cli(self, query: str, kb_path: str = None,
+                   prefer_obsidian: bool = False, no_obsidian: bool = False):
+        """
+        CLI 搜索命令
+
+        Args:
+            query: 查询文本
+            kb_path: 知识库路径（可选，不指定则全局搜索）
+            prefer_obsidian: 优先使用 Obsidian CLI
+            no_obsidian: 禁用 Obsidian CLI
+        """
         print(f"\n{'='*60}")
         print(f"搜索: {query}")
         print(f"{'='*60}\n")
 
+        # 确定搜索模式
+        use_obsidian = False
+        obsidian_mode = "disabled" if no_obsidian else ("prefer" if prefer_obsidian else self.obsidian_cli_mode)
+
+        # 检查 Obsidian CLI 可用性
+        if obsidian_mode != "disabled":
+            if self.obsidian_cli.is_available():
+                use_obsidian = True
+                print("🔍 搜索模式: Obsidian CLI（原生搜索）")
+            else:
+                print("🔍 搜索模式: 索引检索（Obsidian CLI 不可用）")
+        else:
+            print("🔍 搜索模式: 索引检索（CLI 已禁用）")
+
         # 确定搜索范围
         if kb_path:
-            # 指定知识库
-            results = self.search_index(query, kb_path)
             kb_name = os.path.basename(kb_path)
             print(f"知识库: {kb_name}")
+
+            # 优先尝试 Obsidian CLI 搜索
+            if use_obsidian:
+                obsidian_results, source = self._search_with_obsidian_cli(query, kb_path)
+                if obsidian_results:
+                    self._display_obsidian_results(obsidian_results, kb_path)
+                    return
+
+            # 回退到索引搜索
+            results = self.search_index(query, kb_path)
         else:
-            # 全局搜索
+            print("搜索范围: 所有知识库")
+
+            # 全局搜索：尝试用 Obsidian CLI（不限制路径）
+            if use_obsidian:
+                obsidian_results, source = self._search_with_obsidian_cli(query, None)
+                if obsidian_results:
+                    self._display_obsidian_results(obsidian_results, None)
+                    return
+
+            # 回退到全局索引搜索
             results = []
             for kb in self.registry.get('knowledge_bases', []):
                 if kb.get('status') != 'active':
@@ -1586,7 +1758,6 @@ topics:
 
             results.sort(key=lambda x: x['score'], reverse=True)
             results = results[:10]
-            print("搜索范围: 所有知识库")
 
         if not results:
             print("\n未找到相关文档")
@@ -1610,6 +1781,43 @@ topics:
             if doc.get('linked_from'):
                 print(f"   关联自: {doc['linked_from']}")
             print()
+
+    def _search_with_obsidian_cli(self, query: str, kb_path: str = None) -> Tuple[List[str], str]:
+        """
+        使用 Obsidian CLI 执行搜索
+
+        Args:
+            query: 查询文本
+            kb_path: 知识库路径（可选）
+
+        Returns:
+            (结果列表, 来源标识)
+        """
+        # 转换路径格式
+        search_path = None
+        if kb_path:
+            search_path = os.path.basename(kb_path)
+
+        return self.obsidian_cli.search_with_fallback(query, search_path, limit=10)
+
+    def _display_obsidian_results(self, results: List[str], kb_path: str = None):
+        """
+        显示 Obsidian CLI 搜索结果
+
+        Args:
+            results: Obsidian CLI 返回的文件路径列表
+            kb_path: 知识库路径（用于显示）
+        """
+        print(f"\n找到 {len(results)} 个相关文档:\n")
+
+        for i, path in enumerate(results, 1):
+            print(f"{i}. {path}")
+            if kb_path:
+                full_path = os.path.join(kb_path, path) if not os.path.isabs(path) else path
+                print(f"   完整路径: {full_path}")
+            print()
+
+        print("💡 提示: 使用 --no-obsidian 可切换到索引搜索模式（含相关度分数）")
 
     def show_info(self, kb_path: str):
         """显示知识库信息"""
@@ -1723,18 +1931,20 @@ def main():
 
     elif command == "search":
         if len(sys.argv) < 3:
-            print("用法: python knowledge-index-manager.py search <查询> [--kb <知识库路径>]")
+            print("用法: python knowledge-index-manager.py search <查询> [--kb <知识库路径>] [--prefer-obsidian] [--no-obsidian]")
             sys.exit(1)
 
         query = sys.argv[2]
         kb_path = None
+        prefer_obsidian = "--prefer-obsidian" in sys.argv
+        no_obsidian = "--no-obsidian" in sys.argv
 
         if "--kb" in sys.argv:
             kb_idx = sys.argv.index("--kb")
             if kb_idx + 1 < len(sys.argv):
                 kb_path = sys.argv[kb_idx + 1]
 
-        manager.search_cli(query, kb_path)
+        manager.search_cli(query, kb_path, prefer_obsidian=prefer_obsidian, no_obsidian=no_obsidian)
 
     elif command == "info":
         if len(sys.argv) < 3:

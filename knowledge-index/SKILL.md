@@ -63,32 +63,51 @@ description: |-
 | 层级提升 | 自动处理父子索引冲突 | 构建索引时自动执行 |
 | AI 摘要 | 生成文档摘要和关键词 | 构建索引时自动执行 |
 
-## CLI 命令
+## Obsidian CLI 集成
 
-```bash
-# 构建索引
-python scripts/knowledge-index-manager.py build <知识库路径> [--force] [--no-ai]
+### 概述
 
-# 更新索引
-python scripts/knowledge-index-manager.py update <知识库路径> [--no-ai]
+knowledge-index 支持 Obsidian 官方 CLI 进行原生搜索，提供更准确的检索结果。
 
-# 查看所有知识库
-python scripts/knowledge-index-manager.py list
+### 工作流程
 
-# 智能检索
-python scripts/knowledge-index-manager.py search <查询> [--kb <知识库路径>]
-
-# 查看知识库信息
-python scripts/knowledge-index-manager.py info <知识库路径>
+```
+用户查询
+    ↓
+检查 Obsidian CLI 是否可用
+    ├─ 可用 → obsidian search --format=json → 返回结果
+    └─ 不可用 → 使用现有 _index.yaml 索引检索
+    ↓
+返回搜索结果
 ```
 
-### 参数说明
+### 启用条件
 
-| 参数 | 说明 |
-|------|------|
-| `--force` | 强制创建索引（忽略父索引） |
-| `--no-ai` | 禁用 AI 摘要生成 |
-| `--kb` | 指定搜索的知识库路径 |
+**桌面用户**：
+1. 更新 Obsidian 到最新版本（2026年2月后）
+2. Settings → General → 启用 Command line interface
+3. 按提示添加 CLI 到 PATH
+4. **保持 Obsidian 桌面应用运行中**
+
+**验证 CLI 可用性**：
+```bash
+obsidian vault
+# 应显示当前 vault 信息
+```
+
+### 搜索模式
+
+| 模式 | 参数 | 特点 |
+|------|------|------|
+| 自动 | 默认 | 自动检测 CLI，不可用时回退索引 |
+| 优先 CLI | `--prefer-obsidian` | 优先使用 CLI |
+| 仅索引 | `--no-obsidian` | 禁用 CLI，显示相关度分数 |
+
+### CLI 限制
+
+- 需要 Obsidian 桌面应用**正在运行**
+- 搜索结果不包含相关度分数
+- 路径为相对于 vault 的相对路径
 
 ## 3 步快速流程
 
@@ -191,4 +210,4 @@ AI: ✓ 读取全局注册表 → 列出 3 个知识库
 
 ---
 
-**版本**: 2.1 | **最后更新**: 2026-03-11
+**版本**: 2.1 | **最后更新**: 2026-03-15
