@@ -211,8 +211,6 @@ AI: 检索索引，找到 5 个相关文档，按相关度排序返回
 
 ## 安装
 
-### 安装 Skills
-
 将需要的 skill 目录复制到 Claude Code 的 skills 目录：
 
 ```bash
@@ -223,23 +221,6 @@ xcopy <skill-name> %USERPROFILE%\.claude\skills\ /E /I  # Windows
 # 安装全部 skills
 cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目根目录执行）
 ```
-
-### 安装斜杠指令（可选）
-
-项目已包含斜杠指令文件（`.claude/commands/`），有两种使用方式：
-
-| 方式 | 说明 |
-|------|------|
-| **项目内使用** | 无需安装，clone 项目后在项目目录内即可使用 |
-| **全局使用** | 复制到全局目录，可在任意项目使用 |
-
-```bash
-# 全局安装（可选）
-cp -r .claude/commands/* ~/.claude/commands/              # Linux/Mac
-xcopy .claude\commands\ %USERPROFILE%\.claude\commands\ /E /I  # Windows
-```
-
-**注意**：斜杠指令为可选功能，不影响 skill 的正常触发和使用。
 
 ## 使用方法
 
@@ -254,27 +235,25 @@ xcopy .claude\commands\ %USERPROFILE%\.claude\commands\ /E /I  # Windows
 
 ## 斜杠指令列表
 
-部分 skill 提供了斜杠指令，支持显式调用和预授权工具：
+每个 skill 的 `SKILL.md` 同时支持自动触发和显式 `/skill-name [参数]` 调用：
 
 | Skill | 指令 | 说明 |
 |-------|------|------|
-| dev-workflow | `/dev-workflow:new` | 启动新模块开发 |
-| | `/dev-workflow:change` | 修改现有模块 |
-| | `/dev-workflow:check` | 验证文档一致性 |
-| db-mcp | `/db-mcp:connect` | 连接数据库 |
-| | `/db-mcp:query` | 执行只读查询 |
-| doc2md | `/doc2md:convert` | 转换文档为 Markdown |
-| | `/doc2md:batch` | 批量转换文档 |
-| knowledge-index | `/knowledge-index:build` | 构建知识索引 |
-| | `/knowledge-index:update` | 增量更新索引 |
-| | `/knowledge-index:search` | 搜索知识库 |
-| | `/knowledge-index:list` | 列出所有知识库 |
-| template-filler | `/template-filler` | 对话式填写模板 |
-| obsidian-slides | `/obsidian-slides:new` | 创建演示文稿 |
-| | `/obsidian-slides:layout` | 生成幻灯片布局 |
-| | `/obsidian-slides:theme` | 配置主题样式 |
-
-**设计原则**：单功能 skill 直接用名称，多功能 skill 使用子指令。详见 [斜杠指令设计规范](./standards/skill-guide.md#斜杠指令设计规范)。
+| dev-workflow | `/dev-workflow new <模块名>` | 启动新模块开发 |
+| | `/dev-workflow change <模块名>` | 修改现有模块 |
+| | `/dev-workflow check [模块名]` | 验证文档一致性 |
+| db-mcp | `/db-mcp connect <类型> <主机> <库> [用户]` | 连接数据库 |
+| | `/db-mcp query <SQL>` | 执行只读查询 |
+| doc2md | `/doc2md convert <文件> [--tool ...]` | 转换文档为 Markdown |
+| | `/doc2md batch <模式> [-o 目录]` | 批量转换文档 |
+| knowledge-index | `/knowledge-index build <路径>` | 构建知识索引 |
+| | `/knowledge-index update <路径>` | 增量更新索引 |
+| | `/knowledge-index search <查询>` | 搜索知识库 |
+| | `/knowledge-index list` | 列出所有知识库 |
+| template-filler | `/template-filler <模板路径>` | 对话式填写模板 |
+| obsidian-slides | `/obsidian-slides new [主题]` | 创建演示文稿 |
+| | `/obsidian-slides layout <类型>` | 生成幻灯片布局 |
+| | `/obsidian-slides theme [主题名]` | 配置主题样式 |
 
 ## 贡献
 

@@ -12,6 +12,9 @@ description: |
   **不触发场景**：
   - 纯粹的 SQL 语法问题（不涉及连接和执行）
   - 其他类型的 MCP 服务配置
+
+allowed-tools: [Bash, Read, Write]
+argument-hint: "<connect|query> [参数]"
 ---
 
 # db-mcp - 数据库 MCP 服务管理
@@ -19,6 +22,31 @@ description: |
 ## 一行总结
 
 > 零配置数据库连接服务，支持 MySQL、PostgreSQL、SQLite 的安全只读查询。
+
+## 子功能调用
+
+| 指令 | 参数 | 说明 |
+|------|------|------|
+| `/db-mcp connect <类型> <主机> <数据库> [用户]` | mysql/postgresql/sqlite | 零配置连接数据库 |
+| `/db-mcp query <SQL>` | SELECT 语句 | 安全执行只读查询 |
+
+**connect 示例**：
+```
+/db-mcp connect mysql localhost mydb root
+/db-mcp connect postgresql localhost analytics admin
+/db-mcp connect sqlite /path/to/database.db
+```
+
+**query 示例**：
+```
+/db-mcp query SELECT * FROM users LIMIT 10
+/db-mcp query SELECT COUNT(*) FROM orders WHERE status = 'active'
+```
+
+**安全特性**（query）：
+- 仅允许 SELECT 查询
+- 自动 LIMIT（默认 1000 行）
+- 参数化查询防止 SQL 注入
 
 ## 决策树
 

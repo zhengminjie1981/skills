@@ -6,12 +6,34 @@ description: |
   WHEN TO USE: User needs to convert DOCX, PDF, EPUB, HTML, PPTX to Markdown
   TRIGGERS: "convert document", "to markdown", "extract from PDF", "Word to MD"
   CAPABILITIES: OCR, table extraction, image handling, batch processing
+
+allowed-tools: [Bash, Read, Glob]
+argument-hint: "<convert|batch> <文件或模式> [选项]"
 ---
 
 # Doc2Md - Document to Markdown Converter
 
 ## 🎯 One-Line Summary
 Convert any document to clean Markdown with intelligent tool selection.
+
+## 子功能调用
+
+| 指令 | 说明 |
+|------|------|
+| `/doc2md convert <文件> [--tool auto\|pandoc\|mineru\|pymupdf]` | 转换单个文档为 Markdown |
+| `/doc2md batch <模式> [-o 输出目录]` | 批量转换多个文档 |
+
+**convert 示例**：
+```
+/doc2md convert report.docx
+/doc2md convert document.pdf --tool mineru
+```
+
+**batch 示例**：
+```
+/doc2md batch "./docs/*.docx"
+/doc2md batch "./files/*.pdf" -o ./markdown/
+```
 
 ## 🤖 AI Agent Quick Reference
 

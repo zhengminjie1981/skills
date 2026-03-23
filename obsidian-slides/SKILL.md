@@ -18,6 +18,9 @@ description: |
   **不触发场景**：
   - 纯 PowerPoint/Keynote 相关
   - 纯 Markdown 格式问题
+
+allowed-tools: [Read, Write, Glob]
+argument-hint: "<new|layout|theme> [参数]"
 ---
 
 # Obsidian Slides 配置生成
@@ -25,6 +28,25 @@ description: |
 ## 一行总结
 
 > 帮助用户生成 Obsidian Slides Extended（reveal.js）的布局代码、主题配置和动画语法
+
+## 子功能调用
+
+| 指令 | 参数 | 说明 |
+|------|------|------|
+| `/obsidian-slides new [主题] [--template 类型]` | 可选 | 创建演示文稿 |
+| `/obsidian-slides layout <类型> [选项]` | split / grid | 生成布局代码 |
+| `/obsidian-slides theme [主题名] [--dark\|--light]` | 可选 | 配置主题样式 |
+
+**示例**：
+```
+/obsidian-slides new AI 助手产品介绍
+/obsidian-slides new 技术分享 --template technical
+/obsidian-slides layout split
+/obsidian-slides layout split-left 70
+/obsidian-slides layout grid 3
+/obsidian-slides theme dracula
+/obsidian-slides theme --dark
+```
 
 ## 快速开始
 

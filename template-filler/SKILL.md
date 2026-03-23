@@ -12,6 +12,9 @@ description: |
   - 纯格式转换（如 doc2md：将 Word 转为 Markdown）
   - 自由格式写作（不基于模板结构）
   - 代码注释或 API 文档自动生成
+
+allowed-tools: [Read, Write]
+argument-hint: "<模板路径> [-o 输出路径]"
 ---
 
 # template-filler - 对话式模板文档填写

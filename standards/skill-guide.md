@@ -190,60 +190,53 @@ description: |
 
 ### 斜杠指令设计规范
 
-**是否需要创建斜杠指令？**
+**SKILL.md 同时承担两种职责**：
+1. **自动触发**：AI 识别关键词后自动加载
+2. **显式调用**：用户输入 `/skill-name [参数]` 直接触发
 
-| 功能数量 | 是否创建指令 | 说明 |
-|---------|-------------|------|
-| 1 个 | ❌ 不创建 | 直接用 skill 名称调用 |
-| 2+ 个 | ✅ 创建 | 为每个功能创建子指令 |
+`.claude/commands/` 是**旧格式（legacy）**，不再推荐。新格式下，SKILL.md 即为唯一入口。
 
-**命名原则**：
-
-1. **简短**：指令名称 1-2 个单词
-2. **动作导向**：使用动词（build、search、convert）
-3. **避免重复**：子指令名称不应重复 skill 名称
-
-**示例**：
+**多功能 skill 的调用方式**：
 
 ```
-❌ 错误（重复表达）：
-/knowledge-index:knowledge-search
-/doc2md:doc2md-convert
+# 旧格式（已废弃）
+/knowledge-index:build <路径>
+/knowledge-index:search <查询>
 
-✅ 正确（简短、无重复）：
-/knowledge-index:search
-/doc2md:convert
+# 新格式（推荐）
+/knowledge-index build <路径>
+/knowledge-index search <查询>
 ```
 
-**单功能 skill 示例**：
+子功能描述统一写在 SKILL.md 正文中，无需创建独立子指令文件。
 
-```
-template-filler 只有一个功能 → 不创建子指令
-调用方式：/template-filler（直接用 skill 名称）
-```
+**frontmatter 字段说明**：
 
-**多功能 skill 示例**：
+| 字段 | 作用 | 示例 |
+|------|------|------|
+| `name` | skill 名称，即斜杠指令名 | `name: knowledge-index` |
+| `description` | 触发场景描述（AI 判断是否加载的依据） | 见下方模板 |
+| `allowed-tools` | 允许使用的工具列表 | `[Bash, Read, Write]` |
+| `argument-hint` | 参数提示，显示在 `/help` 中 | `"<build|search|list> [参数]"` |
 
-```
-knowledge-index 有 4 个功能 → 创建子指令
-├── /knowledge-index:build
-├── /knowledge-index:update
-├── /knowledge-index:search
-└── /knowledge-index:list
-```
+**完整 frontmatter 示例**：
 
-**目录结构**：
+```yaml
+---
+name: knowledge-index
+description: |
+  本地知识库智能索引技能。
 
-```
-# 多功能 skill
-.claude/commands/
-└── skill-name/
-    ├── subcommand1.md
-    └── subcommand2.md
+  **触发场景**：
+  - 构建索引：建立索引、创建索引
+  - 智能检索：在知识库中查找
 
-# 单功能 skill
-.claude/commands/
-└── skill-name.md    # 直接用 skill 名称，无子目录
+  **不触发场景**：
+  - 纯粹的文件操作
+
+allowed-tools: [Bash, Read, Glob, Grep]
+argument-hint: "<build|update|search|list> [参数]"
+---
 ```
 
 ## 快速流程

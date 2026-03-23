@@ -15,6 +15,9 @@ description: |-
   - 与知识库无关的查询
   - 代码编写或调试
   - 系统配置或设置
+
+allowed-tools: [Bash, Read, Glob, Grep]
+argument-hint: "<build|update|search|list> [路径] [选项]"
 ---
 
 # knowledge-index - 本地知识库智能索引
@@ -116,6 +119,32 @@ obsidian vault
 | **首次构建** | 扫描文档 → 生成摘要 → 写入 `_index.yaml` |
 | **增量更新** | 检测变更 → 增量处理 → 更新索引 |
 | **智能检索** | 读取索引 → 匹配文档 → 生成回答 |
+
+## 子功能调用
+
+| 指令 | 参数 | 说明 |
+|------|------|------|
+| `/knowledge-index build <路径> [--force] [--no-ai]` | 知识库路径 | 扫描文档，生成摘要，创建索引 |
+| `/knowledge-index update <路径> [--no-ai]` | 知识库路径 | 检测变更，增量更新索引 |
+| `/knowledge-index search <查询> [--kb 路径]` | 查询关键词 | 通过索引检索相关文档 |
+| `/knowledge-index list` | 无 | 列出全局注册表中所有知识库 |
+
+**参数说明**：
+
+| 参数 | 适用 | 说明 |
+|------|------|------|
+| `--force` | build | 强制创建索引（忽略父索引） |
+| `--no-ai` | build / update | 禁用 AI 摘要，使用基础摘要 |
+| `--kb <路径>` | search | 指定搜索的知识库（不指定则搜索全部） |
+
+**CLI 命令**（脚本直接调用）：
+
+```bash
+python scripts/knowledge-index-manager.py build <路径> [--force] [--no-ai]
+python scripts/knowledge-index-manager.py update <路径> [--no-ai]
+python scripts/knowledge-index-manager.py search <查询> [--kb <路径>]
+python scripts/knowledge-index-manager.py list
+```
 
 ## 按需加载指南
 
