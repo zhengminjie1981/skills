@@ -189,9 +189,7 @@
     KPI 数字（3-6个）                -> stat-cards
     时间线/历程                      -> timeline-vertical / timeline-horizontal
     对比（2-3方案）                  -> compare-two / compare-three
-  ★ 多组「p+ul」结构分列：
-    用 :::col 显式分列（推荐）
-    或加 splitMode=group（要求 p+ul 交替，## 不触发）
+  ★ 多组「p+ul」结构分列：加 splitMode=group（要求 p+ul 交替，## 不触发）
     columns 参数（stat-cards/card-grid）：
       3项 -> 默认（单行）
       4项 -> columns:2（2×2）
@@ -373,45 +371,7 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 ## 6. MD 内容编写规范
 
-### 6.1 分列内容（:::col）
-
-`:::col` 语法用于显式两列或三列分栏，适合**纯内容分列**（无需列标题）。
-
-**格式要求**：
-
-```markdown
-:::col
-- 要点1
-- 要点2
-:::col
-- 要点3
-- 要点4
-:::
-```
-
-**约束**：
-- 列内标题必须用 `**粗体**`，不能用 `##` / `###`（标题元素破坏幻灯片视觉层级）
-- 两列用一个 `:::col` 分隔符，三列用两个 `:::col` 分隔符
-
-**已知限制：`:::col` 内 `**粗体**` 段落作为列标题时不稳定**
-
-在某些版式下（如 `text-three-column`），`:::col` 内首行的 `**粗体**` 段落会被丢弃，只保留后续列表内容。
-
-**替代方案：需要带标题的多列 → 改用 `card-grid`（稳定可靠）**
-
-```markdown
-# card-grid：列表项自动渲染为卡片，加粗文字 = 卡片标题
-- **列标题A** 列内容说明文字，支持多行
-- **列标题B** 列内容说明文字
-- **列标题C** 列内容说明文字
-# tree: layout.template = "card-grid"，columns:3
-```
-
-选择原则：
-- 只分列（内容无标题）→ `:::col`
-- 分列且每列有标题 → `card-grid`（更稳定，不依赖 :::col 解析）
-
-### 6.2 splitMode:group 的前提
+### 6.1 splitMode:group 的前提
 
 `splitMode: group` 要求 MD 页面内有多组 **段落(p) + 列表(ul) 交替**结构：
 
@@ -433,9 +393,9 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 **选择原则**：
 - 内容是"多组对称列表"→ `splitMode: group`
-- 内容是"段落+段落"或结构不对称 → `:::col` 显式分列（推荐）
+- 内容是"段落+段落"或结构不对称 → 降级为 `text-default`
 
-### 6.3 stat-cards 内容规范
+### 6.2 stat-cards 内容规范
 
 - 每张卡片内容必须极简：**加粗数字/标题 + 不超过一行说明**
 - 6 张卡片时优先考虑拆为两页，而非塞入一页
@@ -451,7 +411,7 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 - **月活用户** 本季度月活达 35 万，同比增长 44%，创历史新高
 ```
 
-### 6.4 文件写入规范（Windows 中文）
+### 6.3 文件写入规范（Windows 中文）
 
 **根因**：Write/Edit 工具在 Windows GBK 环境下会腐蚀特定中文字符（与 GBK 编码冲突的 Unicode 字符）。
 
@@ -462,4 +422,4 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 ---
 
-*版本: 1.6 | 最后更新: 2026-03-25*
+*版本: 1.7 | 最后更新: 2026-03-25*
