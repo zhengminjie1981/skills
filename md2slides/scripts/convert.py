@@ -1625,7 +1625,7 @@ def _preprocess_col_blocks(md_text: str) -> str:
         )
         return f'\n<div class="{wrap_cls}">\n{cols_html}\n</div>\n'
 
-    return re.sub(r':::col\n([\s\S]*?)\n:::', _replace, md_text)
+    return re.sub(r':::col\n([\s\S]*?)\n:::(?!col)', _replace, md_text)
 
 
 def render_slide(
@@ -2033,7 +2033,12 @@ if __name__ == "__main__":
 
     inp  = pathlib.Path(args.input)
     out  = pathlib.Path(args.output) if args.output else inp.with_suffix(".html")
-    tree = pathlib.Path(args.tree)   if args.tree   else inp.parent / "slide-tree.json"
+    if args.tree:
+        tree = pathlib.Path(args.tree)
+    else:
+        slides_dir = inp.parent / ".slides"
+        slides_dir.mkdir(exist_ok=True)
+        tree = slides_dir / f"{inp.stem}.slide-tree.json"
 
     convert(
         input_path=inp,

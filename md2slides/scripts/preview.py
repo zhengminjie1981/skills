@@ -72,7 +72,7 @@ def html_to_previews(
     html_path: pathlib.Path,
     out_dir: pathlib.Path,
     tree_path: pathlib.Path | None = None,
-    width: int = 320,
+    width: int = 640,
     wait_ms: int = 1000,
     browser_channel: str | None = None,
     temp: bool = False,
@@ -84,9 +84,15 @@ def html_to_previews(
 
     # Resolve tree file
     if tree_path is None:
-        stem_tree = html_path.parent / (html_path.stem + "-tree.json")
-        default_tree = html_path.parent / "slide-tree.json"
-        tree_path = stem_tree if stem_tree.exists() else default_tree
+        slides_dir_tree = html_path.parent / ".slides" / (html_path.stem + ".slide-tree.json")
+        stem_tree       = html_path.parent / (html_path.stem + "-tree.json")
+        default_tree    = html_path.parent / "slide-tree.json"
+        if slides_dir_tree.exists():
+            tree_path = slides_dir_tree
+        elif stem_tree.exists():
+            tree_path = stem_tree
+        else:
+            tree_path = default_tree
 
     if tree_path.exists():
         tree  = json.loads(tree_path.read_text(encoding="utf-8"))
@@ -163,8 +169,8 @@ if __name__ == "__main__":
     parser.add_argument("--input",   required=True, help="Input .html file")
     parser.add_argument("--output",  help="Output directory (default: preview/ next to HTML)")
     parser.add_argument("--tree",    help="slide-tree.json path (auto-detected if omitted)")
-    parser.add_argument("--width",   type=int, default=320,
-                        help="Thumbnail width in px (default: 320)")
+    parser.add_argument("--width",   type=int, default=640,
+                        help="Thumbnail width in px (default: 640)")
     parser.add_argument("--wait",    type=int, default=1000,
                         help="Wait ms for JS/chart rendering (default: 1000)")
     parser.add_argument("--browser", choices=["msedge", "chrome", "chromium"],

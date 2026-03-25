@@ -7,3 +7,6 @@
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# md2slides intermediate files
+.slides/
