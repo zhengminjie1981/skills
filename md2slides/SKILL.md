@@ -179,13 +179,16 @@ AI: PDF 已生成：report.pdf（8 页，1280×720px）
 #     然后: playwright install chromium
 #
 #   方案 B：MCP Playwright（已安装时）
-#     前提：先用 --inline-assets 生成内联版 HTML（避免 file:// 跨域限制）
-#     1. 用 MCP Playwright 打开 HTML 文件（file:// 直接打开）
-#     2. 逐页截图（goTo(0)...goTo(N-1)）保存为 PNG
-#     3. 用 Python Pillow 将 PNG 合并为 PDF：
+#     前提：先用 --inline-assets 生成内联版 HTML
+#     1. 启动本地服务器：
+#        python -m http.server 8080 --directory /path/to/html
+#     2. 用 MCP Playwright 打开 http://localhost:8080/xxx.html
+#     3. 逐页截图（goTo(0)...goTo(N-1)）保存为 PNG
+#     4. 用 Python Pillow 将 PNG 合并为 PDF：
 #        from PIL import Image
 #        imgs = [Image.open(f) for f in sorted(png_files)]
 #        imgs[0].save("output.pdf", save_all=True, append_images=imgs[1:])
+#     注：MCP Playwright 不支持 file:// 协议，必须通过 HTTP 服务器访问
 #
 #   方案 C：手动浏览器（不依赖任何安装）
 #     1. Chrome/Edge 打开 HTML
