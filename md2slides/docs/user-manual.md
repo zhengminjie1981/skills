@@ -1,7 +1,7 @@
 # md2slides 用户手册
 
 > 文档层级：L3 用户文档
-> 版本：v1.3 | 创建日期：2026-03-24 | 更新日期：2026-03-25
+> 版本：v1.4 | 创建日期：2026-03-24 | 更新日期：2026-03-25
 
 ---
 
@@ -40,7 +40,7 @@ md2slides 是一个 Claude Code skill，帮助你将**原始材料**（报告、
 | 版式规划 | AI 从 27 种布局模板中为每页选定最佳版式 |
 | 数据图表 | 自动识别数据并生成柱状图、折线图、饼图等 |
 | 原生表格 | 文字型数据直接渲染为带样式的 HTML 表格 |
-| 主题风格 | 5 套预设主题，支持 16:9 / 4:3 两种比例 |
+| 主题风格 | 9 套预设主题，支持 16:9 / 4:3 两种比例 |
 | 键盘翻页 | 方向键和空格键控制翻页，右下角显示页码 |
 | 精细调整 | 通过对话调整任意元素的样式，或切换版式 |
 | PDF 导出 | 自动检测 Edge/Chrome，每张幻灯片对应一页 PDF |
@@ -691,15 +691,19 @@ python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.j
 
 ## 13. 主题与样式参考
 
-### 5 套预设主题
+### 9 套预设主题
 
 | 主题名 | 外观描述 | 适用场景 | 你可以说 |
 |--------|---------|---------|---------|
-| `professional-dark` | 深蓝渐变背景，白色文字，蓝色强调 | 技术/商业汇报 | "深色主题" |
-| `professional-light` | 白色背景，深灰文字，蓝色强调 | 学术/正式场合 | "浅色主题" |
-| `creative-gradient` | 紫蓝渐变，白色文字，金色强调 | 产品介绍/创意提案 | "渐变主题" |
-| `minimal-clean` | 浅灰白背景，深灰文字，极简无装饰 | 设计简报/极简风 | "极简风格" |
-| `warm-earth` | 米黄背景，深棕文字，棕橙强调 | 人文/教育/文化 | "暖色调" |
+| `professional-dark` | 深蓝渐变背景，白色文字，蓝色强调 | 商务汇报、客户演示、季报 | "深色主题" |
+| `professional-light` | 白色背景，深灰文字，蓝色强调 | 正式文档、打印版、学术 | "浅色主题" |
+| `keynote-white` | 纯白背景，苹果字色，极简 | 产品发布、All-hands、��外演讲 | "苹果风" / "极简白" |
+| `tech-terminal` | 近黑背景，亮绿强调，等宽字体 | 工程师分享、架构评审、代码讲解 | "终端风" / "工程师主题" |
+| `celebration` | 深金背景，金黄强调，光晕装饰 | 年会、颁奖、纪念日、节日祝贺 | "庆典主题" / "年会风格" |
+| `caring-green` | 浅薄荷绿背景，沉绿强调 | 员工关怀、团建、OKR 回顾 | "关怀主题" / "绿色风格" |
+| `creative-gradient` | 紫蓝渐变，白色文字，金色强调 | AI/创新展示、创意提案 | "渐变主题" |
+| `minimal-clean` | 浅灰白背景，深灰文字，极简 | 极简风、内部分享、设计评审 | "极简风格" |
+| `warm-earth` | 米黄背景，深棕文字，衬线字体 | 企业历史、品牌故事、文化宣讲 | "暖色调" |
 
 ### 宽高比
 
@@ -913,11 +917,15 @@ python -c "from playwright.sync_api import sync_playwright; print('playwright OK
 
 | 场景 | 推荐主题 |
 |------|---------|
-| 商业/技术汇报 | `professional-dark` |
-| 学术/正式 | `professional-light` |
-| 产品/创意 | `creative-gradient` |
-| 极简/设计 | `minimal-clean` |
-| 人文/教育 | `warm-earth` |
+| 商务汇报/客户演示 | `professional-dark` |
+| 正式文档/打印/学术 | `professional-light` |
+| 产品发布/All-hands/演讲 | `keynote-white` |
+| 工程师分享/架构评审 | `tech-terminal` |
+| 年会/颁奖/节日庆典 | `celebration` |
+| 员工关怀/团建/企业文化 | `caring-green` |
+| AI 展示/创意/产品介绍 | `creative-gradient` |
+| 极简/设计评审 | `minimal-clean` |
+| 企业历史/文化宣讲 | `warm-earth` |
 
 ### 图表速查
 

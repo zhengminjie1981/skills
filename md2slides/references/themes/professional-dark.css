@@ -15,6 +15,9 @@
   --table-row-even-bg: rgba(255,255,255,0.04);
   --page-counter-color: rgba(255,255,255,0.35);
   --list-stripe-bg: rgba(74,144,217,0.06);
+  --overlay-text-color: #ffffff;
+  --overlay-mask-bg: rgba(0,0,0,0.48);
+  --highlight-text-color: #0f1f38;
 }
 
 /* 右上角大面积斜切光晕 */

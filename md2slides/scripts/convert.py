@@ -16,6 +16,10 @@ HIGHLIGHT_MAP = {
     "creative-gradient":   "atom-one-dark",
     "minimal-clean":       "default",
     "warm-earth":          "base16/solarized-light",
+    "tech-terminal":       "github-dark",
+    "keynote-white":       "github",
+    "celebration":         "atom-one-dark",
+    "caring-green":        "base16/solarized-light",
 }
 
 CONTENT_PADDING = "28px 48px 24px 48px"
@@ -245,7 +249,7 @@ LAYOUT_CSS = """\
 /* 重点高亮 */
 .slide mark.hl {
   background: var(--accent-color);
-  color: var(--slide-bg, #fff);
+  color: var(--highlight-text-color, #fff);
   padding: 0.05em 0.3em;
   border-radius: 3px;
   font-weight: 700;
@@ -313,7 +317,7 @@ LAYOUT_CSS = """\
 }
 .slide table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
 .slide th, .slide td {
-  padding: 0.45em 0.9em; border: 1px solid var(--table-border); text-align: center;
+  padding: 0.45em 0.9em; border: 1px solid var(--table-border); text-align: left;
 }
 .slide th {
   background: var(--table-header-bg); font-weight: 700;
@@ -416,13 +420,13 @@ LAYOUT_CSS = """\
 /* === 版式：image-fullbleed === */
 .slide.layout-fullbleed { background-size: cover; background-position: center; }
 .slide.layout-fullbleed::before {
-  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 0;
+  content: ""; position: absolute; inset: 0; background: var(--overlay-mask-bg, rgba(0,0,0,0.45)); z-index: 0;
 }
 .layout-fullbleed-text {
   position: relative; z-index: 1; justify-content: flex-end; padding-bottom: 1em;
 }
-.layout-fullbleed-text h1 { color: #fff !important; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
-.layout-fullbleed-text p, .layout-fullbleed-text li { color: rgba(255,255,255,0.88) !important; }
+.layout-fullbleed-text h1 { color: var(--overlay-text-color, #fff) !important; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.layout-fullbleed-text p, .layout-fullbleed-text li { color: var(--overlay-text-color, #fff) !important; opacity: 0.88; }
 
 /* === 版式：image-only === */
 .layout-image-only {
@@ -535,14 +539,14 @@ LAYOUT_CSS = """\
 /* === 版式：cover-image-bg === */
 .slide.cover-image-bg { background-size: cover; background-position: center; }
 .slide.cover-image-bg::before {
-  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 0;
+  content: ""; position: absolute; inset: 0; background: var(--overlay-mask-bg, rgba(0,0,0,0.5)); z-index: 0;
 }
 .cover-image-bg .slide-content {
   position: relative; z-index: 1;
   justify-content: center; align-items: center; text-align: center;
 }
-.cover-image-bg h1 { color: #fff !important; }
-.cover-image-bg h2 { color: rgba(255,255,255,0.8) !important; }
+.cover-image-bg h1 { color: var(--overlay-text-color, #fff) !important; }
+.cover-image-bg h2 { color: var(--overlay-text-color, #fff) !important; opacity: 0.8; }
 
 /* === 版式：cover-split === */
 .cover-split-wrap {
@@ -651,7 +655,8 @@ def _load_asset(url: str, cache_name: str) -> str | None:
         return None
 
 
-VALID_THEMES = {"professional-dark", "professional-light", "creative-gradient", "minimal-clean", "warm-earth"}
+VALID_THEMES = {"professional-dark", "professional-light", "creative-gradient", "minimal-clean", "warm-earth",
+               "tech-terminal", "keynote-white", "celebration", "caring-green"}
 
 def load_theme_css(theme: str) -> str:
     p = _base_dir() / "references" / "themes" / f"{theme}.css"
@@ -1187,6 +1192,14 @@ def _layout_statement(cfg: dict, inner_html: str, title_html: str,
 
 def _layout_text_two_column(cfg: dict, inner_html: str, title_html: str,
                              chart_html_parts: list, js_snippets: list, index: int) -> str:
+    # 内容量检查：双栏需要至少 5 条 <li>
+    li_count = len(re.findall(r'<li[^>]*>', inner_html))
+    if li_count < 5:
+        print(f"WARNING: slide-{index} uses text-two-column but only has {li_count} <li> items. "
+              f"Recommendation: 1-4 items → text-default, 5-8 items → text-two-column. "
+              f"Auto-downgrading to text-default...")
+        return _layout_text_default(cfg, inner_html, title_html, chart_html_parts, js_snippets, index)
+
     split_mode = cfg.get("splitMode", "item")
 
     if split_mode == "group":
@@ -1228,6 +1241,17 @@ def _layout_text_two_column(cfg: dict, inner_html: str, title_html: str,
 
 def _layout_text_three_column(cfg: dict, inner_html: str, title_html: str,
                                chart_html_parts: list, js_snippets: list, index: int) -> str:
+    # 内容量检查：三栏需要至少 6 条 <li>
+    li_count = len(re.findall(r'<li[^>]*>', inner_html))
+    if li_count < 6:
+        print(f"WARNING: slide-{index} uses text-three-column but only has {li_count} <li> items. "
+              f"Recommendation: <6 items → text-default, 6-8 items → text-two-column, 9+ items → text-three-column. "
+              f"Auto-downgrading to {'text-default' if li_count < 6 else 'text-two-column'}...")
+        if li_count < 6:
+            return _layout_text_default(cfg, inner_html, title_html, chart_html_parts, js_snippets, index)
+        else:
+            return _layout_text_two_column(cfg, inner_html, title_html, chart_html_parts, js_snippets, index)
+
     split_mode = cfg.get("splitMode", "item")
 
     if split_mode == "group":
@@ -1349,6 +1373,8 @@ def _layout_stat_cards(cfg: dict, inner_html: str, title_html: str,
                         chart_html_parts: list, js_snippets: list, index: int) -> str:
     stats = _extract_list_items_as_stats(inner_html)
     if not stats:
+        print(f"WARNING: slide-{index} uses stat-cards layout but no <li> items found. "
+              f"Fallback to text-default. Use Markdown list syntax: '- **数字** 说明'")
         return _layout_text_default(cfg, inner_html, title_html, chart_html_parts, js_snippets, index)
     # columns: AI sets this in layout hint based on card count and content symmetry.
     # Default: all cards in one row (len(stats) columns).
@@ -1368,6 +1394,8 @@ def _layout_card_grid(cfg: dict, inner_html: str, title_html: str,
     columns = cfg.get("columns", 3)
     items = re.findall(r'<li[^>]*>([\s\S]*?)</li>', inner_html)
     if not items:
+        print(f"WARNING: slide-{index} uses card-grid layout but no <li> items found. "
+              f"Fallback to text-default. Use Markdown list syntax: '- **标题** 正文'")
         return _layout_text_default(cfg, inner_html, title_html, chart_html_parts, js_snippets, index)
 
     cards = []
@@ -1962,6 +1990,42 @@ def merge_preserved_styles(new_tree: dict, old_tree: dict) -> tuple[dict, list[s
     return new_tree, lost_ids
 
 
+def extract_styles_from_html(html: str) -> dict[str, dict]:
+    """
+    从已有 HTML 中按 id="sN-xxx" 反向提取 inline style 属性。
+    返回 {element_id: {camelCaseProp: value}}。
+    用于将 HTML 作为唯一事实源：即使 tree.style 落后，也能自动恢复。
+    """
+    result = {}
+    pattern = r'<[^>]+\bid="(s\d+-\w+)"[^>]*\bstyle="([^"]+)"'
+    for m in re.finditer(pattern, html):
+        el_id, style_str = m.group(1), m.group(2)
+        style_dict = {}
+        for decl in style_str.split(";"):
+            decl = decl.strip()
+            if ":" not in decl:
+                continue
+            k, _, v = decl.partition(":")
+            # kebab-case → camelCase
+            k = re.sub(r'-(\w)', lambda x: x.group(1).upper(), k.strip())
+            style_dict[k] = v.strip()
+        if style_dict:
+            result[el_id] = style_dict
+    return result
+
+
+def merge_html_styles_into_tree(tree: dict, html_styles: dict[str, dict]) -> dict:
+    """
+    将从 HTML 提取的 style 合并进 tree（HTML 优先）。
+    """
+    for slide in tree.get("presentation", {}).get("slides", []):
+        for el in slide.get("elements", []):
+            el_id = el["id"]
+            if el_id in html_styles:
+                el.setdefault("style", {}).update(html_styles[el_id])
+    return tree
+
+
 def apply_element_styles(html: str, tree: dict) -> str:
     """
     将 slide-tree.json 中的 elements[].style 注入到 HTML 对应元素。
@@ -1990,16 +2054,17 @@ def apply_element_styles(html: str, tree: dict) -> str:
             def _inject(m: re.Match) -> str:
                 tag_before_id = m.group(1)
                 existing_style = m.group(2)
+                tag_after = m.group(3)  # 包含 >
                 if existing_style:
                     # 已有 style，追加（去除末尾的引号）
                     existing = existing_style[:-1]  # 去掉结尾的 "
                     if existing.endswith(";"):
-                        return f'{tag_before_id}{existing} {style_str}"'
+                        return f'{tag_before_id}{existing} {style_str}"{tag_after}'
                     else:
-                        return f'{tag_before_id}{existing}; {style_str}"'
+                        return f'{tag_before_id}{existing}; {style_str}"{tag_after}'
                 else:
                     # 无 style，新建
-                    return f'{tag_before_id} style="{style_str}"'
+                    return f'{tag_before_id} style="{style_str}"{tag_after}'
 
             # 匹配 <tag ... id="el_id" ... style="..." ...> 或 <tag ... id="el_id" ...>
             pattern = rf'(<[^>]*id="{re.escape(el_id)}"[^>]*?)( style="[^"]*")?([^>]*>)'
@@ -2075,6 +2140,14 @@ def convert(
     slides_html = "\n\n".join(all_slides_html)
     charts_js   = "\n\n".join(all_charts_js)
     new_tree    = build_element_tree(all_tree_nodes, meta)
+
+    # 从现有 HTML 反向提取 style，使 HTML 成为唯一事实源
+    # 即使 tree.style 落后（AI 只改了 HTML），也能在下次生成时自动恢复
+    if output_path.exists():
+        existing_html = output_path.read_text(encoding="utf-8")
+        html_styles = extract_styles_from_html(existing_html)
+        if html_styles:
+            new_tree = merge_html_styles_into_tree(new_tree, html_styles)
 
     if preserve_styles and tree_path.exists():
         old_tree = json.loads(tree_path.read_text(encoding="utf-8"))

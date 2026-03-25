@@ -114,7 +114,9 @@
 {{CHARTS_JS}}
 
 // === 代码高亮 ===
-document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+if (typeof hljs !== 'undefined') {
+  document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+}
 </script>
 </body>
 </html>

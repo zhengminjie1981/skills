@@ -1,7 +1,7 @@
 # md2slides 详细设计文档
 
 > 文档层级：L2 详细设计
-> 版本：v1.2 | 创建日期：2026-03-24 | 更新日期：2026-03-25
+> 版本：v1.3 | 创建日期：2026-03-24 | 更新日期：2026-03-25
 > 依赖文档：[requirements.md](requirements.md)
 
 ---
@@ -77,7 +77,7 @@ md2slides 由两个层次协同工作：
    │
    ├──▶ 浏览器直接查看
    │
-   ├──▶ [AI 样式调整] → 直接更新 .html + slide-tree.json
+   ├──▶ [AI 样式调整] → 直接更新 .html（下次生成时自动同步 slide-tree.json）
    │
    ├──▶ [AI 内容变更] → 更新 .md → [convert.py --preserve-styles]
    │                               → 覆盖 .html + slide-tree.json
@@ -196,11 +196,15 @@ if 用户未指定宽高比:
 
 if 用户未指定主题:
     根据内容类型推荐主题:
-        技术/商业 → professional-dark
-        学术/正式 → professional-light
-        产品/创意 → creative-gradient
-        设计/简报 → minimal-clean
-        人文/教育 → warm-earth
+        商务汇报/客户演示   → professional-dark
+        正式文档/打印版本   → professional-light
+        产品发布/对外演讲台 → keynote-white
+        工程师技术分享      → tech-terminal
+        年会/颁奖/纪念日    → celebration
+        员工关怀/企业文化   → caring-green
+        产品/创意/AI展示    → creative-gradient
+        极简/设计简报       → minimal-clean
+        企业历史/文化宣讲   → warm-earth
     告知推荐理由，询问是否采用
 
 if 用户说"默认" or "用默认配置":
@@ -935,129 +939,73 @@ function scalePresentation() {
   /* 页码 */
   --page-counter-color: ;
 
+  /* 覆盖层（fullbleed/cover-image-bg 使用） */
+  --overlay-text-color: ;  /* 覆盖层上的文字色 */
+  --overlay-mask-bg: ;     /* 覆盖层遮罩色 */
+
+  /* 高亮 */
+  --highlight-text-color: ; /* mark.hl 文字色（与 accent-color 对比） */
+
   /* 图表配色数组（用于 Chart.js）*/
   /* 通过 JS 变量传递，非 CSS 变量 */
 }
 ```
 
-### 5.2 五套主题定义
+### 5.2 九套主题定义
 
-#### professional-dark
+#### professional-dark（商务汇报/客户演示）
 
-```css
-/* references/themes/professional-dark.css */
-:root {
-  --slide-bg: linear-gradient(135deg, #0f1f38 0%, #1a3a5c 100%);
-  --slide-fg: #e8f0fe;
-  --slide-fg-dim: #9ab0cc;
-  --heading-color: #ffffff;
-  --heading-underline: 2px solid #4a90d9;
-  --accent-color: #4a90d9;
-  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
-  --font-heading: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-size-base: 22px;
-  --code-bg: rgba(0,0,0,0.4);
-  --table-border: rgba(74,144,217,0.3);
-  --table-header-bg: rgba(74,144,217,0.2);
-  --table-row-even-bg: rgba(255,255,255,0.04);
-  --page-counter-color: rgba(255,255,255,0.4);
-}
-/* 图表配色（JS 中读取）*/
-/* CHART_COLORS: ["#4a90d9","#50c8a8","#f5a623","#e74c3c","#9b59b6","#1abc9c"] */
-```
+- 背景：深蓝渐变，前景白色，蓝色强调
+- 装饰：左侧蓝色竖条 + 右上角光晕
+- `CHART_COLORS: ["#4a90d9","#50c8a8","#f5a623","#e74c3c","#9b59b6","#1abc9c"]`
 
-#### professional-light
+#### professional-light（正式文档/打印版）
 
-```css
-:root {
-  --slide-bg: #ffffff;
-  --slide-fg: #2c3e50;
-  --slide-fg-dim: #7f8c8d;
-  --heading-color: #1a252f;
-  --heading-underline: 2px solid #2980b9;
-  --accent-color: #2980b9;
-  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
-  --font-heading: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-size-base: 22px;
-  --code-bg: #f4f6f8;
-  --table-border: #dde3e9;
-  --table-header-bg: #eef2f7;
-  --table-row-even-bg: #f8fafc;
-  --page-counter-color: #95a5a6;
-}
-/* CHART_COLORS: ["#2980b9","#27ae60","#f39c12","#e74c3c","#8e44ad","#16a085"] */
-```
+- 背景：纯白，深灰文字，蓝色强调
+- 装饰：顶部全宽渐变色带 + 右下角点阵
+- `CHART_COLORS: ["#2980b9","#27ae60","#f39c12","#e74c3c","#8e44ad","#16a085"]`
 
-#### creative-gradient
+#### keynote-white（产品发布/All-hands/对外演讲）
 
-```css
-:root {
-  --slide-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --slide-fg: #ffffff;
-  --slide-fg-dim: rgba(255,255,255,0.75);
-  --heading-color: #ffffff;
-  --heading-underline: 2px solid rgba(255,255,255,0.4);
-  --accent-color: #ffd700;
-  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
-  --font-heading: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-size-base: 22px;
-  --code-bg: rgba(0,0,0,0.25);
-  --table-border: rgba(255,255,255,0.2);
-  --table-header-bg: rgba(255,255,255,0.15);
-  --table-row-even-bg: rgba(255,255,255,0.06);
-  --page-counter-color: rgba(255,255,255,0.5);
-}
-/* CHART_COLORS: ["#ffd700","#ff6b6b","#74b9ff","#55efc4","#fd79a8","#a29bfe"] */
-```
+- 背景：纯白，苹果字色 #1d1d1f，苹果蓝 #0071e3 强调
+- 装饰：顶部左对齐短横线（38% 宽）
+- `CHART_COLORS: ["#0071e3","#34c759","#ff9500","#ff3b30","#af52de","#5ac8fa"]`
 
-#### minimal-clean
+#### tech-terminal（工程师技术分享/架构评审）
 
-```css
-:root {
-  --slide-bg: #fafafa;
-  --slide-fg: #333333;
-  --slide-fg-dim: #888888;
-  --heading-color: #111111;
-  --heading-underline: none;
-  --accent-color: #333333;
-  --font-body: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-  --font-heading: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', monospace;
-  --font-size-base: 21px;
-  --code-bg: #f0f0f0;
-  --table-border: #e0e0e0;
-  --table-header-bg: #f0f0f0;
-  --table-row-even-bg: #f8f8f8;
-  --page-counter-color: #bbbbbb;
-}
-/* CHART_COLORS: ["#333333","#666666","#999999","#cccccc","#444444","#777777"] */
-```
+- 背景：近黑 #0d1117，亮绿 #3fb950 强调，等宽字体标题
+- 装饰：左侧绿色竖条 + 右上角半透明二进制字符水印
+- `CHART_COLORS: ["#3fb950","#58a6ff","#e3b341","#f85149","#bc8cff","#39d353"]`
 
-#### warm-earth
+#### celebration（年会/颁奖/纪念日/节日祝贺）
 
-```css
-:root {
-  --slide-bg: #fdf6e3;
-  --slide-fg: #3b2a1a;
-  --slide-fg-dim: #7a5c3e;
-  --heading-color: #2c1810;
-  --heading-underline: 2px solid #c17f3b;
-  --accent-color: #c17f3b;
-  --font-body: 'PingFang SC', 'STKaiti', 'Microsoft YaHei', serif;
-  --font-heading: 'PingFang SC', 'STSong', serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-size-base: 22px;
-  --code-bg: #ede0c4;
-  --table-border: #d4b896;
-  --table-header-bg: #e8d5b0;
-  --table-row-even-bg: #f5edd8;
-  --page-counter-color: rgba(59,42,26,0.4);
-}
-/* CHART_COLORS: ["#c17f3b","#8b5e3c","#e8a25c","#5b8c5a","#c17f3b","#7a4a2e"] */
-```
+- 背景：深金渐变，金黄 #f5c842 强调
+- 装饰：右上角大金色光晕 + 底部金色渐变横线
+- `CHART_COLORS: ["#f5c842","#e8a030","#ff6b35","#c8e85a","#f5a0c8","#80d4ff"]`
+
+#### caring-green（员工关怀/团建/企业文化）
+
+- 背景：极浅薄荷绿 #f0f7f4，沉绿 #2d7a52 强调
+- 装饰：左侧柔和绿竖线 + 右下角有机圆圈组
+- `CHART_COLORS: ["#2d7a52","#5aad7a","#8bc8a0","#1a5c3a","#4aaa70","#3d9060"]`
+
+#### creative-gradient（AI 展示/创意提案/产品介绍）
+
+- 背景：紫蓝渐变，白色文字，金色 #ffd700 强调
+- 装饰：左上大光晕 + 右下金色光晕
+- `CHART_COLORS: ["#ffd700","#ff6b6b","#74b9ff","#55efc4","#fd79a8","#a29bfe"]`
+
+#### minimal-clean（极简风/内部分享/设计评审）
+
+- 背景：浅灰白 #f7f7f5，深灰文字，极简无彩色强调
+- 装饰：顶部极细��线 + 右侧极细竖线
+- `CHART_COLORS: ["#333333","#888888","#555555","#aaaaaa","#222222","#666666"]`
+
+#### warm-earth（企业历史/品牌故事/文化宣讲）
+
+- 背景：米黄 #fdf6e3，深棕文字，棕橙 #c17f3b 强调，衬线字体
+- 装饰：顶部宽横条 + 右下角有机圆圈组
+- `CHART_COLORS: ["#c17f3b","#8b5e3c","#e8a25c","#5b8c5a","#c17f3b","#7a4a2e"]`
 
 ### 5.3 标题样式规范
 
@@ -1631,6 +1579,10 @@ md2slides/
 │   ├── themes/
 │   │   ├── professional-dark.css
 │   │   ├── professional-light.css
+│   │   ├── keynote-white.css
+│   │   ├── tech-terminal.css
+│   │   ├── celebration.css
+│   │   ├── caring-green.css
 │   │   ├── creative-gradient.css
 │   │   ├── minimal-clean.css
 │   │   └── warm-earth.css

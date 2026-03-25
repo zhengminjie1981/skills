@@ -100,6 +100,9 @@
   --table-row-even-bg: #f2f2f0;
   --page-counter-color: #aaaaaa;
   --list-stripe-bg: rgba(0,0,0,0.035);
+  --overlay-text-color: #ffffff;
+  --overlay-mask-bg: rgba(0,0,0,0.45);
+  --highlight-text-color: #f7f7f5;
 }
 
 /* 顶部极细双线（主+浅） */
@@ -250,7 +253,7 @@
 /* 重点高亮 */
 .slide mark.hl {
   background: var(--accent-color);
-  color: var(--slide-bg, #fff);
+  color: var(--highlight-text-color, #fff);
   padding: 0.05em 0.3em;
   border-radius: 3px;
   font-weight: 700;
@@ -318,7 +321,7 @@
 }
 .slide table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
 .slide th, .slide td {
-  padding: 0.45em 0.9em; border: 1px solid var(--table-border); text-align: center;
+  padding: 0.45em 0.9em; border: 1px solid var(--table-border); text-align: left;
 }
 .slide th {
   background: var(--table-header-bg); font-weight: 700;
@@ -421,13 +424,13 @@
 /* === 版式：image-fullbleed === */
 .slide.layout-fullbleed { background-size: cover; background-position: center; }
 .slide.layout-fullbleed::before {
-  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 0;
+  content: ""; position: absolute; inset: 0; background: var(--overlay-mask-bg, rgba(0,0,0,0.45)); z-index: 0;
 }
 .layout-fullbleed-text {
   position: relative; z-index: 1; justify-content: flex-end; padding-bottom: 1em;
 }
-.layout-fullbleed-text h1 { color: #fff !important; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
-.layout-fullbleed-text p, .layout-fullbleed-text li { color: rgba(255,255,255,0.88) !important; }
+.layout-fullbleed-text h1 { color: var(--overlay-text-color, #fff) !important; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.layout-fullbleed-text p, .layout-fullbleed-text li { color: var(--overlay-text-color, #fff) !important; opacity: 0.88; }
 
 /* === 版式：image-only === */
 .layout-image-only {
@@ -442,11 +445,14 @@
 
 /* === 版式：stat-cards === */
 .stat-grid {
-  flex: 1; min-height: 0; display: flex; flex-direction: row;
-  flex-wrap: wrap; gap: 2.5%; align-content: center; overflow: hidden;
+  flex: 1; min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--stat-cols, 4), 1fr);
+  gap: 1.2em 2%;
+  align-content: center;
+  overflow: hidden;
 }
 .stat-card {
-  flex: 1 1 20%; min-width: 100px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: var(--list-stripe-bg, rgba(128,128,128,0.08));
   border-radius: 10px; padding: 0.75em 0.5em;
@@ -454,6 +460,27 @@
 }
 .stat-card .s-num { font-size: 2.0em; font-weight: 800; color: var(--accent-color); line-height: 1; }
 .stat-card .s-lbl { font-size: 0.7em; opacity: 0.7; text-align: center; line-height: 1.3; }
+
+/* === 版式：card-grid === */
+.card-grid {
+  flex: 1; min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--card-cols, 3), 1fr);
+  gap: 1em;
+  align-content: center;
+  overflow: hidden;
+}
+.card-grid-item {
+  background: var(--list-stripe-bg, rgba(128,128,128,0.08));
+  border-radius: 10px; padding: 1em 1.2em;
+  border: 1px solid var(--table-border, rgba(128,128,128,0.15));
+  display: flex; flex-direction: column; gap: 0.3em;
+}
+.card-grid-item .cg-title {
+  font-weight: 700; color: var(--accent-color);
+  font-size: 0.9em; line-height: 1.2;
+}
+.card-grid-item .cg-body { font-size: 0.78em; opacity: 0.8; line-height: 1.45; }
 
 /* === 版式：timeline-vertical === */
 .tl-v-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5em; }
@@ -516,14 +543,14 @@
 /* === 版式：cover-image-bg === */
 .slide.cover-image-bg { background-size: cover; background-position: center; }
 .slide.cover-image-bg::before {
-  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 0;
+  content: ""; position: absolute; inset: 0; background: var(--overlay-mask-bg, rgba(0,0,0,0.5)); z-index: 0;
 }
 .cover-image-bg .slide-content {
   position: relative; z-index: 1;
   justify-content: center; align-items: center; text-align: center;
 }
-.cover-image-bg h1 { color: #fff !important; }
-.cover-image-bg h2 { color: rgba(255,255,255,0.8) !important; }
+.cover-image-bg h1 { color: var(--overlay-text-color, #fff) !important; }
+.cover-image-bg h2 { color: var(--overlay-text-color, #fff) !important; opacity: 0.8; }
 
 /* === 版式：cover-split === */
 .cover-split-wrap {
@@ -539,16 +566,62 @@
 }
 .cover-split-img img { max-width: 100%; max-height: 100%; object-fit: cover; border-radius: 8px; }
 
-/* === 版式：section-header === */
-.layout-section {
-  justify-content: center; padding-left: 0.5em;
+/* === 版式：section-header（居中变体，≤4个章节）=== */
+.layout-section-centered {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; height: 100%; gap: 0;
 }
+.layout-section-centered .section-eyebrow { margin-bottom: 0.5em; }
+.layout-section-centered .section-main { font-size: 3em; }
+.layout-section-centered .section-sub { max-width: 70%; }
+.section-dots {
+  display: flex; gap: 0.7em; margin-top: 1.4em; align-items: center;
+}
+.section-dot {
+  width: 0.45em; height: 0.45em; border-radius: 50%;
+  background: var(--accent-color); opacity: 0.22; transition: all 0.2s;
+}
+.section-dot.active {
+  opacity: 1; width: 0.6em; height: 0.6em;
+}
+
+/* === 版式：section-header（TOC变体，≥5个章节）=== */
+.layout-section-toc {
+  display: flex; flex-direction: row; height: 100%;
+}
+.section-toc-left {
+  flex: 0 0 52%; display: flex; flex-direction: column;
+  justify-content: center; padding-right: 6%;
+  border-right: 2px solid var(--accent-color);
+}
+.section-toc-right {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding-left: 6%;
+  gap: 0.55em; min-height: 0; overflow: hidden;
+}
+.toc-item {
+  display: flex; align-items: center; gap: 0.55em;
+  font-size: 0.82em; opacity: 0.35; line-height: 1.2;
+  transition: opacity 0.2s;
+}
+.toc-item.toc-done { opacity: 0.55; }
+.toc-item.toc-active {
+  opacity: 1; font-weight: 700; color: var(--accent-color); font-size: 0.9em;
+}
+.toc-bullet {
+  flex-shrink: 0; width: 0.42em; height: 0.42em;
+  border-radius: 50%; background: currentColor;
+}
+.toc-item.toc-active .toc-bullet { width: 0.55em; height: 0.55em; }
+
+/* shared section text */
 .section-eyebrow {
   font-size: 0.78em; letter-spacing: 0.18em; opacity: 0.45;
   text-transform: uppercase; margin-bottom: 0.3em;
 }
 .section-main { font-size: 2.6em; font-weight: 800; color: var(--accent-color); line-height: 1.1; }
-.section-sub { font-size: 0.9em; opacity: 0.65; max-width: 60%; margin-top: 0.5em; }
+.section-sub { font-size: 0.9em; opacity: 0.65; margin-top: 0.5em; }
 
 /* === 版式：table-full === */
 .layout-table-full { flex: 1; min-height: 0; overflow: auto; }
@@ -584,18 +657,18 @@
 
 <div class="slide" id="slide-3" data-index="3" data-type="content">
   <div class="slide-content density-compact">
-<h1 id="s3-title1">2024：史无前例的气候红线</h1>
-<div class="stat-grid"><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚠️ 2024年是 175年有记录以来最热的一年</span></div><div class="stat-card"><span class="s-num">1.55</span><span class="s-lbl">📈 全球平均气温较工业化前水平高出 °C，首次突破1.5°C阈值</span></div><div class="stat-card"><span class="s-num">2倍</span><span class="s-lbl">🌏 阿拉伯地区升温速度是全球平均的</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">📊 极端天气事件频率与强度双双创历史新高</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚙️ 北极海冰面积持续萎缩，2024年夏季创新低纪录</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🔒 若气温升幅超过 2°C，地球部分生态系统将面临不可逆转的</span></div></div>
+<h1 id="s3-title1" style="font-size:2.5em">2024：史无前例的气候红线</h1>
+<div class="stat-grid" style="--stat-cols:6;"><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚠️ 2024年是 175年有记录以来最热的一年</span></div><div class="stat-card"><span class="s-num">1.55</span><span class="s-lbl">📈 全球平均气温较工业化前水平高出 °C，首次突破1.5°C阈值</span></div><div class="stat-card"><span class="s-num">2倍</span><span class="s-lbl">🌏 阿拉伯地区升温速度是全球平均的</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">📊 极端天气事件频率与强度双双创历史新高</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚙️ 北极海冰面积持续萎缩，2024年夏季创新低纪录</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🔒 若气温升幅超过 2°C，地球部分生态系统将面临不可逆转的</span></div></div>
   </div>
 </div>
 
 <div class="slide" id="slide-4" data-index="4" data-type="data">
   <div class="slide-content density-spacious">
-<h1 id="s4-title1">全球气温偏差趋势（近5年）</h1>
+<h1 id="s4-title1" style="color:#4A90E2">全球气温偏差趋势（近5年）</h1>
     <div class="layout-full-chart">
 <div class="chart-panel" id="s4-chart1-panel" style="width:55%; height:70%;">
   <p class="chart-title" id="s4-chart1-title">年均气温较工业化前偏差（°C）</p>
-  <canvas id="s4-chart1"></canvas>
+  <canvas id="s4-chart1" style="width:55%; height:70%"></canvas>
 </div>
     </div>
   </div>
@@ -614,7 +687,7 @@
 </div>
 <div class="chart-panel" id="s5-chart1-panel" style="width:55%; height:66%;">
   <p class="chart-title" id="s5-chart1-title">本世纪末预计升温幅度（°C）</p>
-  <canvas id="s5-chart1"></canvas>
+  <canvas id="s5-chart1" style="width:55%; height:66%"></canvas>
 </div>
     </div>
   </div>
@@ -632,7 +705,7 @@
 <div class="slide" id="slide-7" data-index="7" data-type="content">
   <div class="slide-content density-compact">
 <h1 id="s7-title1">能源转型：唯一可行路径</h1>
-<div class="stat-grid"><div class="stat-card"><span class="s-num">3,870</span><span class="s-lbl">⚡ 2024年全球可再生能源装机容量突破  GW</span></div><div class="stat-card"><span class="s-num">90%</span><span class="s-lbl">📈 太阳能成本10年间下降 ，成全球最便宜的发电方式</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🏆 全球电动汽车保有量突破 4,000万辆，每年仍以40%速</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">💰 2024年全球清洁能源投资达 1.7万亿美元，首次超过化</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚙️ 绿氢成本持续下降，2030年有望实现平价</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🔒 煤电退出速度仍不足，是实现1.5°C目标的最大障碍</span></div></div>
+<div class="stat-grid" style="--stat-cols:6;"><div class="stat-card"><span class="s-num">3,870</span><span class="s-lbl">⚡ 2024年全球可再生能源装机容量突破  GW</span></div><div class="stat-card"><span class="s-num">90%</span><span class="s-lbl">📈 太阳能成本10年间下降 ，成全球最便宜的发电方式</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🏆 全球电动汽车保有量突破 4,000万辆，每年仍以40%速</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">💰 2024年全球清洁能源投资达 1.7万亿美元，首次超过化</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚙️ 绿氢成本持续下降，2030年有望实现平价</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🔒 煤电退出速度仍不足，是实现1.5°C目标的最大障碍</span></div></div>
   </div>
 </div>
 
@@ -745,7 +818,9 @@ setTimeout(adjustSlideSpacing, 150);
 })();
 
 // === 代码高亮 ===
-document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+if (typeof hljs !== 'undefined') {
+  document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+}
 </script>
 </body>
 </html>

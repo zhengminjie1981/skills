@@ -15,6 +15,9 @@
   --table-row-even-bg: #f5edd8;
   --page-counter-color: rgba(59,42,26,0.4);
   --list-stripe-bg: rgba(193,127,59,0.06);
+  --overlay-text-color: #fdf6e3;
+  --overlay-mask-bg: rgba(26,10,0,0.52);
+  --highlight-text-color: #fdf6e3;
 }
 
 /* 顶部装饰宽横条 */

@@ -15,6 +15,9 @@
   --table-row-even-bg: #f2f2f0;
   --page-counter-color: #aaaaaa;
   --list-stripe-bg: rgba(0,0,0,0.035);
+  --overlay-text-color: #ffffff;
+  --overlay-mask-bg: rgba(0,0,0,0.45);
+  --highlight-text-color: #f7f7f5;
 }
 
 /* 顶部极细双线（主+浅） */

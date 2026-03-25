@@ -37,29 +37,29 @@ python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.j
 # 内容变更后重新生成（保留版式和样式）
 python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.json --preserve-styles
 
-# 生成后直接用默认浏览器打开（file:// 协议，无需 HTTP 服务）
-python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.json --serve
-
 # HTML → PDF
 python scripts/html2pdf.py --input demo.html --output demo.pdf
-
-# 批量预览截图（输出到 preview/ 目录，便于快速检查所有页面）
-python scripts/preview.py --input demo.html
 ```
+
+> ⚠️ **convert.py 每次运行都会读取已有 HTML 的 style 属性合并回 tree**。
+> HTML 破损或样式错乱时，**必须删除旧 HTML 文件再重新生成**，否则坏样式会持续继承。
 
 ## 核心功能
 
-| 功能 | 说明 | 触发示例 |
-|------|------|---------|
-| 内容策划 | 分析材料，规划页面结构，生成 MD | "帮我把这份报告做成演示文稿" |
-| **版式规划** | **AI 逐页分析内容，选定最佳版式，写入 tree** | **"帮我设计版式"** |
-| HTML 生成 | MD + tree 版式 → 自包含 HTML，支持 5 套主题 | "生成 16:9 深色主题的幻灯片" |
-| 数据图表 | 自动提取数据到 CSV，用 Chart.js 渲染 | "数据用折线图展示" |
-| 样式调整 | 直接修改 HTML + 同步元素树 | "第3页标题改成黄色" |
-| 内容变更 | 更新 MD 后重新生成，保留旧版式和样式 | "第4页加一条要点" |
-| PDF 导出 | playwright 渲染，每页对应一张 PDF | "转成 PDF" |
+| 功能       | 说明                               | 触发示例               |
+| -------- | -------------------------------- | ------------------ |
+| 内容策划     | 分析材料，规划页面结构，生成 MD                | "帮我把这份报告做成演示文稿"    |
+| **版式规划** | **AI 逐页分析内容，选定最佳版式，写入 tree**     | **"帮我设计版式"**       |
+| HTML 生成  | MD + tree 版式 → 自包含 HTML，支持 9 套主题 | "生成 16:9 深色主题的幻灯片" |
+| 数据图表     | 自动提取数据到 CSV，用 Chart.js 渲染        | "数据用折线图展示"         |
+| 样式调整     | 直接修改 HTML + 同步元素树                | "第3页标题改成黄色"        |
+| 内容变更     | 更新 MD 后重新生成，保留旧版式和样式             | "第4页加一条要点"         |
+| PDF 导出   | playwright 渲染，每页对应一张 PDF         | "转成 PDF"           |
 
 ## 决策树：收到调整请求时
+
+> **阶段约束**：三阶段顺序不可逆——先定 MD → 再定 tree → 最后跑 convert。
+> **tree 复用**：slide-tree.json 一旦确认，内容变更只需修 MD + 重跑 `convert.py --preserve-styles`，**不需要重新生成 tree**。
 
 ```
 用户发出调整请求
@@ -69,258 +69,111 @@ python scripts/preview.py --input demo.html
 │   │         1. 定位 MD 中对应页面
 │   │         2. 修改 MD 文件
 │   │         3. 运行 convert.py --preserve-styles
-│   │         4. 告知变更摘要和样式保留情况
 │   │
 │   └── NO → 样式调整路径
 │             1. 读取 slide-tree.json 定位元素 ID
 │             2. 直接编辑 HTML 文件 style 属性
-│             3. 同步更新 slide-tree.json
-│             4. 告知修改了哪个 ID 和具体变更
-
-内容变更 vs 样式调整 快速判断：
-  修改文字/要点/标题文本     → 内容变更
-  增加/删除/移动页面         → 内容变更
-  修改图表类型/数据源/字段   → 内容变更
-  修改字体大小/颜色/粗细     → 样式调整
-  修改间距/对齐/背景色       → 样式调整
-  修改图表位置/宽高百分比    → 样式调整
+│             （下次重新生成时 convert.py 自动从 HTML 反向同步 tree）
 ```
 
-## 典型场景
+> **多个调整时**：样式改 HTML + 内容改 MD → 用户满意后跑 `--preserve-styles` 批量同步。详见 `references/operations.md`。
 
-### 场景 A：从原始材料生成演示文稿
-
-```
-用户: 帮我把下面这份产品季报做成演示文稿：[材料]
-
-AI 步骤：
-1. 分析材料，识别可视化数据段落
-2. 规划页面结构（封面/目录/内容页/数据页/结语）
-3. 提取数据 → 创建 data/{名称}-s{N}-{描述}.csv
-4. 生成 MD 文件，含 <!-- chart --> 块
-5. 展示摘要（页数 + 每页标题）并确认
-
-AI: 已完成内容策划，共 8 页：
-    1 封面 / 2 目录 / 3-6 内容页 / 7 数据页（含折线图）/ 8 结语
-    涉及数据文件：data/report-s7-users.csv（已创建）
-    请确认内容，或告知需要调整的地方。
-
-用户: 好的，继续
-
-AI: 请选择宽高比：A. 16:9（推荐） B. 4:3
-用户: 16:9
-
-AI: 根据商务汇报风格，建议 professional-dark 主题。是否采用？
-用户: 好的
-
-AI 执行：python scripts/convert.py --input report.md --output report.html --tree slide-tree.json
-AI: HTML 已生成：report.html（8 页）
-    [展示页面结构摘要]
-```
-
-### 场景 B：样式调整
-
-```
-用户: 把第3页的标题改成黄色，字大一点
-
-AI 步骤：
-1. 读取 slide-tree.json，定位 s3-title1
-2. 修改 HTML 中 id="s3-title1" 元素的 style：
-   color → #FFD700；fontSize 1.9em → 2.3em
-3. 同步更新 slide-tree.json 中 s3-title1 的 style 字段
-
-AI: 已更新 s3-title1：
-    fontSize: 1.9em → 2.3em
-    color: → #FFD700
-    HTML 文件已保存。
-```
-
-### 场景 C：内容变更
-
-```
-用户: 第4页加一条要点："Q4 净利润首次转正"
-
-AI 步骤：
-1. 判断为内容变更（增加列表条目）
-2. 定位 MD 第4页（<!-- Slide 4 -->）
-3. 在列表末尾添加该条目
-4. 运行 convert.py --preserve-styles
-5. 汇报结果
-
-AI: 已更新第4页列表（+1条）。重新生成完成，已有样式全部保留。
-```
-
-### 场景 D：含图表的内容变更
-
-```
-用户: 第5页的柱状图改成折线图
-
-AI 步骤：
-1. 判断为内容变更（修改图表类型）
-2. 定位 MD 第5页的 <!-- chart --> 块
-3. 修改 type: bar → type: line
-4. 运行 convert.py --preserve-styles
-5. 汇报（图表 position/width/height 样式已保留）
-```
-
-### 场景 E：PDF 导出
-
-```
-用户: 帮我转成 PDF
-
-# 主路径（需要 playwright + Chromium）
-AI 执行：python scripts/html2pdf.py --input report.html --output report.pdf
-AI: PDF 已生成：report.pdf（8 页，1280×720px）
-
-# Chromium 下载失败（中国网络）时的备用方案：
-#   方案 A：设置下载镜像（推荐）
-#     Windows: set PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright/
-#     Linux/Mac: export PLAYWRIGHT_DOWNLOAD_HOST=...
-#     然后: playwright install chromium
-#
-#   方案 B：MCP Playwright（已安装时）
-#     前提：先用 --inline-assets 生成内联版 HTML
-#     1. 启动本地服务器：
-#        python -m http.server 8080 --directory /path/to/html
-#     2. 用 MCP Playwright 打开 http://localhost:8080/xxx.html
-#     3. 逐页截图（goTo(0)...goTo(N-1)）保存为 PNG
-#     4. 用 Python Pillow 将 PNG 合并为 PDF：
-#        from PIL import Image
-#        imgs = [Image.open(f) for f in sorted(png_files)]
-#        imgs[0].save("output.pdf", save_all=True, append_images=imgs[1:])
-#     注：MCP Playwright 不支持 file:// 协议，必须通过 HTTP 服务器访问
-#
-#   方案 C：手动浏览器（不依赖任何安装）
-#     1. Chrome/Edge 打开 HTML
-#     2. Ctrl+P → 另存为 PDF → 勾选"背景图形"
-#     注意：图表可能渲染不完整
-```
-
-## 图片支持
-
-在 MD 文件中用标准 Markdown 语法引用图片，生成 HTML 时路径自动修正：
+## MD 分页规则（核心）
 
 ```markdown
-![产品截图](images/product.png)
-![数据图](../assets/chart.jpg)
+---                          ← Front Matter 开始（不是分页）
+title: 标题
+ratio: "16:9"
+theme: professional-dark
+---                          ← Front Matter 结束（不是分页）
+
+<!-- Slide 1: Cover -->      ← 页面注释（影响封面/结语样式）
+# 封面标题
+## 副标题
+
+---                          ← 分页符（独立一行，上下空行）
+
+<!-- Slide 2: 目录 -->
+# 目录
+- 第一章
 ```
 
-**路径规则**：
-- 路径相对于 MD 文件所在目录
-- 若 HTML 输出到不同目录，路径自动调整为相对 HTML 的路径
-- 不支持外部 URL 的路径修正（`http://`、`https://` 保持原样）
-- 文件不存在时打印警告，不中断转换
+**关键点**：`---` 分页；`#`/`##` 不分页；Front Matter 的 `---` 不算分页。
 
-**样式**：图片自适应幻灯片内容区宽度，保持比例缩放。
+## 常见样式 → 元素 ID
 
-## 调整操作速查
-
-### 常见样式 → 元素 ID 定位
-
-| 用户说法 | 定位方法 |
+| 用户说法 | 元素 ID |
 |---------|---------|
-| "第N页标题" | slide-tree.json 中 index=N 的 h1 元素，通常为 sN-title1 |
-| "第N页副标题" | sN-subtitle1 |
-| "第N页列表/要点" | sN-list1（多个列表则为 list1, list2...） |
-| "第N页图表" | sN-chart1 |
-| "第N页背景" | HTML 中 id="slide-N" 的 .slide 元素 |
+| "第N页标题" | `sN-title1` |
+| "第N页副标题" | `sN-subtitle1` |
+| "第N页列表" | `sN-list1` |
+| "第N页图表" | `sN-chart1` |
 
-### 颜色中文名 → CSS 值
+效率原则：读 slide-tree.json 找 ID → Grep HTML 定位行 → Edit 修改 style。
 
-参见 `references/color-map.md`
+## 常见版式陷阱
 
-### 调整幅度参考
+| 版式 | 必须条件 | 错误写法 | 详细规范 |
+|------|---------|---------|---------|
+| stat-cards / card-grid | 必须用 `<li>` 列表项 | 段落 `<p>` → 无卡片 | `references/md-writing.md §4` |
+| text-three-column | 需 3 组 `<p>`+`<ul>` 交替 | 少于 3 组 → 降级 | `references/md-writing.md §3` |
+| chart 块 | 必须显式写 xField/yField | 省略 → 图表空白 | `references/md-writing.md §2` |
 
-| 用户说法 | 推荐调整量 |
-|---------|---------|
-| "大一点" / "小一点" | ±0.3em ~ 0.5em |
-| "大很多" / "小很多" | ±0.8em ~ 1.2em |
-| "加粗" | fontWeight: bold |
-| "细一点" | fontWeight: 300 |
-| "间距大一点" | margin/padding +0.3em ~ 0.5em |
+⚠️ **Windows 中文**：禁止 Write/Edit 工具写中文 MD → GBK 乱码，必须用 Python UTF-8。
 
-### MD 结构 -> 版式行为速查
+## 校验行为规范（生成后必须执行）
 
-**版式由内容性质决定，数量只是辅助参考**：
-
-| 内容性质 | 首选版式 | 不要用 |
-|---------|---------|-------|
-| 并列/对比关系（两组） | `text-two-column` | - |
-| 并列/对比关系（三组） | `text-three-column` | - |
-| 叙事流/连续段落 | `text-default` | `text-two-column` |
-| 顺序导航（目录/步骤） | `text-default` | `text-two-column` |
-| 多维数据（指标/值/对比） | `table-full` | 列表拆两列 |
-| 独立个体（功能/场景卡片） | `card-grid` | `text-two-column` |
-| KPI 数字 | `stat-cards` | `text-default` |
-
-**多列版式的分列行为**：
-
-| MD 结构 | 版式 | 实际行为 | layout 参数 |
-|---------|------|---------|------------|
-| 单个 ul（并列内容） | `text-two-column` | 均分 li 条目到两列 | 无需额外参数 |
-| p+ul+p+ul（多组并列） | `text-two-column` | 默认只拆第一个 ul | 加 `splitMode:group` 按组分列 |
-| p+ul×3 | `text-three-column` | 同上 | 加 `splitMode:group` |
-| 3 张 KPI | `stat-cards` | 单行 | 无需额外参数 |
-| 4 张 KPI | `stat-cards` | 单行四列 | 加 `columns:2`（2×2） |
-| 5 张 KPI | `stat-cards` | 单行五列 | 加 `columns:3`（2+3） |
-| 6 张 KPI | `stat-cards` | 单行六列 | 加 `columns:3`（2×3） |
-
-> **`splitMode:group`**：要求 `p+ul` 交替结构，`##` 不触发；结构不对称时降级为 `text-default`。
-> **版式自检**：多列版式规划完成后，校验内容性质（目录/叙事流降级）、多维数据（改 table-full）和左右列字数比（< 0.5 降级）。详见 `references/workflow.md §2.4`。
-
-## 样式调整效率说明
-
-**优先用 JSON 定位，避免全量读 HTML**：
-```
-1. 读 slide-tree.json → 找到目标 ID（如 s3-title1）
-2. Grep HTML 文件中该 ID → 精确定位行号
-3. Edit 修改对应 style 属性
-4. 同步更新 tree JSON 中的 style 字段
-```
-slide-tree.json 已包含所有元素 ID、类型和位置信息，无需全量读取 546 行 HTML。
-
-## Windows 编码注意
-
-**Write/Edit 工具在 Windows GBK 环境下可能腐蚀特定中文字符**（助、幅、工等 Unicode 编码与 GBK 冲突）：
-- 建议：让用户直接用文本编辑器（VS Code）编写或修改 MD 文件，AI 负责策划内容结构
-- 必须用 AI 写文件时：只写 ASCII + emoji，避免对会被腐蚀的字符直接输出
-- 验证：`python -c "open('file.md', encoding='utf-8').read()"`
-
-## 校验行为规范
-
-### 优先路径：HTML 结构分析（无需浏览器）
-
-生成 HTML 后，优先用以下方式校验，**不启动浏览器，不截图**：
+每次生成或重新生成 HTML 后，**必须**完成以下结构校验：
 
 ```
-1. Read slide-tree.json  → 确认 totalSlides、每页 layout.template、元素 ID
-2. Grep HTML 文件        → 验证关键结构（如 class="layout-card-grid"、chart 块是否存在）
-3. 检查 convert.py 输出  → 有无 WARNING（如多组 p+ul 未分列）
+1. Read slide-tree.json  → 确认 totalSlides、每页 layout.template
+2. Grep HTML 文件        → 验证关键结构（slide 数量、图表容器、分页符）
+3. 检查 convert.py 输出  → 有无 WARNING（缺字段、布局降级、资源失败）
 ```
 
-适用范围：文字内容、版式切换、样式调整——**99% 的场景不需要视觉截图**。
-
-### 必要时：批量截图校验
-
-仅在以下情况才使用 `preview.py` 截图：
-- 图表渲染效果（Chart.js 动态渲染，HTML 结构无法预判）
-- 复杂自定义布局（rawHtml 注入后的实际效果）
-- 用户明确要求查看视觉效果
-
-**使用规范（临时目录，自动清理）**：
+**首次生成后**，额外运行截图确认视觉效果：
 
 ```bash
-# 截图到系统临时目录（不污染项目目录）
-python scripts/preview.py --input demo.html --temp
-# AI 读取截图确认效果后，立即清理
-python scripts/preview.py --input demo.html --clean
+python scripts/preview.py --input demo.html       # 默认临时目录
+python scripts/preview.py --input demo.html --clean  # 确认后清理截图
 ```
 
-### 禁止行为
+后续重新生成时，仅在图表渲染异常、复杂自定义布局、用户明确要求时才截图。
 
-- 禁止直接用 MCP Playwright 截图到项目目录或任意路径
-- 禁止在不使用 `--temp` 的情况下运行 `preview.py`（避免在项目根留下 `preview/` 垃圾目录）
-- 禁止截图后不清理临时目录
+**禁止**：截图后不清理临时文件。
+
+## 临时文件管理
+
+AI 在操作过程中产生的**临时脚本**（如单次用途的 Python 辅助脚本）用完后必须删除。
+
+**不属于临时文件**（不可删除）：
+- `slide-tree.json`：版式规划结果，内容变更时复用
+- `*.md`、`*.html`、`data/*.csv`：项目核心文件
+
+## 参考资源（按场景加载）
+
+### 我要做演示文稿
+
+| 场景 | 读取文档 |
+|------|---------|
+| 内容策划（页数、数据识别、图表类型）| `references/content-planning.md` |
+| 版式规划（27种模板选择、主题选择）| `references/layout-guide.md` |
+| 写 MD 文件（分页规则、chart块、emoji）| `references/md-writing.md` |
+| 整体工作流概览 | `references/workflow.md` |
+
+### 我要修改幻灯片
+
+| 场景 | 读取文档 |
+|------|---------|
+| 样式/内容/版式调整详细流程 | `references/operations.md` |
+| 调整请求路由、增删页面影响 | `references/workflow.md §3` |
+
+### 其他
+
+| 场景 | 读取文档 |
+|------|---------|
+| 导出 PDF（3种方案）| `references/pdf-export.md` |
+| 颜色中文名 → CSS 值 | `references/color-map.md` |
 
 ## 文件结构
 
@@ -328,31 +181,27 @@ python scripts/preview.py --input demo.html --clean
 md2slides/
 ├── SKILL.md                    ← 本文件（AI 入口）
 ├── scripts/
-│   ├── convert.py              ← MD → HTML 主脚本（含 --serve 预览服务）
-│   ├── html2pdf.py             ← HTML → PDF（自动检测 Edge/Chrome/Chromium）
-│   └── preview.py              ← 批量截图缩略图（输出到 preview/ 目录）
+│   ├── convert.py              ← MD → HTML 主脚本
+│   ├── html2pdf.py             ← HTML → PDF
+│   └── preview.py              ← 批量截图
 ├── references/                 ← AI 按需加载
-│   ├── workflow.md             ← 完整工作流决策树与版式选择原则
+│   ├── workflow.md             ← 工作流概览 + 调整路由
+│   ├── content-planning.md     ← 内容策划（页数、数据、图表类型）
+│   ├── layout-guide.md         ← 版式选择（27种模板、主题、自检）
+│   ├── operations.md           ← 调整操作（场景流程、元素ID、速查）
+│   ├── md-writing.md           ← MD编写规范（分页、chart块、emoji）
+│   ├── pdf-export.md           ← PDF导出方案
 │   ├── color-map.md            ← 中文颜色名映射
-│   ├── template.html           ← HTML 骨架模板
 │   ├── chart-defaults.json     ← 图表配色配置
 │   ├── slide-schema.json       ← 元素树 JSON Schema
-│   └── themes/                 ← 5套主题 CSS
-├── assets/                     ← 缓存的 CDN 资源（首次 --inline-assets 时下载）
+│   ├── template.html           ← HTML 骨架模板
+│   └── themes/                 ← 9套主题 CSS
+├── assets/                     ← 缓存的 CDN 资源
 ├── data/                       ← 运行时数据（CSV 文件）
 ├── examples/                   ← 示例文件
 └── docs/                       ← 开发文档（不加载）
 ```
 
-## 参考资源
-
-按需加载的详细文档：
-
-| 文档 | 内容 | 何时读取 |
-|------|------|---------|
-| `references/workflow.md` | 完整工作流决策树、版式选择原则、MD 编写规范 | 遇到复杂判断、分列异常、中文乱码时 |
-| `references/color-map.md` | 中文颜色名 → CSS 值映射表 | 用户用中文指定颜色时 |
-
 ---
 
-**版本**: 1.5 | **最后更新**: 2026-03-25
+**版本**: 2.3 | **最后更新**: 2026-03-25

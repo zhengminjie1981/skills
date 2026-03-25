@@ -3,11 +3,11 @@ preview.py - Generate thumbnail screenshots for all slides in an HTML presentati
 Requires: playwright
 
 Usage:
-    # Persistent preview (kept in preview/ next to HTML)
+    # Default: temporary preview (system temp dir, auto-clean on --clean)
     python scripts/preview.py --input demo.html
 
-    # Temporary preview (system temp dir, print paths, auto-clean on --clean)
-    python scripts/preview.py --input demo.html --temp
+    # Persistent preview (kept in preview/ next to HTML)
+    python scripts/preview.py --input demo.html --output preview/
 
     # Clean up temp previews for a given HTML file
     python scripts/preview.py --input demo.html --clean
@@ -206,5 +206,8 @@ if __name__ == "__main__":
     out  = pathlib.Path(args.output) if args.output else inp.parent / "preview"
     tree = pathlib.Path(args.tree) if args.tree else None
 
+    # Default to temp mode if no explicit output directory specified
+    use_temp = args.temp if args.output else (args.temp or True)
+
     html_to_previews(inp, out, tree_path=tree, width=args.width,
-                     wait_ms=args.wait, browser_channel=channel, temp=args.temp)
+                     wait_ms=args.wait, browser_channel=channel, temp=use_temp)

@@ -1,62 +1,47 @@
 {
   "professional-dark": {
-    "colors": [
-      "#4a90d9",
-      "#50c8a8",
-      "#f5a623",
-      "#e74c3c",
-      "#9b59b6",
-      "#1abc9c"
-    ],
+    "colors": ["#4a90d9","#50c8a8","#f5a623","#e74c3c","#9b59b6","#1abc9c"],
     "gridColor": "rgba(255,255,255,0.1)",
     "textColor": "#9ab0cc"
   },
   "professional-light": {
-    "colors": [
-      "#2980b9",
-      "#27ae60",
-      "#f39c12",
-      "#e74c3c",
-      "#8e44ad",
-      "#16a085"
-    ],
+    "colors": ["#2980b9","#27ae60","#f39c12","#e74c3c","#8e44ad","#16a085"],
     "gridColor": "rgba(0,0,0,0.08)",
     "textColor": "#7f8c8d"
   },
   "creative-gradient": {
-    "colors": [
-      "#ffd700",
-      "#ff6b6b",
-      "#74b9ff",
-      "#55efc4",
-      "#fd79a8",
-      "#a29bfe"
-    ],
+    "colors": ["#ffd700","#ff6b6b","#74b9ff","#55efc4","#fd79a8","#a29bfe"],
     "gridColor": "rgba(255,255,255,0.15)",
     "textColor": "rgba(255,255,255,0.75)"
   },
   "minimal-clean": {
-    "colors": [
-      "#333333",
-      "#888888",
-      "#555555",
-      "#aaaaaa",
-      "#222222",
-      "#666666"
-    ],
+    "colors": ["#333333","#888888","#555555","#aaaaaa","#222222","#666666"],
     "gridColor": "rgba(0,0,0,0.06)",
     "textColor": "#888888"
   },
   "warm-earth": {
-    "colors": [
-      "#c17f3b",
-      "#8b5e3c",
-      "#e8a25c",
-      "#5b8c5a",
-      "#c17f3b",
-      "#7a4a2e"
-    ],
+    "colors": ["#c17f3b","#8b5e3c","#e8a25c","#5b8c5a","#c17f3b","#7a4a2e"],
     "gridColor": "rgba(59,42,26,0.1)",
     "textColor": "#7a5c3e"
+  },
+  "tech-terminal": {
+    "colors": ["#3fb950","#58a6ff","#e3b341","#f85149","#bc8cff","#39d353"],
+    "gridColor": "rgba(63,185,80,0.12)",
+    "textColor": "#8b949e"
+  },
+  "keynote-white": {
+    "colors": ["#0071e3","#34c759","#ff9500","#ff3b30","#af52de","#5ac8fa"],
+    "gridColor": "rgba(0,0,0,0.07)",
+    "textColor": "#6e6e73"
+  },
+  "celebration": {
+    "colors": ["#f5c842","#e8a030","#ff6b35","#c8e85a","#f5a0c8","#80d4ff"],
+    "gridColor": "rgba(245,200,66,0.15)",
+    "textColor": "#c9a96e"
+  },
+  "caring-green": {
+    "colors": ["#2d7a52","#5aad7a","#8bc8a0","#1a5c3a","#4aaa70","#3d9060"],
+    "gridColor": "rgba(45,122,82,0.1)",
+    "textColor": "#4a7a5a"
   }
 }

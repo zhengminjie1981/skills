@@ -49,7 +49,10 @@
           {
             "id": "s3-title1",
             "type": "h1",
-            "content": "2024：史无前例的气候红线"
+            "content": "2024：史无前例的气候红线",
+            "style": {
+              "fontSize": "2.5em"
+            }
           },
           {
             "id": "s3-list1",
@@ -76,7 +79,10 @@
           {
             "id": "s4-title1",
             "type": "h1",
-            "content": "全球气温偏差趋势（近5年）"
+            "content": "全球气温偏差趋势（近5年）",
+            "style": {
+              "color": "#4A90E2"
+            }
           },
           {
             "id": "s4-chart1",

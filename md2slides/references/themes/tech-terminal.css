@@ -1,0 +1,47 @@
+:root {
+  --slide-bg: #0d1117;
+  --slide-fg: #c9d1d9;
+  --slide-fg-dim: #8b949e;
+  --heading-color: #e6edf3;
+  --heading-underline: 2px solid #3fb950;
+  --accent-color: #3fb950;
+  --font-body: 'JetBrains Mono', 'Fira Code', 'PingFang SC', 'Microsoft YaHei', monospace;
+  --font-heading: 'JetBrains Mono', 'Fira Code', 'PingFang SC', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-size-base: 20px;
+  --code-bg: #161b22;
+  --table-border: rgba(63,185,80,0.18);
+  --table-header-bg: rgba(63,185,80,0.12);
+  --table-row-even-bg: rgba(255,255,255,0.03);
+  --page-counter-color: rgba(139,148,158,0.6);
+  --list-stripe-bg: rgba(63,185,80,0.05);
+  --overlay-text-color: #e6edf3;
+  --overlay-mask-bg: rgba(0,0,0,0.55);
+  --highlight-text-color: #0d1117;
+}
+
+/* 左侧绿色竖条 */
+.slide::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(to bottom, #3fb950 0%, rgba(63,185,80,0.15) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* 右上角半透明等宽字符水印 */
+.slide::after {
+  content: "01 10\A11 00\A01 11";
+  white-space: pre;
+  position: absolute;
+  top: 18px; right: 24px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.62em;
+  line-height: 1.6;
+  color: rgba(63,185,80,0.12);
+  letter-spacing: 0.15em;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
