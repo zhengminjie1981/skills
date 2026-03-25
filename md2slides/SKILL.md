@@ -245,6 +245,8 @@ AI: PDF 已生成：report.pdf（8 页，1280×720px）
 | 并列/对比关系（两组） | `text-two-column` | - |
 | 并列/对比关系（三组） | `text-three-column` | - |
 | 叙事流/连续段落 | `text-default` | `text-two-column` |
+| 顺序导航（目录/步骤） | `text-default` | `text-two-column` |
+| 多维数据（指标/值/对比） | `table-full` | 列表拆两列 |
 | 独立个体（功能/场景卡片） | `card-grid` | `text-two-column` |
 | KPI 数字 | `stat-cards` | `text-default` |
 
@@ -260,8 +262,8 @@ AI: PDF 已生成：report.pdf（8 页，1280×720px）
 | 5 张 KPI | `stat-cards` | 单行五列 | 加 `columns:3`（2+3） |
 | 6 张 KPI | `stat-cards` | 单行六列 | 加 `columns:3`（2×3） |
 
-> **`:::col` 内部约束**：列内标题用 `**粗体**`，不用 `##`；`splitMode:group` 要求 `p+ul` 交替结构（`##` 不触发）。
-> **版式自检**：多列版式规划完成后，校验内容性质和左右列字数比（< 0.5 降级为单列）。详见 `references/workflow.md §2.4`。
+> **`:::col` 内部约束**：适合纯内容分列（无列标题）；需要带标题的多列改用 `card-grid`（:::col 内粗体标题在部分版式下不稳定）；`splitMode:group` 要求 `p+ul` 交替结构（`##` 不触发）。
+> **版式自检**：多列版式规划完成后，校验内容性质（目录/叙事流降级）、多维数据（改 table-full）和左右列字数比（< 0.5 降级）。详见 `references/workflow.md §2.4`。
 
 ## 样式调整效率说明
 
@@ -350,4 +352,4 @@ md2slides/
 
 ---
 
-**版本**: 1.3 | **最后更新**: 2026-03-25
+**版本**: 1.4 | **最后更新**: 2026-03-25
