@@ -189,7 +189,7 @@
     KPI 数字（3-6个）                -> stat-cards
     时间线/历程                      -> timeline-vertical / timeline-horizontal
     对比（2-3方案）                  -> compare-two / compare-three
-  ★ 多组「p+ul」结构分列：加 splitMode=group（要求 p+ul 交替，## 不触发）
+  ★ 多组「标题+列表」结构分列：加 splitMode=group（支持 h1/h2/h3 + ul/ol）
     columns 参数（stat-cards/card-grid）：
       3项 -> 默认（单行）
       4项 -> columns:2（2×2）
@@ -200,6 +200,7 @@
 数据页（data）
   单图表               -> chart-full
   图表 + 文字说明      -> chart-right / chart-left
+  ★ 图表尺寸/位置可在 layout 中覆盖（见 §2.5）
 
 结语页（outro）
   有图片               -> image-fullbleed
@@ -234,6 +235,52 @@
 检查通过后才写入 slide-tree.json。
 如有降级，在输出的版式摘要中注明原因，如：
   "第5页：内容为叙事流，降级为 text-default（原 text-two-column）"
+```
+
+### 2.5 Layout 参数速查
+
+以下参数可在 slide-tree.json 的 `layout` 字段中设置，覆盖默认行为：
+
+**图表参数**（数据页）：
+
+| 参数 | 作用 | 示例 |
+|------|------|------|
+| `chartWidth` | 图表宽度 | `"90%"` |
+| `chartHeight` | 图表高度 | `"80%"` |
+| `chartPosition` | 图表位置 | `"right"` / `"left"` / `"bottom"` / `"full"` |
+
+**标题参数**（所有页面）：
+
+| 参数 | 作用 | 示例 |
+|------|------|------|
+| `titleSize` | 标题字体大小 | `"2.5em"` / `"36px"` |
+| `titleColor` | 标题颜色 | `"#FFD700"` / `"gold"` |
+
+**自定义样式**：
+
+| 参数 | 作用 | 示例 |
+|------|------|------|
+| `customCss` | 页面级自定义 CSS | `".slide-content { padding: 2em; }"` |
+
+**分列参数**：
+
+| 参数 | 作用 | 适用版式 |
+|------|------|---------|
+| `splitMode` | 分列模式 | text-two-column, text-three-column |
+| `columns` | 卡片列数 | stat-cards, card-grid |
+
+**使用示例**：
+
+```json
+{
+  "index": 5,
+  "layout": {
+    "template": "chart-right",
+    "chartWidth": "70%",
+    "chartHeight": "75%",
+    "titleSize": "1.8em"
+  }
+}
 ```
 
 ---
@@ -373,9 +420,10 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 ### 6.1 splitMode:group 的前提
 
-`splitMode: group` 要求 MD 页面内有多组 **段落(p) + 列表(ul) 交替**结构：
+`splitMode: group` 要求 MD 页面内有多组 **标题/段落 + 列表** 交替结构：
 
 ```markdown
+# 方式1：粗体段落 + 列表（推荐）
 **组标题A**
 
 - 列表项1
@@ -385,11 +433,24 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 - 列表项3
 - 列表项4
+
+# 方式2：## 标题 + 列表（已支持）
+## 组标题A
+
+- 列表项1
+- 列表项2
+
+## 组标题B
+
+- 列表项3
+- 列表项4
 ```
 
+**支持的组合**：`<p>` + `<ul>`、`<h1>` + `<ul>`、`<h2>` + `<ul>`、`<h3>` + `<ul>`
+
 **不满足条件时自动回退**（convert.py 会打印 WARNING）：
-- 用 `## 标题` 代替段落 → `##` 不是 `<p>` 元素，分组逻辑识别不到
-- 只有一个 `ul` → 触发回退，按 item split 处理
+- 只有一个列表 → 触发回退，按 item split 处理
+- 无列表结构 → 降级为默认布局
 
 **选择原则**：
 - 内容是"多组对称列表"→ `splitMode: group`
@@ -422,4 +483,4 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 ---
 
-*版本: 1.7 | 最后更新: 2026-03-25*
+*版本: 1.8 | 最后更新: 2026-03-25*

@@ -1109,11 +1109,12 @@ def _split_list_items(ul_html: str, n: int) -> list[str]:
 
 def _split_by_groups(inner_html: str, n: int) -> tuple[str, list[str]] | tuple[None, None]:
     """
-    Split inner_html by p+ul groups into n columns (splitMode=group).
-    Each group is an optional <p> followed by a <ul>/<ol>.
+    Split inner_html by p+ul or h1/h2/h3+ul groups into n columns (splitMode=group).
+    Each group is an optional <p>/<h1>/<h2>/<h3> followed by a <ul>/<ol>.
     Returns (prefix_html, [col1, col2, ...]) or (None, None) if fewer than 2 groups found.
     """
-    group_pat = re.compile(r'(?:<p[^>]*>[\s\S]*?</p>\s*)?<[ou]l[\s\S]*?</[ou]l>')
+    # Extended to recognize h1/h2/h3 + ul/ol patterns (not just p + ul)
+    group_pat = re.compile(r'(?:<(?:p|h[1-3])[^>]*>[\s\S]*?</(?:p|h[1-3])>\s*)?<[ou]l[\s\S]*?</[ou]l>')
     matches = list(group_pat.finditer(inner_html))
     if len(matches) < 2:
         return None, None
@@ -1199,13 +1200,13 @@ def _layout_text_two_column(cfg: dict, inner_html: str, title_html: str,
             )
             body = (title_html or "") + ("\n" + prefix if prefix else "") + "\n" + cols_html
             return _wrap_slide_content(body)
-        print(f"WARNING: slide-{index} splitMode=group requested but fewer than 2 p+ul groups found; "
+        print(f"WARNING: slide-{index} splitMode=group requested but fewer than 2 groups found; "
               f"falling back to item split.")
 
-    # item split (default): warn if multiple p+ul groups will cause stacking
-    multi_groups = re.findall(r'(?:<p[^>]*>[\s\S]*?</p>\s*)?<[ou]l[\s\S]*?</[ou]l>', inner_html)
+    # item split (default): warn if multiple groups will cause stacking
+    multi_groups = re.findall(r'(?:<(?:p|h[1-3])[^>]*>[\s\S]*?</(?:p|h[1-3])>\s*)?<[ou]l[\s\S]*?</[ou]l>', inner_html)
     if len(multi_groups) >= 2:
-        print(f"WARNING: slide-{index} contains {len(multi_groups)} p+ul groups in two-column layout. "
+        print(f"WARNING: slide-{index} contains {len(multi_groups)} groups in two-column layout. "
               f"Only the first list will be split; remaining groups stack above. "
               f"Set splitMode=group in slide-tree.json to fix.")
 
@@ -1239,13 +1240,13 @@ def _layout_text_three_column(cfg: dict, inner_html: str, title_html: str,
             )
             body = (title_html or "") + ("\n" + prefix if prefix else "") + "\n" + cols_html
             return _wrap_slide_content(body)
-        print(f"WARNING: slide-{index} splitMode=group requested but fewer than 2 p+ul groups found; "
+        print(f"WARNING: slide-{index} splitMode=group requested but fewer than 2 groups found; "
               f"falling back to item split.")
 
-    # item split (default): warn if multiple p+ul groups will cause stacking
-    multi_groups = re.findall(r'(?:<p[^>]*>[\s\S]*?</p>\s*)?<[ou]l[\s\S]*?</[ou]l>', inner_html)
+    # item split (default): warn if multiple groups will cause stacking
+    multi_groups = re.findall(r'(?:<(?:p|h[1-3])[^>]*>[\s\S]*?</(?:p|h[1-3])>\s*)?<[ou]l[\s\S]*?</[ou]l>', inner_html)
     if len(multi_groups) >= 2:
-        print(f"WARNING: slide-{index} contains {len(multi_groups)} p+ul groups in three-column layout. "
+        print(f"WARNING: slide-{index} contains {len(multi_groups)} groups in three-column layout. "
               f"Only the first list will be split; remaining groups stack above. "
               f"Set splitMode=group in slide-tree.json to fix.")
 
@@ -1708,22 +1709,32 @@ def render_slide(
                 print(f"Warning: 'dataFile' in chart block is deprecated, rename to 'dataSource'.")
             csv_path  = md_dir / data_src if data_src else None
             csv_data  = read_csv(csv_path) if csv_path else []
+
+            # Override chart params from layout hint (P0: tree-first configuration)
+            cp_override = dict(cp)  # copy to avoid mutating original
+            if cfg.get("chartWidth"):
+                cp_override["width"] = cfg["chartWidth"]
+            if cfg.get("chartHeight"):
+                cp_override["height"] = cfg["chartHeight"]
+
             panel_html, js_snip = render_chart_panel(
-                chart_id, cp, csv_data, chart_defaults
+                chart_id, cp_override, csv_data, chart_defaults
             )
             chart_html_parts.append(panel_html)
             if js_snip:
                 js_snippets.append(js_snip)
 
-        position = chart_params_list[0].get("position", "full")
-        # Override position from layout hint if given
-        if template == "chart-right":  position = "right"
-        elif template == "chart-left": position = "left"
-        elif template == "chart-bottom": position = "bottom"
-        elif template == "chart-full": position = "full"
+        # Position: layout.chartPosition > template-based > MD param
+        position = cfg.get("chartPosition") or chart_params_list[0].get("position", "full")
+        if not cfg.get("chartPosition"):  # only apply template override if not explicitly set
+            if template == "chart-right":  position = "right"
+            elif template == "chart-left": position = "left"
+            elif template == "chart-bottom": position = "bottom"
+            elif template == "chart-full": position = "full"
 
         if position in ("right", "left"):
-            chart_w = chart_params_list[0].get("width", "55%")
+            # Use overridden width if available
+            chart_w = cp_override.get("width", "55%")
             try:
                 text_w_pct = 100 - float(chart_w.rstrip("%")) - 3
                 text_w = f"{text_w_pct:.0f}%"
@@ -1790,6 +1801,28 @@ def render_slide(
         density_cls = "density-compact"
     body_html = body_html.replace('class="slide-content"',
                                   f'class="slide-content {density_cls}"', 1)
+
+    # P2: Title style from layout hint (titleSize, titleColor)
+    title_styles = []
+    if cfg.get("titleSize"):
+        title_styles.append(f"font-size:{cfg['titleSize']}")
+    if cfg.get("titleColor"):
+        title_styles.append(f"color:{cfg['titleColor']}")
+    if title_styles:
+        style_str = "; ".join(title_styles)
+        # Inject style into first h1 element
+        body_html = re.sub(
+            r'(<h1[^>]*)(>)',
+            rf'\1 style="{style_str}"\2',
+            body_html,
+            count=1
+        )
+
+    # P2: Custom CSS injection (layout.customCss)
+    custom_css = cfg.get("customCss", "")
+    if custom_css:
+        # Inject as inline <style> at the end of body_html
+        body_html += f'\n<style>\n{custom_css}\n</style>'
 
     # Extra attributes for special layouts (fullbleed background)
     extra_slide_attrs = ""
@@ -1929,6 +1962,54 @@ def merge_preserved_styles(new_tree: dict, old_tree: dict) -> tuple[dict, list[s
     return new_tree, lost_ids
 
 
+def apply_element_styles(html: str, tree: dict) -> str:
+    """
+    将 slide-tree.json 中的 elements[].style 注入到 HTML 对应元素。
+    支持：已有 style 属性（追加）、无 style 属性（新建）。
+    """
+    for slide in tree.get("presentation", {}).get("slides", []):
+        for el in slide.get("elements", []):
+            if not el.get("style"):
+                continue
+            el_id = el["id"]
+            style_dict = el["style"]
+            if not style_dict:
+                continue
+
+            # 构建 style 字符串
+            style_parts = []
+            for k, v in style_dict.items():
+                # 转换 camelCase → kebab-case (fontSize → font-size)
+                css_key = re.sub(r'([A-Z])', r'-\1', k).lower()
+                style_parts.append(f"{css_key}:{v}")
+            style_str = "; ".join(style_parts)
+
+            # 匹配 id="sX-xxx" 的元素，注入 style
+            # 情况1: 已有 style="..." → 追加
+            # 情况2: 无 style → 新建
+            def _inject(m: re.Match) -> str:
+                tag_before_id = m.group(1)
+                existing_style = m.group(2)
+                if existing_style:
+                    # 已有 style，追加（去除末尾的引号）
+                    existing = existing_style[:-1]  # 去掉结尾的 "
+                    if existing.endswith(";"):
+                        return f'{tag_before_id}{existing} {style_str}"'
+                    else:
+                        return f'{tag_before_id}{existing}; {style_str}"'
+                else:
+                    # 无 style，新建
+                    return f'{tag_before_id} style="{style_str}"'
+
+            # 匹配 <tag ... id="el_id" ... style="..." ...> 或 <tag ... id="el_id" ...>
+            pattern = rf'(<[^>]*id="{re.escape(el_id)}"[^>]*?)( style="[^"]*")?([^>]*>)'
+            new_html = re.sub(pattern, _inject, html, count=1)
+            if new_html != html:
+                html = new_html
+
+    return html
+
+
 # ── Main convert function ─────────────────────────────────────────────────────
 
 def convert(
@@ -2002,6 +2083,7 @@ def convert(
             print(f"[preserve-styles] Style lost for: {', '.join(lost_ids)}")
 
     html_output = generate_html(slides_html, charts_js, meta, theme_css, slide_size, inline_assets)
+    html_output = apply_element_styles(html_output, new_tree)
 
     output_path.write_text(html_output, encoding="utf-8")
     tree_path.write_text(
