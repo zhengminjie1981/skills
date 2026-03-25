@@ -238,15 +238,30 @@ AI: PDF 已生成：report.pdf（8 页，1280×720px）
 
 ### MD 结构 -> 版式行为速查
 
+**版式由内容性质决定，数量只是辅助参考**：
+
+| 内容性质 | 首选版式 | 不要用 |
+|---------|---------|-------|
+| 并列/对比关系（两组） | `text-two-column` | - |
+| 并列/对比关系（三组） | `text-three-column` | - |
+| 叙事流/连续段落 | `text-default` | `text-two-column` |
+| 独立个体（功能/场景卡片） | `card-grid` | `text-two-column` |
+| KPI 数字 | `stat-cards` | `text-default` |
+
+**多列版式的分列行为**：
+
 | MD 结构 | 版式 | 实际行为 | layout 参数 |
 |---------|------|---------|------------|
-| 单个 ul | text-two-column | 均分 li 条目到两列 | 无需额外参数 |
-| p+ul+p+ul（多组） | text-two-column | 默认只拆第一个 ul，其余堆叠 | 加 splitMode:group 按组分列 |
-| p+ul+p+ul+p+ul | text-three-column | 同上 | 加 splitMode:group |
-| 3 张卡片 | stat-cards | 单行三列 | 无需额外参数 |
-| 4 张对称卡片 | stat-cards | 单行四列（纵向留白多） | 加 columns:2 变为 2x2 |
-| 5 张卡片 | stat-cards | 单行五列（过窄） | 加 columns:3（2+3 排列） |
-| 6 张卡片 | stat-cards | 单行六列 | 加 columns:3（2x3） |
+| 单个 ul（并列内容） | `text-two-column` | 均分 li 条目到两列 | 无需额外参数 |
+| p+ul+p+ul（多组并列） | `text-two-column` | 默认只拆第一个 ul | 加 `splitMode:group` 按组分列 |
+| p+ul×3 | `text-three-column` | 同上 | 加 `splitMode:group` |
+| 3 张 KPI | `stat-cards` | 单行 | 无需额外参数 |
+| 4 张 KPI | `stat-cards` | 单行四列 | 加 `columns:2`（2×2） |
+| 5 张 KPI | `stat-cards` | 单行五列 | 加 `columns:3`（2+3） |
+| 6 张 KPI | `stat-cards` | 单行六列 | 加 `columns:3`（2×3） |
+
+> **`:::col` 内部约束**：列内标题用 `**粗体**`，不用 `##`；`splitMode:group` 要求 `p+ul` 交替结构（`##` 不触发）。
+> **版式自检**：多列版式规划完成后，校验内容性质和左右列字数比（< 0.5 降级为单列）。详见 `references/workflow.md §2.4`。
 
 ## 样式调整效率说明
 
@@ -330,9 +345,9 @@ md2slides/
 
 | 文档 | 内容 | 何时读取 |
 |------|------|---------|
-| `references/workflow.md` | 完整工作流决策树与边界情况 | 遇到复杂调整判断时 |
+| `references/workflow.md` | 完整工作流决策树、版式选择原则、MD 编写规范 | 遇到复杂判断、分列异常、中文乱码时 |
 | `references/color-map.md` | 中文颜色名 → CSS 值映射表 | 用户用中文指定颜色时 |
 
 ---
 
-**版本**: 1.1 | **最后更新**: 2026-03-24
+**版本**: 1.3 | **最后更新**: 2026-03-25

@@ -139,47 +139,93 @@
 
 ### 2.3 版式选择原则
 
+**第一步：判断内容性质（优先于数量）**
+
+| 内容性质 | 判断标准 | 合理版式 | 不合理版式 |
+|---------|---------|---------|----------|
+| 并列关系 | 两组内容左右对等、可互换顺序 | `text-two-column` / `text-three-column` | `text-default` |
+| 叙事流 | 连贯段落，有前后逻辑，不可拆分 | `text-default` | `text-two-column` |
+| 独立个体 | 每条是完整单元（功能、特性、场景） | `card-grid` | `text-two-column` |
+| KPI 数字 | 数字是主角，说明是辅助 | `stat-cards` | `text-default` |
+| 主体+注解 | 一个核心图表 + 少量文字说明 | `chart-right` / `chart-left` | 平等两列 |
+
+**第二步：数量作为辅助参考（内容性质已确定为并列时）**
+
+```
+并列内容 + 2 组 -> text-two-column
+并列内容 + 3 组 -> text-three-column
+并列内容 + 4-6 项独立单元 -> card-grid（columns:2 或 3）
+```
+
+**按页面类型的完整路径**：
+
 ```
 封面（cover）
-  有图片 -> cover-image-bg → cover-split
+  有图片 -> cover-image-bg / cover-split
   无图片 -> text-hero
 
 目录（toc）
   -> text-default（标题 + 列表）
 
 章节页（section）
-  -> section-header（统一使用，脚本自动按章节数切换子变体）
-  ★ ≤4 个章节：居中大标题 + 底部进度点（简洁，章节少不需要导航）
-  ★ ≥5 个章节：左侧标题 + 右侧 TOC 列表，当前章节高亮（帮助听众定位）
-  注：章节数由脚本自动统计所有 section-header 页面，无需手动配置
+  -> section-header（脚本自动按章节数切换子变体）
+  ★ ≤4 个章节：居中大标题 + 底部进度点
+  ★ ≥5 个章节：左侧标题 + 右侧 TOC 列表，当前章节高亮
+  注：章节数由脚本自动统计，无需手动配置
 
 内容页（content）
   有图片 + 4条以内要点 -> image-right / image-left
   有图片 + 6条要点     -> image-right（imageWidth: 35%）
-  无图片 + 4条以内要点 -> text-default
-  无图片 + 5-8条要点   -> text-two-column
-  无图片 + 9条以上     -> text-three-column
-  ★ 多组「小标题+列表」（p+ul 重复）-> 加 splitMode=group 按组分列
-    或在 MD 中使用 :::col...:::col...:::  显式分列（推荐，无需配置 tree）
-  核心数字/KPI         -> stat-cards
-    columns 参数（AI 按内容判断）：
-      3张对称  -> columns:3（单行，默认）
-      4张对称  -> columns:2（2x2 网格）
-      5张      -> columns:3（2+3 排列）
-      6张      -> columns:3（2x3 网格）
-      内容不对称或差异大 -> columns 保持单行，让内容自然撑开
-  特性/功能/场景卡片   -> card-grid（列表项各为一张卡，columns 控制列数）
-  时间线/历程          -> timeline-vertical / timeline-horizontal
-  复杂自定义结构       -> 在 tree layout 中设置 rawHtml 字段直接注入 HTML
+  无图片，内容性质优先：
+    叙事流（连续段落/有前后逻辑）    -> text-default（无论多少条）
+    并列关系（2组）                  -> text-two-column
+    并列关系（3组）                  -> text-three-column
+    独立个体（4-6项，每项是完整单元）-> card-grid
+    KPI 数字（3-6个）                -> stat-cards
+    时间线/历程                      -> timeline-vertical / timeline-horizontal
+    对比（2-3方案）                  -> compare-two / compare-three
+  ★ 多组「p+ul」结构分列：
+    用 :::col 显式分列（推荐）
+    或加 splitMode=group（要求 p+ul 交替，## 不触发）
+    columns 参数（stat-cards/card-grid）：
+      3项 -> 默认（单行）
+      4项 -> columns:2（2×2）
+      5项 -> columns:3（2+3）
+      6项 -> columns:3（2×3）
+  复杂自定义结构 -> tree layout 中设置 rawHtml 字段
 
 数据页（data）
   单图表               -> chart-full
   图表 + 文字说明      -> chart-right / chart-left
 
 结语页（outro）
-  有图片               -> image-fullbleed（最强视觉冲击）
+  有图片               -> image-fullbleed
   有引用语             -> quote-center
   无图片               -> text-hero
+```
+
+### 2.4 版式规划自检（阶段二完成后执行）
+
+每页版式选定后，对使用多列版式的页面执行以下检查：
+
+```
+对每个 text-two-column / text-three-column 页面：
+
+1. 内容性质检查
+   Q：两列内容是「并列/对比关系」吗？可以互换顺序而不破坏语义吗？
+   如果否 → 降级为 text-default
+
+2. 列均衡检查
+   Q：估算左右两列字数比，是否 ≥ 0.5（即短列不少于长列的一半）？
+   如果否 → 降级为 text-default，或改用 :::col 手动调整分列点
+
+3. 条目数量检查（card-grid 适用性）
+   Q：列表项是否为独立完整单元（每条都能单独成立）？
+   如果是 → 优先 card-grid，而非强行分列
+
+检查通过后才写入 slide-tree.json。
+如有降级，在输出的版式摘要中注明原因，如：
+  "第5页：内容为叙事流，降级为 text-default（原 text-two-column）"
 ```
 
 ---
@@ -315,4 +361,81 @@ type 枚举： title / subtitle / h3 / list / p / img / code / table / quote / c
 
 ---
 
-*版本: 1.3 | 最后更新: 2026-03-25*
+## 6. MD 内容编写规范
+
+### 6.1 分列内容（:::col）
+
+`:::col` 语法用于显式两列或三列分栏，是最可控的分列方式。
+
+**格式要求**：
+
+```markdown
+:::col
+**左列标题**
+
+内容段落或列表。
+:::col
+**右列标题**
+
+- 要点1
+- 要点2
+:::
+```
+
+**约束**：
+- 列内标题必须用 `**粗体**`，不能用 `##` / `###`（标题元素会破坏幻灯片视觉层级）
+- 每列内容用段落或列表，不用 Markdown 标题
+- 两列用一个 `:::col` 分隔符，三列用两个 `:::col` 分隔符
+
+### 6.2 splitMode:group 的前提
+
+`splitMode: group` 要求 MD 页面内有多组 **段落(p) + 列表(ul) 交替**结构：
+
+```markdown
+**组标题A**
+
+- 列表项1
+- 列表项2
+
+**组标题B**
+
+- 列表项3
+- 列表项4
+```
+
+**不满足条件时自动回退**（convert.py 会打印 WARNING）：
+- 用 `## 标题` 代替段落 → `##` 不是 `<p>` 元素，分组逻辑识别不到
+- 只有一个 `ul` → 触发回退，按 item split 处理
+
+**选择原则**：
+- 内容是"多组对称列表"→ `splitMode: group`
+- 内容是"段落+段落"或结构不对称 → `:::col` 显式分列（推荐）
+
+### 6.3 stat-cards 内容规范
+
+- 每张卡片内容必须极简：**加粗数字/标题 + 不超过一行说明**
+- 6 张卡片时优先考虑拆为两页，而非塞入一页
+- `columns` 参数由 AI 在版式规划阶段按卡片数量自动设置（见 §2.3）
+
+```markdown
+# 正确（每卡极简）
+- **35万** 月活用户
+- **14.5%** 付费转化率
+- **58分** NPS 评分
+
+# 错误（内容过长，溢出风险）
+- **月活用户** 本季度月活达 35 万，同比增长 44%，创历史新高
+```
+
+### 6.4 文件写入规范（Windows 中文）
+
+**根因**：Write/Edit 工具在 Windows GBK 环境下会腐蚀特定中文字符（与 GBK 编码冲突的 Unicode 字符）。
+
+**规范**：
+- 含中文的 MD/JSON 文件用 Python `open(..., 'w', encoding='utf-8')` 写入
+- 避免用 Write/Edit 工具直接写大段中文内容
+- 验证：`python -c "import re; t=open('f.md',encoding='utf-8').read(); print(len(re.findall(chr(0xfffd),t)), '个乱码')"`
+
+---
+
+*版本: 1.5 | 最后更新: 2026-03-25*
