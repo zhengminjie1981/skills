@@ -47,7 +47,7 @@ AI: [加载 dev-workflow skill] 在修改代码前，请先确认相关文档...
 - **零配置启动** - 无需配置文件即可启动，通过 AI 工具自动设置
 - **自动安装依赖** - 自动检测并安装缺失的数据库驱动
 - **智能诊断** - 系统能力检测和连接测试
-- 支持 MySQL、PostgreSQL 和 SQLite
+- 支持 MySQL、PostgreSQL 和 SQLite（MySQL 兼容 AnalyticDB 等云数据库变体）
 - 安全的只读查询，带 SQL 注入防护
 
 **主要工具：**
@@ -57,6 +57,10 @@ AI: [加载 dev-workflow skill] 在修改代码前，请先确认相关文档...
 - `list_tables` - 列出数据库中所有表
 - `describe_table` - 查看表结构和 schema
 - `execute_query` - 执行 SELECT 查询
+
+**命令行工具区分：**
+- `python scripts/db-mcp.py check` — 检查 MCP 服务是否注册（≠ 数据库连接状态）
+- `python scripts/db-mcp.py validate` — 验证数据库连接配置
 
 **快速开始：**
 ```
@@ -142,6 +146,20 @@ AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
 - **5 套主题**：professional-dark/light、creative-gradient、minimal-clean、warm-earth
 - **精细调整**：通过对话调整任意页面版式、样式；内容变更后保留已有版式
 - **PDF 导出**：每张幻灯片对应一页 PDF，支持离线资源内联
+
+**主题速查：**
+
+| 主题 | 适用场景 |
+|------|---------|
+| `professional-dark` | 商务汇报、客户演示 |
+| `professional-light` | 正式文档、打印版 |
+| `keynote-white` | 产品发布、All-hands、对外演讲 |
+| `tech-terminal` | 工程师分享、架构评审 |
+| `celebration` | 年会、颁奖、节日庆典 |
+| `caring-green` | 员工关怀、团建、企业文化 |
+| `creative-gradient` | AI 展示、创意提案 |
+| `minimal-clean` | 极简风、设计评审 |
+| `warm-earth` | 企业历史、文化宣讲 |
 
 **触发场景：**
 - 生成演示文稿：做成演示文稿、做成幻灯片、做成 PPT、转成 HTML、生成 slides
@@ -230,12 +248,17 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 - `template-filler/SKILL.md` - 对话式模板文档填写
 - `md2slides/SKILL.md` - Markdown 转演示文稿
 
-## 斜杠指令列表
+## 技能调用格式
 
-每个 skill 的 `SKILL.md` 同时支持自动触发和显式 `/skill-name [参数]` 调用：
+每个 skill 都支持两种触发方式：
 
-| Skill | 指令 | 说明 |
-|-------|------|------|
+1. **自动触发**：通过描述中的触发场景关键词，AI 自动识别并加载相应技能
+2. **显式调用**：使用 `/skill-name [参数]` 格式直接调用
+
+**推荐调用格式**（使用空格分隔参数）：
+
+| Skill | 调用示例 | 说明 |
+|-------|---------|------|
 | dev-workflow | `/dev-workflow new <模块名>` | 启动新模块开发 |
 | | `/dev-workflow change <模块名>` | 修改现有模块 |
 | | `/dev-workflow check [模块名]` | 验证文档一致性 |
@@ -250,6 +273,8 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 | template-filler | `/template-filler <模板路径>` | 对话式填写模板 |
 | md2slides | `/md2slides convert <文件>` | MD 转 HTML 演示文稿 |
 | | `/md2slides pdf <文件>` | HTML 导出 PDF |
+
+**注意**：以上格式使用空格分隔参数，符合 Claude Code 最新规范。AI 会根据上下文理解参数含义。
 
 ## 贡献
 
