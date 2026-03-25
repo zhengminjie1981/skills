@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>气候变化关键数据 2024</title>
+  <style>
+    /* === 基础重置 === */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { overflow: hidden; background: #000; }
+
+    /* === 幻灯片容器 === */
+    #presentation {
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      transform-origin: center center;
+    }
+
+    /* === 单张幻灯片 === */
+    .slide {
+      position: absolute;
+      width: 1280px;
+      height: 720px;
+      display: none;
+      flex-direction: column;
+      padding: 28px 48px 24px 48px;
+      background: var(--slide-bg);
+      color: var(--slide-fg);
+      font-family: var(--font-body);
+      font-size: var(--font-size-base);
+    }
+    .slide.active { display: flex; }
+
+    /* === 页码 === */
+    #page-counter {
+      position: fixed;
+      bottom: 18px; right: 24px;
+      font-size: 0.75em;
+      color: var(--page-counter-color, rgba(255,255,255,0.5));
+      font-family: var(--font-mono, monospace);
+      z-index: 100;
+      user-select: none;
+    }
+
+    /* === 进度条 === */
+    #progress-bar {
+      position: fixed; bottom: 0; left: 0;
+      height: 3px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+      z-index: 99;
+    }
+
+    /* === 标题样式 === */
+    .slide h1 {
+      font-family: var(--font-heading);
+      font-size: 2.0em;
+      font-weight: 800;
+      color: var(--heading-color);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      border-bottom: var(--heading-underline);
+      padding-bottom: 0.3em;
+      margin-bottom: 0.4em;
+    }
+    .slide h2 {
+      font-family: var(--font-heading);
+      font-size: 1.05em;
+      font-style: italic;
+      color: var(--slide-fg-dim);
+      font-weight: 400;
+      margin-top: -0.2em;
+      opacity: 0.8;
+      letter-spacing: 0.02em;
+    }
+    .slide h3 {
+      font-size: 0.95em;
+      color: var(--heading-color);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+
+    /* === 主题样式 === */
+    :root {
+  --slide-bg: #f7f7f5;
+  --slide-fg: #2b2b2b;
+  --slide-fg-dim: #777777;
+  --heading-color: #111111;
+  --heading-underline: 2px solid #222222;
+  --accent-color: #111111;
+  --font-body: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  --font-heading: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+  --font-size-base: 21px;
+  --code-bg: #eeeeec;
+  --table-border: #d8d8d6;
+  --table-header-bg: #e8e8e6;
+  --table-row-even-bg: #f2f2f0;
+  --page-counter-color: #aaaaaa;
+  --list-stripe-bg: rgba(0,0,0,0.035);
+}
+
+/* 顶部极细双线（主+浅） */
+.slide::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  background: linear-gradient(to right, #111 0%, #111 40%, #bbb 40%, #bbb 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* 右侧极细竖线 */
+.slide::after {
+  content: "";
+  position: absolute;
+  right: 0; top: 15%;
+  width: 1px; height: 70%;
+  background: linear-gradient(to bottom, transparent, #cccccc 30%, #cccccc 70%, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+    /* === 布局系统 === */
+    /* === 内容区基础 === */
+.slide-content {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  padding: 0.15em 0; gap: 0.45em; overflow: hidden;
+}
+.slide h1 { margin-bottom: 0.25em; }
+
+/* === 布局系统 (min-height:0 防止 flex 子元素高度膨胀) === */
+.layout-split {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  gap: 3%; align-items: stretch; overflow: hidden;
+}
+.text-panel  { min-height: 0; display: flex; flex-direction: column; gap: 0.4em; overflow: hidden; }
+.chart-panel { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+.chart-panel canvas { flex: 1; min-height: 0; width: 100%; }
+.chart-title {
+  font-size: 0.72em; text-align: center; opacity: 0.65;
+  margin-bottom: 0.25em; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.layout-full-chart {
+  flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden;
+}
+.layout-full-chart canvas { flex: 1; min-height: 0; width: 92%; max-height: 80%; }
+.layout-stacked { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.5em; overflow: hidden; }
+
+/* === 内容密度自适应 === */
+.density-spacious { gap: 0.9em !important; }
+.density-spacious li { line-height: 1.95; }
+.density-normal   { gap: 0.42em; }
+.density-normal   li { line-height: 1.75; }
+.density-compact  { gap: 0.15em !important; font-size: 0.9em; }
+.density-compact  li { line-height: 1.45; }
+
+/* === 封面页 === */
+.slide[data-type="cover"] .slide-content {
+  justify-content: center; align-items: center; text-align: center; gap: 0;
+}
+.slide[data-type="cover"] h1 {
+  font-size: 3.0em;
+  font-weight: 900;
+  border-bottom: none;
+  margin-bottom: 0.18em;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.slide[data-type="cover"] h2 {
+  font-size: 1.15em;
+  font-style: normal;
+  opacity: 0.65;
+  margin-top: 0.5em;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+}
+/* 封面底部渐变装饰线 */
+.slide[data-type="cover"]::after {
+  content: "";
+  position: absolute;
+  left: 48px; bottom: 44px;
+  width: 96px; height: 4px;
+  background: linear-gradient(to right, var(--accent-color), transparent);
+  border-radius: 2px;
+}
+
+/* === 结语页 === */
+.slide[data-type="outro"] .slide-content {
+  justify-content: center; align-items: center; text-align: center;
+}
+.slide[data-type="outro"] h1 {
+  font-size: 2.6em;
+  border-bottom: none;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.slide[data-type="outro"] p {
+  font-size: 0.9em; opacity: 0.65; margin-top: 0.6em; letter-spacing: 0.08em;
+}
+
+/* === 内容页：列表增强 === */
+.slide[data-type="content"] ul,
+.slide[data-type="content"] ol,
+.slide[data-type="data"]    ul,
+.slide[data-type="data"]    ol {
+  list-style: none;
+  padding-left: 0;
+}
+.slide[data-type="content"] li,
+.slide[data-type="data"]    li {
+  padding: 0.22em 0.5em 0.22em 1.5em;
+  position: relative;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+/* 交替行淡底色 */
+.slide[data-type="content"] li:nth-child(even),
+.slide[data-type="data"]    li:nth-child(even) {
+  background: var(--list-stripe-bg, rgba(128,128,128,0.05));
+}
+/* 左侧装饰竖线 (4px, accent色) */
+.slide[data-type="content"] li::before,
+.slide[data-type="data"]    li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.22em; bottom: 0.22em;
+  width: 3px;
+  background: var(--accent-color);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+/* 右侧 emoji 图标包装 */
+.slide li .li-icon {
+  display: inline-block;
+  margin-right: 0.35em;
+  font-style: normal;
+}
+/* 关键数字放大 */
+.slide .key-number {
+  font-size: 1.35em;
+  font-weight: 800;
+  color: var(--accent-color);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+/* 重点高亮 */
+.slide mark.hl {
+  background: var(--accent-color);
+  color: var(--slide-bg, #fff);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* === 目录页：编号圆圈 === */
+.slide[data-type="toc"] ul,
+.slide[data-type="toc"] ol {
+  list-style: none; padding-left: 0; counter-reset: toc-counter;
+}
+.slide[data-type="toc"] li {
+  display: flex; align-items: center;
+  padding: 0.3em 0;
+  border-bottom: 1px solid var(--table-border, rgba(128,128,128,0.15));
+  font-size: 1.02em;
+  counter-increment: toc-counter;
+}
+.slide[data-type="toc"] li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  flex-shrink: 0;
+  width: 2em; height: 2em;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 0.72em;
+  font-weight: 700;
+  margin-right: 0.7em;
+  opacity: 0.88;
+}
+
+/* === blockquote：左色块引用 === */
+.slide blockquote {
+  border-left: 4px solid var(--accent-color);
+  background: var(--list-stripe-bg, rgba(128,128,128,0.07));
+  padding: 0.5em 0.9em;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  opacity: 0.9;
+  margin: 0.2em 0;
+}
+.slide blockquote p { margin: 0; }
+
+/* === hr：渐变装饰线 === */
+.slide hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(to right, var(--accent-color), transparent);
+  margin: 0.5em 0;
+  border-radius: 1px;
+}
+
+/* === strong/em === */
+.slide strong { color: var(--accent-color); font-weight: 700; }
+.slide em { opacity: 0.85; }
+
+/* === 通用元素 === */
+.slide ul, .slide ol { padding-left: 1.2em; line-height: 1.75; }
+.slide li { margin-bottom: 0.15em; }
+.slide pre {
+  border-radius: 8px; padding: 0.75em 1em; font-size: 0.78em;
+  overflow-x: auto; background: var(--code-bg);
+  border: 1px solid var(--table-border, rgba(128,128,128,0.15));
+}
+.slide table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+.slide th, .slide td {
+  padding: 0.45em 0.9em; border: 1px solid var(--table-border); text-align: center;
+}
+.slide th {
+  background: var(--table-header-bg); font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; font-size: 0.88em;
+}
+.slide tr:nth-child(even) { background: var(--table-row-even-bg); }
+.slide .data-table-wrap { flex: 1; overflow: auto; }
+
+/* === 图片 === */
+.slide-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  flex-shrink: 1;
+}
+
+/* === 版式：text-hero（大字留白） === */
+.layout-hero { justify-content: center; }
+.layout-hero > h1 { font-size: 2.6em; }
+.layout-hero > ul, .layout-hero > ol { font-size: 1.15em; }
+.layout-hero > p { font-size: 1.1em; opacity: 0.85; }
+
+/* === 版式：text-two-column === */
+.col-wrap {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  gap: 3%; overflow: hidden;
+}
+.col-wrap .col {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  gap: 0.4em; overflow: hidden;
+}
+
+/* === 版式：text-three-column === */
+.col-wrap-3 {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  gap: 2%; overflow: hidden;
+}
+.col-wrap-3 .col {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  gap: 0.35em; overflow: hidden;
+}
+.col-wrap-3 .col h3 {
+  color: var(--accent-color); font-size: 0.9em; letter-spacing: 0.04em;
+  padding-bottom: 0.25em; border-bottom: 2px solid var(--accent-color);
+  margin-bottom: 0.3em;
+}
+
+/* === 版式：statement（单句声明） === */
+.layout-statement { justify-content: center; align-items: center; text-align: center; }
+.layout-statement .stmt-text {
+  font-size: 2.0em; font-weight: 700; line-height: 1.4;
+  max-width: 80%; color: var(--accent-color);
+}
+.layout-statement .stmt-sub { font-size: 0.9em; opacity: 0.65; margin-top: 0.6em; }
+
+/* === 版式：quote-center === */
+.layout-quote-center { justify-content: center; align-items: center; text-align: center; }
+.layout-quote-center blockquote {
+  font-size: 1.45em; border-left: none; background: none;
+  font-style: italic; max-width: 78%;
+  border-top: 3px solid var(--accent-color);
+  border-bottom: 3px solid var(--accent-color);
+  padding: 0.65em 1.2em; opacity: 1;
+}
+
+/* === 版式：quote-side === */
+.layout-quote-side {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  gap: 4%; align-items: center; overflow: hidden;
+}
+.layout-quote-side .quote-zone { flex: 0 0 50%; min-height: 0; }
+.layout-quote-side .quote-zone blockquote { font-size: 1.2em; }
+.layout-quote-side .text-zone {
+  flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.4em;
+}
+
+/* === 版式：image-right / image-left === */
+.image-split {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  gap: 3%; align-items: center; overflow: hidden;
+}
+.image-split .img-panel {
+  min-height: 0; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+}
+.image-split .img-panel img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.image-split .text-zone { min-height: 0; display: flex; flex-direction: column; gap: 0.4em; overflow: hidden; flex: 1; }
+
+/* === 版式：image-top / image-bottom === */
+.image-stack {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  gap: 3%; overflow: hidden;
+}
+.image-stack .img-zone {
+  display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+}
+.image-stack .img-zone img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.image-stack .text-zone { min-height: 0; display: flex; flex-direction: column; gap: 0.4em; overflow: hidden; flex: 1; }
+
+/* === 版式：image-fullbleed === */
+.slide.layout-fullbleed { background-size: cover; background-position: center; }
+.slide.layout-fullbleed::before {
+  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 0;
+}
+.layout-fullbleed-text {
+  position: relative; z-index: 1; justify-content: flex-end; padding-bottom: 1em;
+}
+.layout-fullbleed-text h1 { color: #fff !important; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.layout-fullbleed-text p, .layout-fullbleed-text li { color: rgba(255,255,255,0.88) !important; }
+
+/* === 版式：image-only === */
+.layout-image-only {
+  flex: 1; min-height: 0; position: relative; display: flex;
+  align-items: center; justify-content: center; overflow: hidden;
+}
+.layout-image-only img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.layout-image-only .img-caption {
+  position: absolute; bottom: 0.6em; left: 0; right: 0;
+  text-align: center; font-size: 0.72em; opacity: 0.65;
+}
+
+/* === 版式：stat-cards === */
+.stat-grid {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  flex-wrap: wrap; gap: 2.5%; align-content: center; overflow: hidden;
+}
+.stat-card {
+  flex: 1 1 20%; min-width: 100px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--list-stripe-bg, rgba(128,128,128,0.08));
+  border-radius: 10px; padding: 0.75em 0.5em;
+  border: 1px solid var(--table-border, rgba(128,128,128,0.15)); gap: 0.25em;
+}
+.stat-card .s-num { font-size: 2.0em; font-weight: 800; color: var(--accent-color); line-height: 1; }
+.stat-card .s-lbl { font-size: 0.7em; opacity: 0.7; text-align: center; line-height: 1.3; }
+
+/* === 版式：timeline-vertical === */
+.tl-v-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5em; }
+.tl-v-list > li {
+  display: flex; align-items: flex-start; gap: 0.8em;
+  padding: 0 !important; background: none !important;
+}
+.tl-v-list > li::before { display: none !important; }
+.tl-v-num {
+  flex-shrink: 0; width: 2em; height: 2em;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--accent-color);
+  color: #fff; font-size: 0.78em; font-weight: 700;
+}
+.tl-v-content { flex: 1; padding-top: 0.25em; }
+
+/* === 版式：timeline-horizontal === */
+.tl-h-wrap { flex: 1; min-height: 0; display: flex; align-items: center; overflow: hidden; }
+.tl-h-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: row; width: 100%; align-items: flex-start;
+}
+.tl-h-list > li {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative; padding: 0 0.4em !important; background: none !important;
+}
+.tl-h-list > li::before { display: none !important; }
+.tl-h-list > li::after {
+  content: ""; position: absolute; top: 0.9em; left: 50%; right: -50%;
+  height: 2px; background: var(--accent-color); opacity: 0.35; z-index: 0;
+}
+.tl-h-list > li:last-child::after { display: none; }
+.tl-h-dot {
+  width: 1.8em; height: 1.8em; border-radius: 50%;
+  background: var(--accent-color); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72em; font-weight: 700; margin-bottom: 0.4em;
+  position: relative; z-index: 1; flex-shrink: 0;
+}
+.tl-h-text { font-size: 0.75em; text-align: center; line-height: 1.35; }
+
+/* === 版式：compare-two / compare-three === */
+.compare-wrap {
+  flex: 1; min-height: 0; display: flex; flex-direction: row;
+  overflow: hidden;
+}
+.compare-col {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  padding: 0 1.2em; overflow: hidden; gap: 0.4em;
+}
+.compare-col + .compare-col {
+  border-left: 1px solid var(--table-border, rgba(128,128,128,0.2));
+}
+.compare-col > h3 {
+  color: var(--accent-color); font-size: 0.9em; text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 0.3em; padding-bottom: 0.25em;
+  border-bottom: 2px solid var(--accent-color);
+}
+
+/* === 版式：cover-image-bg === */
+.slide.cover-image-bg { background-size: cover; background-position: center; }
+.slide.cover-image-bg::before {
+  content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 0;
+}
+.cover-image-bg .slide-content {
+  position: relative; z-index: 1;
+  justify-content: center; align-items: center; text-align: center;
+}
+.cover-image-bg h1 { color: #fff !important; }
+.cover-image-bg h2 { color: rgba(255,255,255,0.8) !important; }
+
+/* === 版式：cover-split === */
+.cover-split-wrap {
+  flex: 1; min-height: 0; display: flex; flex-direction: row; overflow: hidden;
+}
+.cover-split-text {
+  flex: 0 0 55%; display: flex; flex-direction: column;
+  justify-content: center; padding-right: 4%; overflow: hidden;
+}
+.cover-split-img {
+  flex: 1; min-height: 0; display: flex; align-items: center;
+  justify-content: center; overflow: hidden;
+}
+.cover-split-img img { max-width: 100%; max-height: 100%; object-fit: cover; border-radius: 8px; }
+
+/* === 版式：section-header === */
+.layout-section {
+  justify-content: center; padding-left: 0.5em;
+}
+.section-eyebrow {
+  font-size: 0.78em; letter-spacing: 0.18em; opacity: 0.45;
+  text-transform: uppercase; margin-bottom: 0.3em;
+}
+.section-main { font-size: 2.6em; font-weight: 800; color: var(--accent-color); line-height: 1.1; }
+.section-sub { font-size: 0.9em; opacity: 0.65; max-width: 60%; margin-top: 0.5em; }
+
+/* === 版式：table-full === */
+.layout-table-full { flex: 1; min-height: 0; overflow: auto; }
+.layout-table-full table { font-size: 0.85em; }
+
+  </style>
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+</head>
+<body>
+
+<div id="presentation">
+  <div class="slide" id="slide-1" data-index="1" data-type="cover">
+  <div class="slide-content density-spacious">
+<h1 id="s1-title1">气候变化：2024年关键数据</h1>
+
+<h2 id="s1-subtitle1">史上最热一年，1.55°C警报拉响</h2>
+  </div>
+</div>
+
+<div class="slide" id="slide-2" data-index="2" data-type="toc">
+  <div class="slide-content density-normal">
+<h1 id="s2-title1">目录</h1>
+
+<ul id="s2-list1">
+<li>2024年：175年来最热记录</li>
+<li>全球气温趋势</li>
+<li>排放缺口与目标路径</li>
+<li>主要国家承诺进展</li>
+<li>行动与目标之间的鸿沟</li>
+</ul>
+  </div>
+</div>
+
+<div class="slide" id="slide-3" data-index="3" data-type="content">
+  <div class="slide-content density-compact">
+<h1 id="s3-title1">2024：史无前例的气候红线</h1>
+<div class="stat-grid"><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚠️ 2024年是 175年有记录以来最热的一年</span></div><div class="stat-card"><span class="s-num">1.55</span><span class="s-lbl">📈 全球平均气温较工业化前水平高出 °C，首次突破1.5°C阈值</span></div><div class="stat-card"><span class="s-num">2倍</span><span class="s-lbl">🌏 阿拉伯地区升温速度是全球平均的</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">📊 极端天气事件频率与强度双双创历史新高</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚙️ 北极海冰面积持续萎缩，2024年夏季创新低纪录</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🔒 若气温升幅超过 2°C，地球部分生态系统将面临不可逆转的</span></div></div>
+  </div>
+</div>
+
+<div class="slide" id="slide-4" data-index="4" data-type="data">
+  <div class="slide-content density-spacious">
+<h1 id="s4-title1">全球气温偏差趋势（近5年）</h1>
+    <div class="layout-full-chart">
+<div class="chart-panel" id="s4-chart1-panel" style="width:55%; height:70%;">
+  <p class="chart-title" id="s4-chart1-title">年均气温较工业化前偏差（°C）</p>
+  <canvas id="s4-chart1"></canvas>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="slide-5" data-index="5" data-type="data">
+  <div class="slide-content density-spacious">
+    <div class="layout-split">
+<div class="text-panel" id="s5-text-panel" style="width:42%;">
+<h1 id="s5-title1">不同情景下的升温预测</h1>
+<ul id="s5-list1">
+<li><span class="li-icon">🎯</span> <strong><span class="key-number">1.5</span>°C目标</strong>：需要排放量2025年前达峰，2030年前减少 <strong><span class="key-number">43%</span></strong></li>
+<li><span class="li-icon">⚠</span>️ <strong>当前政策路径</strong>：本世纪末升温 <strong><span class="key-number">2.8</span>°C</strong>，远超安全阈值</li>
+<li><span class="li-icon">📈</span> <strong>实施NDC承诺</strong>：可将升温控制在 <strong><span class="key-number">2.3</span>-2.5°C</strong>，仍不达标</li>
+</ul>
+</div>
+<div class="chart-panel" id="s5-chart1-panel" style="width:55%; height:66%;">
+  <p class="chart-title" id="s5-chart1-title">本世纪末预计升温幅度（°C）</p>
+  <canvas id="s5-chart1"></canvas>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="slide-6" data-index="6" data-type="content">
+  <div class="slide-content density-compact">
+<h1 id="s6-title1">主要国家碳中和承诺</h1>
+
+
+<div class="col-wrap"><div class="col"><ul id="s6-list1"><li><span class="li-icon">🌏</span> <strong>中国</strong>：2030年前碳达峰，2060年前实现碳中和；2035年较峰值减排7-10%</li><li><span class="li-icon">⚙</span>️ <strong>欧盟</strong>：2030年减排 <strong><span class="key-number">55%</span></strong>（对比1990年），2050年碳中和</li><li><span class="li-icon">⚠</span>️ <strong>美国</strong>：特朗普政府撤销2030/<span class="key-number">2035</span> NDC目标，重回高碳轨道</li></ul></div><div class="col"><ul id="s6-list1"><li><span class="li-icon">🚀</span> <strong>印度</strong>：2070年碳中和，可再生能源占比目标 <strong><span class="key-number">50%</span></strong>（2030年）</li><li><span class="li-icon">💡</span> <strong>日本/韩国</strong>：2050年碳中和，绿氢产业列为优先战略</li><li><span class="li-icon">📊</span> 全球已有 <strong>140余个国家</strong>提出碳中和或净零目标</li></ul></div></div>
+  </div>
+</div>
+
+<div class="slide" id="slide-7" data-index="7" data-type="content">
+  <div class="slide-content density-compact">
+<h1 id="s7-title1">能源转型：唯一可行路径</h1>
+<div class="stat-grid"><div class="stat-card"><span class="s-num">3,870</span><span class="s-lbl">⚡ 2024年全球可再生能源装机容量突破  GW</span></div><div class="stat-card"><span class="s-num">90%</span><span class="s-lbl">📈 太阳能成本10年间下降 ，成全球最便宜的发电方式</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🏆 全球电动汽车保有量突破 4,000万辆，每年仍以40%速</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">💰 2024年全球清洁能源投资达 1.7万亿美元，首次超过化</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">⚙️ 绿氢成本持续下降，2030年有望实现平价</span></div><div class="stat-card"><span class="s-num">—</span><span class="s-lbl">🔒 煤电退出速度仍不足，是实现1.5°C目标的最大障碍</span></div></div>
+  </div>
+</div>
+
+<div class="slide" id="slide-8" data-index="8" data-type="outro">
+  <div class="slide-content layout-quote-center">
+<blockquote id="s8-quote1">
+<p id="s8-p1">"我们不缺目标，不缺技术，不缺资金——我们缺的是行动的紧迫感。"</p>
+</blockquote>
+<p id="s8-p2">📩 数据来源：WRI State of Climate Action · UNEP Emissions Gap Report 2025</p>
+  </div>
+</div>
+</div>
+
+<div id="page-counter">
+  <span id="cur-page">1</span> / <span id="tot-pages">8</span>
+</div>
+<div id="progress-bar" style="width: 12.5%"></div>
+
+<!-- Chart.js -->
+<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- highlight.js (browser bundle, UMD format — avoids "module is not defined" in headless) -->
+<script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<script>
+// === 幻灯片核心逻辑 ===
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+document.getElementById('tot-pages').textContent = total;
+
+function goTo(n) {
+  if (n < 0 || n >= total) return;
+  slides[current].classList.remove('active');
+  current = n;
+  slides[current].classList.add('active');
+  document.getElementById('cur-page').textContent = current + 1;
+  document.getElementById('progress-bar').style.width =
+    ((current + 1) / total * 100) + '%';
+}
+
+function nextSlide() { goTo(current + 1); }
+function prevSlide() { goTo(current - 1); }
+
+document.addEventListener('keydown', (e) => {
+  const next = ['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'];
+  const prev = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+  if (next.includes(e.key)) { e.preventDefault(); nextSlide(); }
+  else if (prev.includes(e.key)) { e.preventDefault(); prevSlide(); }
+});
+
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) { dx < 0 ? nextSlide() : prevSlide(); }
+});
+
+function scalePresentation() {
+  const slideW = 1280, slideH = 720;
+  const scaleX = window.innerWidth / slideW;
+  const scaleY = window.innerHeight / slideH;
+  const scale = Math.min(scaleX, scaleY);
+  document.getElementById('presentation').style.transform = 'scale(' + scale + ')';
+}
+window.addEventListener('resize', scalePresentation);
+scalePresentation();
+goTo(0);
+
+// 溢出检测：调整内容密度以防止文字溢出
+// 注意：使用 scrollHeight vs clientHeight，而非累加 offsetHeight（flex gap 不计入子元素高度）
+// 注意：不用 getBoundingClientRect（CSS scale 后坐标为视觉坐标，不可靠）
+function adjustSlideSpacing() {
+  slides.forEach(function(slide) {
+    var content = slide.querySelector('.slide-content');
+    if (!content) return;
+    var wasActive = slide.classList.contains('active');
+    // 对非激活幻灯片：临时显示（visibility:hidden 不占视觉空间但可测量）
+    if (!wasActive) {
+      slide.style.display = 'flex';
+      slide.style.visibility = 'hidden';
+      void content.offsetHeight; // 强制 reflow，确保 scrollHeight 准确
+    }
+    var overflow = content.scrollHeight - content.clientHeight;
+    if (overflow > 8) { // 8px 安全边距
+      if (content.classList.contains('density-spacious')) {
+        content.classList.remove('density-spacious');
+        content.classList.add('density-normal');
+      } else if (content.classList.contains('density-normal')) {
+        content.classList.remove('density-normal');
+        content.classList.add('density-compact');
+      }
+    }
+    if (!wasActive) {
+      slide.style.display = '';
+      slide.style.visibility = '';
+    }
+  });
+}
+// 初始渲染后执行一次（延迟 150ms 等待字体加载）
+setTimeout(adjustSlideSpacing, 150);
+
+// === 图表初始化 ===
+(function(){
+  new Chart(document.getElementById('s4-chart1'), {"type": "line", "data": {"labels": ["2020", "2021", "2022", "2023", "2024"], "datasets": [{"label": "气温偏差(℃)", "data": [1.2, 1.11, 1.17, 1.45, 1.55], "borderColor": "#333333", "backgroundColor": "rgba(51,51,51,0.2)", "tension": 0.4, "borderWidth": 2, "pointRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "animation": {"duration": 0}, "plugins": {"legend": {"display": true, "labels": {"color": "#888888"}}, "title": {"display": false}}, "scales": {"x": {"ticks": {"color": "#888888"}, "grid": {"color": "rgba(0,0,0,0.06)"}}, "y": {"ticks": {"color": "#888888"}, "grid": {"color": "rgba(0,0,0,0.06)"}}}}});
+})();
+
+(function(){
+  new Chart(document.getElementById('s5-chart1'), {"type": "bar", "data": {"labels": ["1.5°C目标", "实施NDC承诺", "当前政策路径", "无任何行动"], "datasets": [{"label": "预计升温(℃)", "data": [1.5, 2.4, 2.8, 3.6], "backgroundColor": "#333333"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "animation": {"duration": 0}, "plugins": {"legend": {"display": true, "labels": {"color": "#888888"}}, "title": {"display": false}}, "scales": {"x": {"ticks": {"color": "#888888"}, "grid": {"color": "rgba(0,0,0,0.06)"}}, "y": {"ticks": {"color": "#888888"}, "grid": {"color": "rgba(0,0,0,0.06)"}}}}});
+})();
+
+// === 代码高亮 ===
+document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "SlideTree",
+  "description": "md2slides 元素树 + 版式规划的 JSON Schema",
+  "type": "object",
+  "properties": {
+    "presentation": {
+      "type": "object",
+      "required": ["ratio", "theme", "totalSlides", "slides"],
+      "properties": {
+        "ratio": {
+          "type": "string",
+          "enum": ["16:9", "4:3"]
+        },
+        "theme": {
+          "type": "string",
+          "enum": [
+            "professional-dark",
+            "professional-light",
+            "creative-gradient",
+            "minimal-clean",
+            "warm-earth"
+          ]
+        },
+        "totalSlides": {
+          "type": "integer"
+        },
+        "slides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "type"],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "description": "页码，从 1 开始"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["cover", "toc", "content", "data", "outro"],
+                "description": "页面语义类型，影响默认样式"
+              },
+              "layout": {
+                "type": "object",
+                "description": "AI 版式规划结果。存在时 convert.py 按此版式生成 HTML",
+                "properties": {
+                  "template": {
+                    "type": "string",
+                    "description": "版式模板名称",
+                    "enum": [
+                      "text-default",
+                      "text-hero",
+                      "text-two-column",
+                      "text-three-column",
+                      "statement",
+                      "quote-center",
+                      "quote-side",
+                      "image-right",
+                      "image-left",
+                      "image-top",
+                      "image-bottom",
+                      "image-fullbleed",
+                      "image-only",
+                      "chart-full",
+                      "chart-right",
+                      "chart-left",
+                      "chart-bottom",
+                      "stat-cards",
+                      "timeline-vertical",
+                      "timeline-horizontal",
+                      "compare-two",
+                      "compare-three",
+                      "cover-image-bg",
+                      "cover-split",
+                      "section-header",
+                      "table-full"
+                    ]
+                  },
+                  "rationale": {
+                    "type": "string",
+                    "description": "AI 选择该版式的理由，便于人工审核和调整"
+                  },
+                  "imageWidth": {
+                    "type": "string",
+                    "description": "图片面板宽度，用于 image-right/image-left，如 '45%'"
+                  },
+                  "imageHeight": {
+                    "type": "string",
+                    "description": "图片面板高度，用于 image-top/image-bottom，如 '45%'"
+                  },
+                  "eyebrow": {
+                    "type": "string",
+                    "description": "section-header 版式的上方小字，如 'Chapter 01'"
+                  }
+                },
+                "required": ["template"]
+              },
+              "elements": {
+                "type": "array",
+                "description": "页面内元素列表，由 convert.py 生成，也可人工添加 img 节点",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "type"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "元素唯一 ID，格式 sN-{type}{seq}，如 s3-title1"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "h1", "h2", "h3",
+                        "p", "ul", "ol",
+                        "img", "pre", "table",
+                        "blockquote", "chart"
+                      ]
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "文字内容（h1-h3、p、blockquote 使用）"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "列表条目（ul、ol 使用）"
+                    },
+                    "src": {
+                      "type": "string",
+                      "description": "图片路径（img 使用），相对于 MD 文件所在目录"
+                    },
+                    "alt": {
+                      "type": "string",
+                      "description": "图片替代文字（img 使用）"
+                    },
+                    "style": {
+                      "type": "object",
+                      "description": "手��样式覆盖，--preserve-styles 时保留",
+                      "additionalProperties": { "type": "string" }
+                    },
+                    "chartType": {
+                      "type": "string",
+                      "enum": [
+                        "bar", "bar-horizontal", "line", "area",
+                        "pie", "donut", "scatter", "table"
+                      ],
+                      "description": "图表类型（chart 元素使用）"
+                    },
+                    "dataSource": {
+                      "type": "string",
+                      "description": "CSV 数据源路径，相对于 MD 文件（chart 使用）"
+                    },
+                    "xField": {
+                      "type": "string",
+                      "description": "X 轴字段名"
+                    },
+                    "yField": {
+                      "type": "string",
+                      "description": "Y 轴字段名，多系列用逗号分隔"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "图表标题"
+                    },
+                    "layout": {
+                      "type": "string",
+                      "enum": ["full", "right", "left", "center", "bottom"],
+                      "description": "图表位置（chart 元素使用���兼容旧字段）"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

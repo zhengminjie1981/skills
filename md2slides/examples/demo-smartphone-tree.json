@@ -1,0 +1,221 @@
+{
+  "presentation": {
+    "ratio": "16:9",
+    "theme": "professional-light",
+    "totalSlides": 8,
+    "slides": [
+      {
+        "index": 1,
+        "type": "cover",
+        "elements": [
+          {
+            "id": "s1-title1",
+            "type": "h1",
+            "content": "2024全球智能手机市场"
+          },
+          {
+            "id": "s1-subtitle1",
+            "type": "h2",
+            "content": "12.2亿部，复苏之年"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "type": "toc",
+        "elements": [
+          {
+            "id": "s2-title1",
+            "type": "h1",
+            "content": "目录"
+          },
+          {
+            "id": "s2-list1",
+            "type": "ul",
+            "items": [
+              "市场整体复苏态势",
+              "季度出货量走势",
+              "操作系统竞争格局",
+              "品牌格局与高端化趋势",
+              "折叠屏与新兴机遇"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s3-title1",
+            "type": "h1",
+            "content": "市场全面复苏"
+          },
+          {
+            "id": "s3-list1",
+            "type": "ul",
+            "items": [
+              "📈 2024年全球智能手机出货量 12.2亿部，同比增长 6-7%",
+              "💰 均价（ASP）升至 356美元，创历史新高，较上年增长1%",
+              "🏆 收入同比增长 5%，连续两年下滑后实现反弹",
+              "🌏 亚太地区贡献全球 54% 的出货量，印度增速尤为亮眼",
+              "⚙️ 全年发布折叠屏新机型 18款以上，市场快速扩容",
+              "📊 AI功能成为新旗舰标配，推动消费者换机意愿上升"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "12.2亿部、356美元、54%等市场体量指标"
+        }
+      },
+      {
+        "index": 4,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s4-title1",
+            "type": "h1",
+            "content": "2024年季度出货量趋势"
+          },
+          {
+            "id": "s4-chart1",
+            "type": "chart",
+            "chartType": "bar",
+            "dataSource": "data/smartphone-shipments.csv",
+            "xField": "季度",
+            "yField": "出货量(亿部)",
+            "title": "全球智能手机季度出货量（亿部）",
+            "layout": "full",
+            "style": {
+              "width": "55%",
+              "height": "70%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-full",
+          "rationale": "季度出货柱状图全屏展示复苏节奏"
+        }
+      },
+      {
+        "index": 5,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s5-title1",
+            "type": "h1",
+            "content": "操作系统市场份额"
+          },
+          {
+            "id": "s5-list1",
+            "type": "ul",
+            "items": [
+              "⚙️ Android：71% 市场份额，超过 9.8亿部",
+              "🏆 iOS：29% 市场份额，约 3.5亿部，溢价能力无可撼动",
+              "💰 尽管份额偏低，苹果却拿走全行业 约85% 的利润",
+              "📈 iPhone 16系列推动苹果Q4份额升至 23%，单季领跑"
+            ]
+          },
+          {
+            "id": "s5-chart1",
+            "type": "chart",
+            "chartType": "donut",
+            "dataSource": "data/smartphone-os.csv",
+            "xField": "系统",
+            "yField": "市场份额(%)",
+            "title": "2024年全球操作系统市场份额",
+            "layout": "right",
+            "style": {
+              "width": "50%",
+              "height": "66%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "OS份额饼图+4条说明，图右文左"
+        }
+      },
+      {
+        "index": 6,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s6-title1",
+            "type": "h1",
+            "content": "品牌竞争：季度角力"
+          },
+          {
+            "id": "s6-list1",
+            "type": "ul",
+            "items": [
+              "🏆 三星：Q3出货 5,790万部（19%份额），全年第一",
+              "📈 苹果：Q4出货 7,540万部（23%份额），单季逆袭",
+              "🌏 小米：Q4市占率 13%，性价比策略重获市场认可",
+              "⚙️ OPPO/vivo：合计约15%份额，东南亚市场深度布局",
+              "💡 华为：麒麟芯片回归，国内份额快速恢复至 约15%",
+              "⚠️ 中低端竞争持续白热化，差异化与高端化成唯一出路"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "text-two-column",
+          "rationale": "6家品牌各自表现，3+3双栏对列阅读"
+        }
+      },
+      {
+        "index": 7,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s7-title1",
+            "type": "h1",
+            "content": "下一个增长极：AI手机与折叠屏"
+          },
+          {
+            "id": "s7-list1",
+            "type": "ul",
+            "items": [
+              "🚀 AI手机：Galaxy AI · Apple Intelligence · 小米 HyperAI 全面上线",
+              "💡 折叠屏：2024年全球出货约 2,200万部，同比增长 48%",
+              "📈 预计2026年折叠屏市场规模突破 300亿美元",
+              "⚙️ 卫星通信成旗舰标配，消除信号盲区成新卖点",
+              "🏆 超薄旗舰竞赛激烈：三星 S25 Edge、苹果 iPhone 17 Air",
+              "🌏 印度成为全球最大增量市场，本土品牌份额快速崛起"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "timeline-vertical",
+          "rationale": "AI→折叠屏→卫星→超薄，技术演进路线图"
+        }
+      },
+      {
+        "index": 8,
+        "type": "outro",
+        "elements": [
+          {
+            "id": "s8-title1",
+            "type": "h1",
+            "content": "从量变到质变的新周期"
+          },
+          {
+            "id": "s8-quote1",
+            "type": "blockquote",
+            "content": "\"规模复苏之后，是AI和折叠屏重新定义智能手机的时代。\""
+          },
+          {
+            "id": "s8-p2",
+            "type": "p",
+            "content": "📩 数据来源：Counterpoint Research · TechInsights · Statista 2024"
+          }
+        ],
+        "layout": {
+          "template": "quote-center",
+          "rationale": "金句总结新周期，居中收尾"
+        }
+      }
+    ]
+  }
+}

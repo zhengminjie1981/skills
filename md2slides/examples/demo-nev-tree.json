@@ -1,0 +1,221 @@
+{
+  "presentation": {
+    "ratio": "16:9",
+    "theme": "creative-gradient",
+    "totalSlides": 8,
+    "slides": [
+      {
+        "index": 1,
+        "type": "cover",
+        "elements": [
+          {
+            "id": "s1-title1",
+            "type": "h1",
+            "content": "2024中国新能源汽车市场"
+          },
+          {
+            "id": "s1-subtitle1",
+            "type": "h2",
+            "content": "1286万辆，全球领跑"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "type": "toc",
+        "elements": [
+          {
+            "id": "s2-title1",
+            "type": "h1",
+            "content": "目录"
+          },
+          {
+            "id": "s2-list1",
+            "type": "ul",
+            "items": [
+              "市场全年数据总览",
+              "销量五年增长曲线",
+              "主流品牌市场格局",
+              "中国车企全球地位",
+              "2025年展望"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s3-title1",
+            "type": "h1",
+            "content": "2024年：创纪录的一年"
+          },
+          {
+            "id": "s3-list1",
+            "type": "ul",
+            "items": [
+              "📈 全年新能源汽车销量 1286.6万辆，同比增长 35.5%",
+              "🏆 NEV渗透率突破 40.9%，每10辆新车超4辆是新能源",
+              "🌏 中国占全球新能源汽车销售的 70%，绝对主导地位",
+              "💰 仅12月单月销量即达 159.6万辆，创单月历史纪录",
+              "🚀 中国自主品牌合计销量 1807.9万辆，市占率 65%",
+              "📊 外资品牌市场份额持续下滑，合资车企压力显著加剧"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "核心数字放大：1286万���、40.9%、70%等"
+        }
+      },
+      {
+        "index": 4,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s4-title1",
+            "type": "h1",
+            "content": "新能源汽车销量五年增长"
+          },
+          {
+            "id": "s4-chart1",
+            "type": "chart",
+            "chartType": "area",
+            "dataSource": "data/nev-sales.csv",
+            "xField": "年份",
+            "yField": "销量(万辆)",
+            "title": "中国NEV年销量（万辆）",
+            "layout": "full",
+            "style": {
+              "width": "55%",
+              "height": "72%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-full",
+          "rationale": "面积图全屏展示五年增长趋势"
+        }
+      },
+      {
+        "index": 5,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s5-title1",
+            "type": "h1",
+            "content": "主流品牌市场格局"
+          },
+          {
+            "id": "s5-list1",
+            "type": "ul",
+            "items": [
+              "🏆 比亚迪：371.8万辆，市占率 34.1%，同比增长41.1%",
+              "📈 奇瑞集团：增幅惊人 232.7%，达58.4万辆",
+              "⚙️ 特斯拉：65.7万辆，市占率 6.0%，排名第三",
+              "💡 理想汽车：50.1万辆，市占率 4.6%"
+            ]
+          },
+          {
+            "id": "s5-chart1",
+            "type": "chart",
+            "chartType": "donut",
+            "dataSource": "data/nev-brands.csv",
+            "xField": "品牌",
+            "yField": "市场份额(%)",
+            "title": "2024年NEV品牌市场份额",
+            "layout": "right",
+            "style": {
+              "width": "52%",
+              "height": "66%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "饼图+4条品牌说明，图右文左"
+        }
+      },
+      {
+        "index": 6,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s6-title1",
+            "type": "h1",
+            "content": "头部车企核心竞争力"
+          },
+          {
+            "id": "s6-list1",
+            "type": "ul",
+            "items": [
+              "⚙️ 比亚迪：刀片电池 + 垂直整合，全产业链自研",
+              "🚀 华为系（问界/智界）：智能驾驶领先，鸿蒙车机生态",
+              "💡 理想汽车：增程+纯电双路线，家庭用户精准定位",
+              "📈 小米SU7：2024年交付超13万辆，跨界造车首战告捷",
+              "🌏 吉利/极氪：高端化突破，出口欧洲市场持续发力",
+              "🤝 蔚来：换电模式独树一帜，BaaS订阅模式创新"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "text-two-column",
+          "rationale": "6家车企竞争力，3+3双栏对比"
+        }
+      },
+      {
+        "index": 7,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s7-title1",
+            "type": "h1",
+            "content": "全球竞争：中国制造走向世界"
+          },
+          {
+            "id": "s7-list1",
+            "type": "ul",
+            "items": [
+              "🌏 中国NEV出口 177.3万辆，同比增长 12.8%",
+              "📈 比亚迪已在 70余个国家和地区销售",
+              "⚠️ 欧盟对中国电动车加征关税，最高达 45.3%",
+              "🏆 中国动力电池占据全球 60%以上的市场份额",
+              "💰 宁德时代全球市占率稳居第一，达 37.9%",
+              "🚀 \"出海\"成为2025年各大车企最重要战略方向"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "出口数字密集：177万辆、60%、37.9%"
+        }
+      },
+      {
+        "index": 8,
+        "type": "outro",
+        "elements": [
+          {
+            "id": "s8-title1",
+            "type": "h1",
+            "content": "新能源，新世界"
+          },
+          {
+            "id": "s8-quote1",
+            "type": "blockquote",
+            "content": "\"中国用10年完成了燃油车百年的产业积累，新能源赛道的全球竞争才刚开始。\""
+          },
+          {
+            "id": "s8-p2",
+            "type": "p",
+            "content": "📩 数据来源：中国汽车工业协会 · CnEVPost · MarkLines 2025"
+          }
+        ],
+        "layout": {
+          "template": "quote-center",
+          "rationale": "金句居中，简洁收尾"
+        }
+      }
+    ]
+  }
+}

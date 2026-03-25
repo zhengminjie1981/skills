@@ -1,0 +1,220 @@
+{
+  "presentation": {
+    "ratio": "16:9",
+    "theme": "minimal-clean",
+    "totalSlides": 8,
+    "slides": [
+      {
+        "index": 1,
+        "type": "cover",
+        "elements": [
+          {
+            "id": "s1-title1",
+            "type": "h1",
+            "content": "气候变化：2024年关键数据"
+          },
+          {
+            "id": "s1-subtitle1",
+            "type": "h2",
+            "content": "史上最热一年，1.55°C警报拉响"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "type": "toc",
+        "elements": [
+          {
+            "id": "s2-title1",
+            "type": "h1",
+            "content": "目录"
+          },
+          {
+            "id": "s2-list1",
+            "type": "ul",
+            "items": [
+              "2024年：175年来最热记录",
+              "全球气温趋势",
+              "排放缺口与目标路径",
+              "主要国家承诺进展",
+              "行动与目标之间的鸿沟"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s3-title1",
+            "type": "h1",
+            "content": "2024：史无前例的气候红线"
+          },
+          {
+            "id": "s3-list1",
+            "type": "ul",
+            "items": [
+              "⚠️ 2024年是 175年有记录以来最热的一年",
+              "📈 全球平均气温较工业化前水平高出 1.55°C，首次突破1.5°C阈值",
+              "🌏 阿拉伯地区升温速度是全球平均的 2倍",
+              "📊 极端天气事件频率与强度双双创历史新高",
+              "⚙️ 北极海冰面积持续萎缩，2024年夏季创新低纪录",
+              "🔒 若气温升幅超过 2°C，地球部分生态系统将面临不可逆转的崩溃"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "1.55°C、175年、2倍等危机数字，stat-cards传递紧迫感"
+        }
+      },
+      {
+        "index": 4,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s4-title1",
+            "type": "h1",
+            "content": "全球气温偏差趋势（近5年）"
+          },
+          {
+            "id": "s4-chart1",
+            "type": "chart",
+            "chartType": "line",
+            "dataSource": "data/climate-temp.csv",
+            "xField": "年份",
+            "yField": "气温偏差(℃)",
+            "title": "年均气温较工业化前偏差（°C）",
+            "layout": "full",
+            "style": {
+              "width": "55%",
+              "height": "70%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-full",
+          "rationale": "折线图全屏展示气温偏差趋势"
+        }
+      },
+      {
+        "index": 5,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s5-title1",
+            "type": "h1",
+            "content": "不同情景下的升温预测"
+          },
+          {
+            "id": "s5-list1",
+            "type": "ul",
+            "items": [
+              "🎯 1.5°C目标：需要排放量2025年前达峰，2030年前减少 43%",
+              "⚠️ 当前政策路径：本世纪末升温 2.8°C，远超安全阈值",
+              "📈 实施NDC承诺：可将升温控制在 2.3-2.5°C，仍不达标"
+            ]
+          },
+          {
+            "id": "s5-chart1",
+            "type": "chart",
+            "chartType": "bar",
+            "dataSource": "data/climate-scenarios.csv",
+            "xField": "情景",
+            "yField": "预计升温(℃)",
+            "title": "本世纪末预计升温幅度（°C）",
+            "layout": "right",
+            "style": {
+              "width": "55%",
+              "height": "66%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "柱状图+3条情景说明，图右文左对照"
+        }
+      },
+      {
+        "index": 6,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s6-title1",
+            "type": "h1",
+            "content": "主要国家碳中和承诺"
+          },
+          {
+            "id": "s6-list1",
+            "type": "ul",
+            "items": [
+              "🌏 中国：2030年前碳达峰，2060年前实现碳中和；2035年较峰值减排7-10%",
+              "⚙️ 欧盟：2030年减排 55%（对比1990年），2050年碳中和",
+              "⚠️ 美国：特朗普政府撤销2030/2035 NDC目标，重回高碳轨道",
+              "🚀 印度：2070年碳中和，可再生能源占比目标 50%（2030年）",
+              "💡 日本/韩国：2050年碳中和，绿氢产业列为优先战略",
+              "📊 全球已有 140余个国家提出碳中和或净零目标"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "text-two-column",
+          "rationale": "6个主要国家承诺，两列便于横向比较"
+        }
+      },
+      {
+        "index": 7,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s7-title1",
+            "type": "h1",
+            "content": "能源转型：唯一可行路径"
+          },
+          {
+            "id": "s7-list1",
+            "type": "ul",
+            "items": [
+              "⚡ 2024年全球可再生能源装机容量突破 3,870 GW",
+              "📈 太阳能成本10年间下降 90%，成全球最便宜的发电方式",
+              "🏆 全球电动汽车保有量突破 4,000万辆，每年仍以40%速度增长",
+              "💰 2024年全球清洁能源投资达 1.7万亿美元，首次超过化石能源",
+              "⚙️ 绿氢成本持续下降，2030年有望实现平价",
+              "🔒 煤电退出速度仍不足，是实现1.5°C目标的最大障碍"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "3870GW、90%、4000万辆、1.7万亿，能源转型成就"
+        }
+      },
+      {
+        "index": 8,
+        "type": "outro",
+        "elements": [
+          {
+            "id": "s8-title1",
+            "type": "h1",
+            "content": "时间窗口正在关闭"
+          },
+          {
+            "id": "s8-quote1",
+            "type": "blockquote",
+            "content": "\"我们不缺目标，不缺技术，不缺资金——我们缺的是行动的紧迫感。\""
+          },
+          {
+            "id": "s8-p2",
+            "type": "p",
+            "content": "📩 数据来源：WRI State of Climate Action · UNEP Emissions Gap Report 2025"
+          }
+        ],
+        "layout": {
+          "template": "quote-center",
+          "rationale": "金句呼吁行动，居中感召"
+        }
+      }
+    ]
+  }
+}

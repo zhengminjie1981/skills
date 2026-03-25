@@ -130,46 +130,43 @@ AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
 
 ---
 
-### [obsidian-slides](./obsidian-slides/) - Obsidian Slides 配置生成
+### [md2slides](./md2slides/) - Markdown 转演示文稿
 
-帮助用户生成 Obsidian Slides Extended（reveal.js）演示文稿的布局代码、主题配置和动画语法。
+将原始材料或 Markdown 文件转换为 HTML 格式的演示文稿，支持 AI 版式规划（27 种布局模板）、图片嵌入、数据图表和 PDF 导出。
 
-**核心能力（AI 可靠执行）：**
-- **幻灯片生成**：新建幻灯片 / 内容转换
-- **布局生成**：grid/split 布局代码
-- **主题配置**：frontmatter 主题设置（含 transition）
-- **动画语法**：fragment 类名
+**核心能力：**
+- **内容策划**：AI 分析材料，自动规划页面结构和内容分配，生成 MD 提纲
+- **版式规划**：AI 逐页分析内容，从 27 种布局模板中选择最佳版式，写入 tree JSON
+- **图片支持**：标准 Markdown 语法引用图片，路径自动修正，支持多种布局集成方式
+- **数据图表**：自动识别数据并生成柱状图、折线图、饼图等（Chart.js）
+- **5 套主题**：professional-dark/light、creative-gradient、minimal-clean、warm-earth
+- **精细调整**：通过对话调整任意页面版式、样式；内容变更后保留已有版式
+- **PDF 导出**：每张幻灯片对应一页 PDF，支持离线资源内联
 
 **触发场景：**
-- 幻灯片生成：创建幻灯片、新建 slides、转成幻灯片、Markdown 转 slides
-- 布局生成：幻灯片布局、grid 布局、分栏布局
-- 主题配置：幻灯片主题、换主题、深色主题
-- 动画效果：逐条显示、fragment、动画
+- 生成演示文稿：做成演示文稿、做成幻灯片、做成 PPT、转成 HTML、生成 slides
+- 版式规划：设计版式、帮我排版、版式规划、选布局、换版式、换布局
+- 数据图表：数据可视化、柱状图、折线图、饼图
+- PDF 导出：转成 PDF、导出 PDF
 
 **快速开始：**
+```bash
+# 阶段一：AI 策划 MD 内容（直接对话）
+
+# 阶段二：AI 版式规划，写入 slide-tree.json（直接对话）
+
+# 阶段三：MD + tree -> HTML（--serve 生成后直接用浏览器打开）
+python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.json --serve
+
+# 推荐：内联资源，离线可用（中国网络友好）
+python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.json --inline-assets
+
+# 批量截图预览所有页面
+python scripts/preview.py --input demo.html
+
+# HTML -> PDF
+python scripts/html2pdf.py --input demo.html --output demo.pdf
 ```
-用户: 帮我创建一个产品介绍幻灯片
-AI: [加载 obsidian-slides skill] 好的，我来帮你创建...
-    - 询问目标受众和演示时长
-    - 选择模板和主题风格
-    - 生成完整 Markdown 文件
-
-用户: 帮我做一个左右分栏布局
-AI: 询问比例后，生成 split 布局代码...
-
-用户: 配置一个深色主题
-AI: 列出深色主题选项（black/night/moon），用户选择后生成 frontmatter...
-```
-
-**模板列表：**
-
-| 模板 | 用途 | 深浅适配 |
-|------|------|---------|
-| `product-pitch.md` | 产品介绍 | ✅ dark/light |
-| `meeting-report.md` | 会议汇报 | ✅ dark/light |
-| `tutorial.md` | 教程演示 | ✅ dark/light |
-| `technical.md` | 技术分享 | 内置主题 |
-| `announcement.md` | 公告通知 | 内置主题 |
 
 ---
 
@@ -231,7 +228,7 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 - `doc2md/SKILL.md` - 文档转换工作流
 - `knowledge-index/SKILL.md` - 知识库索引指南
 - `template-filler/SKILL.md` - 对话式模板文档填写
-- `obsidian-slides/SKILL.md` - Obsidian Slides 配置生成
+- `md2slides/SKILL.md` - Markdown 转演示文稿
 
 ## 斜杠指令列表
 
@@ -251,9 +248,8 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 | | `/knowledge-index search <查询>` | 搜索知识库 |
 | | `/knowledge-index list` | 列出所有知识库 |
 | template-filler | `/template-filler <模板路径>` | 对话式填写模板 |
-| obsidian-slides | `/obsidian-slides new [主题]` | 创建演示文稿 |
-| | `/obsidian-slides layout <类型>` | 生成幻灯片布局 |
-| | `/obsidian-slides theme [主题名]` | 配置主题样式 |
+| md2slides | `/md2slides convert <文件>` | MD 转 HTML 演示文稿 |
+| | `/md2slides pdf <文件>` | HTML 导出 PDF |
 
 ## 贡献
 

@@ -1,0 +1,40 @@
+:root {
+  --slide-bg: #ffffff;
+  --slide-fg: #1e2d3d;
+  --slide-fg-dim: #6b7c8d;
+  --heading-color: #0d1f2d;
+  --heading-underline: 3px solid #2980b9;
+  --accent-color: #2980b9;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  --font-heading: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-size-base: 21px;
+  --code-bg: #f0f4f8;
+  --table-border: #cdd8e3;
+  --table-header-bg: #e3edf6;
+  --table-row-even-bg: #f5f9fc;
+  --page-counter-color: #a0b0be;
+  --list-stripe-bg: rgba(41,128,185,0.04);
+}
+
+/* 顶部全宽色带 */
+.slide::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 5px;
+  background: linear-gradient(to right, #2980b9, #5dade2, #2980b9);
+  pointer-events: none;
+  z-index: 0;
+}
+/* 右下角点阵装饰 */
+.slide::after {
+  content: "";
+  position: absolute;
+  right: 28px; bottom: 28px;
+  width: 72px; height: 72px;
+  background-image: radial-gradient(circle, rgba(41,128,185,0.22) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+  pointer-events: none;
+  z-index: 0;
+}

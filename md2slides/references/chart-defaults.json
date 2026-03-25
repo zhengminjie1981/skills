@@ -1,0 +1,62 @@
+{
+  "professional-dark": {
+    "colors": [
+      "#4a90d9",
+      "#50c8a8",
+      "#f5a623",
+      "#e74c3c",
+      "#9b59b6",
+      "#1abc9c"
+    ],
+    "gridColor": "rgba(255,255,255,0.1)",
+    "textColor": "#9ab0cc"
+  },
+  "professional-light": {
+    "colors": [
+      "#2980b9",
+      "#27ae60",
+      "#f39c12",
+      "#e74c3c",
+      "#8e44ad",
+      "#16a085"
+    ],
+    "gridColor": "rgba(0,0,0,0.08)",
+    "textColor": "#7f8c8d"
+  },
+  "creative-gradient": {
+    "colors": [
+      "#ffd700",
+      "#ff6b6b",
+      "#74b9ff",
+      "#55efc4",
+      "#fd79a8",
+      "#a29bfe"
+    ],
+    "gridColor": "rgba(255,255,255,0.15)",
+    "textColor": "rgba(255,255,255,0.75)"
+  },
+  "minimal-clean": {
+    "colors": [
+      "#333333",
+      "#888888",
+      "#555555",
+      "#aaaaaa",
+      "#222222",
+      "#666666"
+    ],
+    "gridColor": "rgba(0,0,0,0.06)",
+    "textColor": "#888888"
+  },
+  "warm-earth": {
+    "colors": [
+      "#c17f3b",
+      "#8b5e3c",
+      "#e8a25c",
+      "#5b8c5a",
+      "#c17f3b",
+      "#7a4a2e"
+    ],
+    "gridColor": "rgba(59,42,26,0.1)",
+    "textColor": "#7a5c3e"
+  }
+}

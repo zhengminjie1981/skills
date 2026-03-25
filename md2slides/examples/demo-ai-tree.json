@@ -1,0 +1,291 @@
+{
+  "presentation": {
+    "ratio": "16:9",
+    "theme": "professional-dark",
+    "totalSlides": 9,
+    "slides": [
+      {
+        "index": 1,
+        "type": "cover",
+        "elements": [
+          {
+            "id": "s1-title1",
+            "type": "h1",
+            "content": "全球AI产业趋势 2025"
+          },
+          {
+            "id": "s1-subtitle1",
+            "type": "h2",
+            "content": "从 3900 亿到 3.5 万亿美元的增长之路"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "type": "toc",
+        "elements": [
+          {
+            "id": "s2-title1",
+            "type": "h1",
+            "content": "目录"
+          },
+          {
+            "id": "s2-list1",
+            "type": "ul",
+            "items": [
+              "市场规模与增长预测",
+              "企业采用现状",
+              "区域竞争格局",
+              "核心技术突破",
+              "未来展望"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s3-title1",
+            "type": "h1",
+            "content": "市场规模：爆发式增长"
+          },
+          {
+            "id": "s3-p1",
+            "type": "p"
+          },
+          {
+            "id": "s3-list1",
+            "type": "ul",
+            "items": [
+              "📈 2025年全球AI市场规模 3,909亿美元，同比增长逾30%",
+              "🎯 2033年预计达到 3.497万亿美元，8年增长近9倍",
+              "⚙️ 年复合增长率（CAGR）高达 30.6%，远超IT行业均值",
+              "🏆 北美以 35.5% 的份额持续领跑全球",
+              "🌏 亚太地区贡献 2,838亿美元，预计2030年为区域GDP新增3万亿美元",
+              "💰 AI预计到2030年为全球GDP贡献超 15.7万亿美元"
+            ]
+          },
+          {
+            "id": "s3-img1",
+            "type": "img",
+            "src": "images/ai-chip.jpg",
+            "alt": "AI芯片"
+          }
+        ],
+        "layout": {
+          "template": "image-right",
+          "imageWidth": "38%",
+          "rationale": "6条数据要点为主体，图片辅助视觉；image-right 让数据列表占主要阅读区域"
+        }
+      },
+      {
+        "index": 4,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s4-title1",
+            "type": "h1",
+            "content": "市场规模增长预测（2025–2033）"
+          },
+          {
+            "id": "s4-chart1",
+            "type": "chart",
+            "chartType": "area",
+            "dataSource": "data/ai-market-growth.csv",
+            "xField": "年份",
+            "yField": "市场规模(十亿美元)",
+            "title": "全球AI市场规模（十亿美元）",
+            "layout": "full",
+            "style": {
+              "width": "55%",
+              "height": "72%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-full",
+          "rationale": "单一面积图，全屏展示数据趋势最直观"
+        }
+      },
+      {
+        "index": 5,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s5-title1",
+            "type": "h1",
+            "content": "企业AI采用率"
+          },
+          {
+            "id": "s5-list1",
+            "type": "ul",
+            "items": [
+              "👥 87% 企业将AI列为首要战略优先项",
+              "⚙️ 76% 企业在业务中积极使用AI",
+              "📊 69% 企业已部署生成式AI",
+              "🚀 智能体AI（Agentic AI）成为2025最热趋势"
+            ]
+          },
+          {
+            "id": "s5-chart1",
+            "type": "chart",
+            "chartType": "bar-horizontal",
+            "dataSource": "data/ai-adoption.csv",
+            "xField": "应用场景",
+            "yField": "采用率(%)",
+            "title": "企业AI应用场景采用率（%）",
+            "layout": "right",
+            "style": {
+              "width": "58%",
+              "height": "70%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "横向柱状图 + 4条文字要点，图右文左经典分栏"
+        }
+      },
+      {
+        "index": 6,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s6-title1",
+            "type": "h1",
+            "content": "区域市场份额分布"
+          },
+          {
+            "id": "s6-list1",
+            "type": "ul",
+            "items": [
+              "🌏 北美：35.5%，以OpenAI、Google、Microsoft主导",
+              "📈 亚太：28.5%，中国与印度双引擎驱动",
+              "⚙️ 欧洲：22%，监管先行但创新活跃",
+              "🤝 其他：14%，新兴市场加速跟进"
+            ]
+          },
+          {
+            "id": "s6-chart1",
+            "type": "chart",
+            "chartType": "donut",
+            "dataSource": "data/ai-regions.csv",
+            "xField": "地区",
+            "yField": "市场份额(%)",
+            "title": "2025年全球AI市场区域占比",
+            "layout": "right",
+            "style": {
+              "width": "52%",
+              "height": "68%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "饼图 + 4条区域说明，图右文左清晰对应"
+        }
+      },
+      {
+        "index": 7,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s7-title1",
+            "type": "h1",
+            "content": "2025 四大核心技术趋势"
+          },
+          {
+            "id": "s7-list1",
+            "type": "ul",
+            "items": [
+              "🤖 智能体AI（Agentic AI）：自主完成多步骤任务，无需人工干预",
+              "💡 多模态大模型：文字、图像、音频、视频统一处理",
+              "🔒 AI安全与合规：EU AI Act生效，企业加速布局治理框架",
+              "⚙️ 端侧推理（Edge AI）：芯片算力提升推动AI本地化部署",
+              "📊 AI+ 行业深度融合：医疗影像诊断准确率超过人类医生",
+              "🚀 开源生态爆发：LLaMA、Mistral系列推动民主化浪潮"
+            ]
+          },
+          {
+            "id": "s7-p1",
+            "type": "p"
+          },
+          {
+            "id": "s7-img1",
+            "type": "img",
+            "src": "images/data-center.jpg",
+            "alt": "数据中心"
+          }
+        ],
+        "layout": {
+          "template": "text-two-column",
+          "rationale": "6条技术趋势内容均衡，两列分栏（3+3）比单列更易阅读，视觉密度合适"
+        }
+      },
+      {
+        "index": 8,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s8-title1",
+            "type": "h1",
+            "content": "投资与竞争格局"
+          },
+          {
+            "id": "s8-list1",
+            "type": "ul",
+            "items": [
+              "💰 2024年全球AI融资额突破 1,000亿美元，创历史新高",
+              "🏆 OpenAI估值达 1,570亿美元，成全球最高估值AI公司",
+              "🌏 中国AI投资占全球 约15%，百度、阿里、华为、字节加速布局",
+              "⚠️ 算力军备竞赛持续：英伟达H100/H200供不应求",
+              "🤝 科技巨头与传统企业深度合作，产业AI化进程全面加速",
+              "📈 AI基础设施投资2025年预计超 2,000亿美元"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "text-two-column",
+          "rationale": "用户要求换成双栏布局"
+        }
+      },
+      {
+        "index": 9,
+        "type": "outro",
+        "elements": [
+          {
+            "id": "s9-title1",
+            "type": "h1",
+            "content": "AI时代，全面开启"
+          },
+          {
+            "id": "s9-p1",
+            "type": "p"
+          },
+          {
+            "id": "s9-quote1",
+            "type": "blockquote",
+            "content": "\"AI不是未来，它是当下正在发生的产业革命。\""
+          },
+          {
+            "id": "s9-p3",
+            "type": "p",
+            "content": "📩 数据来源：Grand View Research · Microsoft AI Economy Report · Statista 2025"
+          },
+          {
+            "id": "s9-img1",
+            "type": "img",
+            "src": "images/ai-robot.jpg",
+            "alt": "AI机器人"
+          }
+        ],
+        "layout": {
+          "template": "image-fullbleed",
+          "rationale": "结语页有 AI 机器人图片，铺满背景强化视觉冲击；引用语和标题以白字叠加，形成戏剧性收尾"
+        }
+      }
+    ]
+  }
+}

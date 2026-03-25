@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  <style>
+    /* === 基础重置 === */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { overflow: hidden; background: #000; }
+
+    /* === 幻灯片容器 === */
+    #presentation {
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      transform-origin: center center;
+    }
+
+    /* === 单张幻灯片 === */
+    .slide {
+      position: absolute;
+      width: {{SLIDE_WIDTH}}px;
+      height: {{SLIDE_HEIGHT}}px;
+      display: none;
+      flex-direction: column;
+      padding: {{CONTENT_PADDING}};
+      background: var(--slide-bg);
+      color: var(--slide-fg);
+      font-family: var(--font-body);
+      font-size: var(--font-size-base);
+    }
+    .slide.active { display: flex; }
+
+    /* === 页码 === */
+    #page-counter {
+      position: fixed;
+      bottom: 18px; right: 24px;
+      font-size: 0.75em;
+      color: var(--page-counter-color, rgba(255,255,255,0.5));
+      font-family: var(--font-mono, monospace);
+      z-index: 100;
+      user-select: none;
+    }
+
+    /* === 进度条 === */
+    #progress-bar {
+      position: fixed; bottom: 0; left: 0;
+      height: 3px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+      z-index: 99;
+    }
+
+    /* === 标题样式 === */
+    .slide h1 {
+      font-family: var(--font-heading);
+      font-size: 2.0em;
+      font-weight: 800;
+      color: var(--heading-color);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      border-bottom: var(--heading-underline);
+      padding-bottom: 0.3em;
+      margin-bottom: 0.4em;
+    }
+    .slide h2 {
+      font-family: var(--font-heading);
+      font-size: 1.05em;
+      font-style: italic;
+      color: var(--slide-fg-dim);
+      font-weight: 400;
+      margin-top: -0.2em;
+      opacity: 0.8;
+      letter-spacing: 0.02em;
+    }
+    .slide h3 {
+      font-size: 0.95em;
+      color: var(--heading-color);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+
+    /* === 主题样式 === */
+    {{THEME_CSS}}
+
+    /* === 布局系统 === */
+    {{LAYOUT_CSS}}
+  </style>
+  {{HLJS_CSS_TAG}}
+</head>
+<body>
+
+<div id="presentation">
+  {{SLIDES_HTML}}
+</div>
+
+<div id="page-counter">
+  <span id="cur-page">1</span> / <span id="tot-pages">{{TOTAL}}</span>
+</div>
+<div id="progress-bar" style="width: {{FIRST_PROGRESS}}%"></div>
+
+<!-- Chart.js -->
+{{CHARTJS_TAG}}
+<!-- highlight.js (browser bundle, UMD format — avoids "module is not defined" in headless) -->
+{{HLJS_JS_TAG}}
+
+<script>
+// === 幻灯片核心逻辑 ===
+{{SLIDE_JS}}
+
+// === 图表初始化 ===
+{{CHARTS_JS}}
+
+// === 代码高亮 ===
+document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+</script>
+</body>
+</html>

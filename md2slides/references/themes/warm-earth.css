@@ -1,0 +1,44 @@
+:root {
+  --slide-bg: #fdf6e3;
+  --slide-fg: #3b2a1a;
+  --slide-fg-dim: #7a5c3e;
+  --heading-color: #2c1810;
+  --heading-underline: 3px solid #c17f3b;
+  --accent-color: #c17f3b;
+  --font-body: 'PingFang SC', 'STKaiti', 'Microsoft YaHei', serif;
+  --font-heading: 'PingFang SC', 'STSong', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-size-base: 21px;
+  --code-bg: #ede0c4;
+  --table-border: #d4b896;
+  --table-header-bg: #e8d5b0;
+  --table-row-even-bg: #f5edd8;
+  --page-counter-color: rgba(59,42,26,0.4);
+  --list-stripe-bg: rgba(193,127,59,0.06);
+}
+
+/* 顶部装饰宽横条 */
+.slide::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 6px;
+  background: linear-gradient(to right, #c17f3b 0%, #e8a857 50%, #c17f3b 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* 右下角有机纹理圆圈组 */
+.slide::after {
+  content: "";
+  position: absolute;
+  right: 22px; bottom: 22px;
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  border: 2px solid rgba(193,127,59,0.22);
+  box-shadow:
+    0 0 0 10px rgba(193,127,59,0.09),
+    0 0 0 20px rgba(193,127,59,0.05),
+    0 0 0 32px rgba(193,127,59,0.025);
+  pointer-events: none;
+  z-index: 0;
+}

@@ -1,0 +1,39 @@
+:root {
+  --slide-bg: linear-gradient(135deg, #0f1f38 0%, #1a3a5c 100%);
+  --slide-fg: #e8f0fe;
+  --slide-fg-dim: #9ab0cc;
+  --heading-color: #ffffff;
+  --heading-underline: 3px solid #4a90d9;
+  --accent-color: #4a90d9;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  --font-heading: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-size-base: 21px;
+  --code-bg: rgba(0,0,0,0.45);
+  --table-border: rgba(74,144,217,0.25);
+  --table-header-bg: rgba(74,144,217,0.22);
+  --table-row-even-bg: rgba(255,255,255,0.04);
+  --page-counter-color: rgba(255,255,255,0.35);
+  --list-stripe-bg: rgba(74,144,217,0.06);
+}
+
+/* 右上角大面积斜切光晕 */
+.slide::before {
+  content: "";
+  position: absolute;
+  top: -5%; right: -5%;
+  width: 55%; height: 70%;
+  background: radial-gradient(ellipse at 80% 20%, rgba(74,144,217,0.13) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* 左侧竖条 + 底部横线 */
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; top: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(to bottom, #4a90d9 0%, rgba(74,144,217,0.1) 100%);
+  pointer-events: none;
+  z-index: 0;
+}

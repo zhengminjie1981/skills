@@ -1,0 +1,239 @@
+{
+  "presentation": {
+    "ratio": "16:9",
+    "theme": "professional-dark",
+    "totalSlides": 9,
+    "slides": [
+      {
+        "index": 1,
+        "type": "cover",
+        "elements": [
+          {
+            "id": "s1-title1",
+            "type": "h1",
+            "content": "2024 Q4 Product Quarterly Report"
+          },
+          {
+            "id": "s1-subtitle1",
+            "type": "h2",
+            "content": "Product Team | Q4 Summary"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "type": "toc",
+        "elements": [
+          {
+            "id": "s2-title1",
+            "type": "h1",
+            "content": "Table of Contents"
+          },
+          {
+            "id": "s2-list1",
+            "type": "ul",
+            "items": [
+              "I. Quarterly Overview",
+              "II. User Growth",
+              "III. Monthly Active Users Trend",
+              "IV. Core Feature Updates",
+              "V. Revenue Structure",
+              "VI. Next Quarter Plan",
+              "VII. Summary"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s3-title1",
+            "type": "h1",
+            "content": "Quarterly Overview"
+          },
+          {
+            "id": "s3-list1",
+            "type": "ul",
+            "items": [
+              "Q4 total users reached 350,000, up 44% year-over-year",
+              "Q4 net profit turned positive for the first time",
+              "Three major features launched, user satisfaction 4.8/5",
+              "Market coverage expanded to 12 new cities",
+              "Customer acquisition cost reduced by 23%"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "5条核心季度指标，stat-cards突出成绩单"
+        }
+      },
+      {
+        "index": 4,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s4-title1",
+            "type": "h1",
+            "content": "User Growth"
+          },
+          {
+            "id": "s4-list1",
+            "type": "ul",
+            "items": [
+              "New registered users: 85,000 (up 38% vs Q3)",
+              "Paid conversions: 12,300 (conversion rate 14.5%)",
+              "User retention rate: 72% (up 8 percentage points vs last year)",
+              "NPS score: 58 (industry average 42)"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "4条用户增长数字，展示增长健康度"
+        }
+      },
+      {
+        "index": 5,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s5-title1",
+            "type": "h1",
+            "content": "Monthly Active Users Trend"
+          },
+          {
+            "id": "s5-list1",
+            "type": "ul",
+            "items": [
+              "October: 243,000 users, strong holiday season growth",
+              "November: 287,000 users, new feature launch drove surge",
+              "December: 352,000 users, year-end campaign achieved new high"
+            ]
+          },
+          {
+            "id": "s5-chart1",
+            "type": "chart",
+            "chartType": "line",
+            "dataSource": "data/q4-report-s5-users.csv",
+            "xField": "月份",
+            "yField": "月活用户(万)",
+            "layout": "right",
+            "style": {
+              "width": "60%",
+              "height": "65%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "月活折线图+3条月度说明，图右文左"
+        }
+      },
+      {
+        "index": 6,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s6-title1",
+            "type": "h1",
+            "content": "Core Feature Updates"
+          },
+          {
+            "id": "s6-list1",
+            "type": "ul",
+            "items": [
+              "Smart Recommendation Engine v2.0: Recommendation accuracy improved to 89%",
+              "Mobile App Redesign: Average session duration increased by 35%",
+              "API Open Platform: 128 third-party integrations available"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "text-hero",
+          "rationale": "仅3条功能更新，hero版式放大字号增加留白"
+        }
+      },
+      {
+        "index": 7,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s7-title1",
+            "type": "h1",
+            "content": "Revenue Structure"
+          },
+          {
+            "id": "s7-list1",
+            "type": "ul",
+            "items": [
+              "Subscription revenue: 60% (core business stable)",
+              "Advertising revenue: 25% (year-over-year growth)",
+              "API fee revenue: 15% (new growth engine)"
+            ]
+          },
+          {
+            "id": "s7-chart1",
+            "type": "chart",
+            "chartType": "bar",
+            "dataSource": "data/q4-report-s7-revenue.csv",
+            "xField": "季度",
+            "yField": "收入(万元)",
+            "layout": "right",
+            "style": {
+              "width": "55%",
+              "height": "65%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "收入结构柱状图+3条说明，图右文左"
+        }
+      },
+      {
+        "index": 8,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s8-title1",
+            "type": "h1",
+            "content": "Next Quarter Plan"
+          },
+          {
+            "id": "s8-list1",
+            "type": "ul",
+            "items": [
+              "Launch AI assistant feature (Q1 priority)",
+              "Expand enterprise customer base target: 500 enterprise clients",
+              "Optimize onboarding process to improve new user retention",
+              "International expansion: pilot in Southeast Asian market"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "timeline-vertical",
+          "rationale": "AI→企业客户→留存→国际化，路线图逻辑"
+        }
+      },
+      {
+        "index": 9,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s9-title1",
+            "type": "h1",
+            "content": "Thank You"
+          },
+          {
+            "id": "s9-subtitle1",
+            "type": "h2",
+            "content": "Product Team | contact@example.com"
+          }
+        ]
+      }
+    ]
+  }
+}

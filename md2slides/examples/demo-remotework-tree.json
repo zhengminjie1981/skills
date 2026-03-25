@@ -1,0 +1,230 @@
+{
+  "presentation": {
+    "ratio": "16:9",
+    "theme": "warm-earth",
+    "totalSlides": 8,
+    "slides": [
+      {
+        "index": 1,
+        "type": "cover",
+        "elements": [
+          {
+            "id": "s1-title1",
+            "type": "h1",
+            "content": "混合办公时代"
+          },
+          {
+            "id": "s1-subtitle1",
+            "type": "h2",
+            "content": "2025年全球工作趋势报告"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "type": "toc",
+        "elements": [
+          {
+            "id": "s2-title1",
+            "type": "h1",
+            "content": "目录"
+          },
+          {
+            "id": "s2-list1",
+            "type": "ul",
+            "items": [
+              "远程办公的全球现状",
+              "工作模式分布格局",
+              "员工诉求与管理层期待",
+              "生产力数据的真相",
+              "AI与未来工作方式"
+            ]
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s3-title1",
+            "type": "h1",
+            "content": "远程办公：后疫情时代的新常态"
+          },
+          {
+            "id": "s3-list1",
+            "type": "ul",
+            "items": [
+              "📊 全球 28% 的员工以某种形式远程工作（2020年仅20%）",
+              "🌏 美国远程工作者约 3,510万人，占劳动人口 22.8%",
+              "📈 混合岗位招聘比例：2023年初9% → 2025年初 24%，增长近3倍",
+              "🎯 完全远程岗位比例已从10%升至 13%",
+              "⚙️ 90% 的企业维持或扩大了远程工作政策",
+              "🤝 88% 的高管表示不会强制要求2025年全员返岗"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "28%、22.8%、24%等现状数据密集，规模化呈现"
+        }
+      },
+      {
+        "index": 4,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s4-title1",
+            "type": "h1",
+            "content": "当前工作模式分布"
+          },
+          {
+            "id": "s4-list1",
+            "type": "ul",
+            "items": [
+              "👥 混合办公最受欢迎：每周2-3天在家",
+              "📈 完全远程岗位持续增长，尤其在科技与金融行业",
+              "⚙️ 全员到岗模式仅剩约 37% 的员工，比例持续下降"
+            ]
+          },
+          {
+            "id": "s4-chart1",
+            "type": "chart",
+            "chartType": "donut",
+            "dataSource": "data/remote-modes.csv",
+            "xField": "工作模式",
+            "yField": "占比(%)",
+            "title": "2025年全球员工工作模式占比",
+            "layout": "right",
+            "style": {
+              "width": "50%",
+              "height": "66%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "工作模式饼图+3条说明，图右文左"
+        }
+      },
+      {
+        "index": 5,
+        "type": "data",
+        "elements": [
+          {
+            "id": "s5-title1",
+            "type": "h1",
+            "content": "员工诉求 vs. CEO期待"
+          },
+          {
+            "id": "s5-list1",
+            "type": "ul",
+            "items": [
+              "⚠️ 98% 的员工希望保留远程工作选项",
+              "🎯 83% 的员工偏好混合办公模式",
+              "⚙️ 但 83% 的CEO期望3年内实现全员返岗",
+              "💡 这一张力正在成为2025年人才竞争的核心议题"
+            ]
+          },
+          {
+            "id": "s5-chart1",
+            "type": "chart",
+            "chartType": "bar",
+            "dataSource": "data/remote-gap.csv",
+            "xField": "立场",
+            "yField": "比例(%)",
+            "title": "员工偏好 vs 管理层期待（%）",
+            "layout": "right",
+            "style": {
+              "width": "55%",
+              "height": "66%"
+            }
+          }
+        ],
+        "layout": {
+          "template": "chart-right",
+          "rationale": "员工vs管理层对比柱状图，图右文左突出张力"
+        }
+      },
+      {
+        "index": 6,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s6-title1",
+            "type": "h1",
+            "content": "生产力数据：反直觉的真相"
+          },
+          {
+            "id": "s6-list1",
+            "type": "ul",
+            "items": [
+              "📈 远程工作者生产效率平均 高出35-40%",
+              "⚙️ 错误率降低约 40%，得益于更安静的工作环境",
+              "🏆 安静环境带来的专注度提升，使产出增加 13%",
+              "👥 69% 的管理者报告团队在混合模式下表现更好",
+              "💰 企业每名远程员工平均节省办公成本 约1.1万美元/年",
+              "⚠️ 但协作创新、文化传承、新员工融入仍是混合办公的三大挑战"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "stat-cards",
+          "rationale": "35-40%、40%、1.1万美元等生产力数字，让数据说话"
+        }
+      },
+      {
+        "index": 7,
+        "type": "content",
+        "elements": [
+          {
+            "id": "s7-title1",
+            "type": "h1",
+            "content": "AI正在重塑工作方式"
+          },
+          {
+            "id": "s7-list1",
+            "type": "ul",
+            "items": [
+              "🤖 80% 的员工在工作中使用AI工具（2024年为72%）",
+              "📈 64% 的企业积极支持员工使用AI进行日常工作",
+              "⚙️ AI协作工具使会议效率提升 约40%，摘要自动生成",
+              "💡 代码生成、文案写作、数据分析——AI正在成为\"第三方协作者\"",
+              "🎯 未来工作技能排名：AI协作能力跃升至第一位",
+              "🚀 \"人机协作\"将彻底重新定义工作岗位的边界与价值"
+            ]
+          }
+        ],
+        "layout": {
+          "template": "timeline-vertical",
+          "rationale": "AI采用率→企业支持→效率→技能，递进逻辑"
+        }
+      },
+      {
+        "index": 8,
+        "type": "outro",
+        "elements": [
+          {
+            "id": "s8-title1",
+            "type": "h1",
+            "content": "工作的未来，由人定义"
+          },
+          {
+            "id": "s8-quote1",
+            "type": "blockquote",
+            "content": "\"办公室不是生产力的来源，专注力才是。\""
+          },
+          {
+            "id": "s8-p2",
+            "type": "p",
+            "content": "📩 数据来源：Owl Labs State of Hybrid Work · Join Horizons · Second Talent 2025"
+          }
+        ],
+        "layout": {
+          "template": "quote-center",
+          "rationale": "金句点题，居中震撼收尾"
+        }
+      }
+    ]
+  }
+}
