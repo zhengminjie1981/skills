@@ -1,7 +1,7 @@
 # md2slides 详细设计文档
 
 > 文档层级：L2 详细设计
-> 版本：v1.1 | 创建日期：2026-03-24 | 更新日期：2026-03-24
+> 版本：v1.2 | 创建日期：2026-03-24 | 更新日期：2026-03-25
 > 依赖文档：[requirements.md](requirements.md)
 
 ---
@@ -58,6 +58,7 @@ md2slides 由两个层次协同工作：
 | `convert.py` | 脚本 | 解析 MD，读取 CSV，生成 HTML，输出元素树 |
 | `extract_data.py` | 脚本 | 从原始材料中提取表格/数据，写入 CSV |
 | `html2pdf.py` | 脚本 | 用 playwright 渲染 HTML，导出分页 PDF |
+| `preview.py` | 脚本 | 批量截图生成缩略图，--temp/--clean 管理临时目录 |
 | `references/template.html` | 模板 | HTML 骨架，含变量占位符 |
 | `references/themes/*.css` | 样式 | 各主题的 CSS 变量和样式规则 |
 | `references/chart-defaults.json` | 配置 | 各图表类型的 Chart.js 默认参数 |
@@ -1687,3 +1688,4 @@ md2slides/
 |------|------|------|
 | v1.0 | 2026-03-24 | 初稿，基于 requirements.md v0.3 完整设计 |
 | v1.1 | 2026-03-24 | 新增内容变更工作流（§2.3.0、§2.4）、路由判断逻辑、样式保留合并机制、convert.py --preserve-styles 接口 |
+| v1.2 | 2026-03-25 | 重构为三阶段工作流；27种版式；版式规划阶段；section-header双变体；splitMode=group；stat-cards columns；card-grid；:::col预处理；rawHtml；preview.py；浏览器自动检测；PDF黑边修复 |
