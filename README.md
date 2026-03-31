@@ -224,6 +224,40 @@ AI: 检索索引，找到 5 个相关文档，按相关度排序返回
 
 ---
 
+### [socrates](./socrates/) - 苏格拉底式思考伙伴
+
+通过提问引导用户自己发现答案，而非直接提供解决方案。
+
+**核心能力：**
+- **苏格拉底追问** - 澄清概念、探测假设、追问证据
+- **结构化分析** - 5 Whys、MECE、First Principles、逆向思维
+- **思维树对比** - 多路径探索、假设验证、决策支持
+- **对话节奏控制** - 自动判断深挖或收敛时机
+
+**交互模式：**
+- 快速梳理：2-3 个问题快速定位
+- 深度分析：完整苏格拉底对话
+- 决策支持：思维树多路径对比
+
+**触发场景：**
+- 梳理思路："梳理思路"、"帮我理一下"、"分析一下"
+- 逻辑验证："这个逻辑对吗"、"想想这个问题"
+- 决策支持："哪个方案更好"、"怎么选择"
+
+**快速开始：**
+```
+用户: 帮我理一下这个项目的思路
+AI: [加载 socrates skill] 让我帮你理清。先确认一下——你说的「这个项目」具体指的是？
+
+用户: 这个逻辑对不对？
+AI: [加载 socrates skill] 我们来检验一下。你的核心假设是什么？
+
+用户: A 和 B 两个方案，选哪个好？
+AI: [加载 socrates skill] 两个各有优劣。先明确一下——你最看重什么？
+```
+
+---
+
 ## 安装
 
 将需要的 skill 目录复制到 Claude Code 的 skills 目录：
@@ -247,6 +281,7 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 - `knowledge-index/SKILL.md` - 知识库索引指南
 - `template-filler/SKILL.md` - 对话式模板文档填写
 - `md2slides/SKILL.md` - Markdown 转演示文稿
+- `socrates/SKILL.md` - 苏格拉底式思考伙伴
 
 ## 技能调用格式
 
@@ -273,6 +308,7 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 | template-filler | `/template-filler <模板路径>` | 对话式填写模板 |
 | md2slides | `/md2slides convert <文件>` | MD 转 HTML 演示文稿 |
 | | `/md2slides pdf <文件>` | HTML 导出 PDF |
+| socrates | `/socrates` | 启动苏格拉底式对话 |
 
 **注意**：以上格式使用空格分隔参数，符合 Claude Code 最新规范。AI 会根据上下文理解参数含义。
 
