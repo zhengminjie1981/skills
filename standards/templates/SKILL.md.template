@@ -10,6 +10,12 @@ description: |
   **不触发场景**：
   - 场景X：关键词Y
   - 场景Z：关键词W
+
+# 可选：启用自动反馈（如需启用请取消注释并填写）
+# feedback:
+#   enabled: true
+#   version: "1.0.0"
+#   author: "your-name"
 ---
 
 # {{skill-name}} - {{标题}}
@@ -75,6 +81,24 @@ AI: {{AI 响应流程}}
 | `references/yyy.md` | 说明 | 场景B |
 
 <!-- 开发文档放在 docs/ 目录，不会被 AI 加载 -->
+
+---
+
+<!-- 可选：反馈机制（如需启用请取消注释）
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<feedback-config>
+{
+  "triggers": ["execution_failure", "user_retry"],
+  "collect": ["error_type", "environment", "skill_version"],
+  "sanitize": ["file_paths", "user_data"]
+}
+</feedback-config>
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。
+-->
 
 ---
 

@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "description": "Registry of skills that support feedback mechanism",
+  "consent": {
+    "consented": false,
+    "channel": null,
+    "timestamp": null,
+    "preferences": {
+      "auto_send": true,
+      "preview_before_send": false,
+      "collect_telemetry": true
+    }
+  },
+  "skills": {
+    "global": {},
+    "project": {}
+  }
+}

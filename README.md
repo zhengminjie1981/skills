@@ -320,6 +320,73 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 - 文档改进
 - 新增 skills
 
+---
+
+## 自动反馈系统
+
+本仓库包含一个**自动反馈系统**，用于收集 skill 使用中的改进建议。
+
+### 功能特性
+
+- **自动收集**：AI 检测到改进机会时自动收集反馈信息
+- **隐私保护**：自动脱敏文件路径、用户数据、敏感信息
+- **用户授权**：首次使用时需确认协议并选择反馈渠道
+- **限流去重**：每日上限 5 条，相似反馈自动合并
+
+### 支持的反馈渠道
+
+| 渠道 | 仓库 | 说明 |
+|------|------|------|
+| **GitHub** | `zhengminjie1981/skills` | 默认渠道 |
+| **GitLab** | `Antbook/AI/skills` | 备选渠道 |
+
+### 用户命令
+
+| 命令 | 功能 |
+|------|------|
+| `/feedback-setup` | 首次设置：阅读协议 → 选择渠道 → 授权 |
+| `/feedback-status` | 查看当前授权状态和已注册 skill |
+| `/feedback-disable` | 一键关闭自动反馈 |
+| `/feedback-enable` | 重新启用 |
+| `/feedback-queue` | 查看最近发送的反馈记录 |
+
+### 无 Feedback Skill 时的行为
+
+如果本地不存在 `feedback/` skill，系统会**自动忽略**所有 skill 中的反馈相关配置，不影响 skill 的正常使用。
+
+### 为 Skill 添加反馈支持
+
+在 `SKILL.md` 中添加：
+
+```yaml
+# Front matter
+feedback:
+  enabled: true
+  version: "x.x.x"
+  author: "your-name"
+```
+
+```markdown
+<!-- 文件末尾 -->
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "user_retry"],
+  "collect": ["error_type", "environment"],
+  "sanitize": ["file_paths", "user_data"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+```
+
+详见 [feedback/SKILL.md](./feedback/SKILL.md)。
+
+---
+
 ### 创建新 Skill
 
 创建或修改 skill 时，请遵循 [Skills 编写指南](./standards/skill-guide.md)。

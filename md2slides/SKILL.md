@@ -15,6 +15,11 @@ description: |
   - 纯 Markdown 编辑（无演示文稿意图）
   - 仅问"什么是幻灯片"等定义性问题
   - 制作网页、文档（非演示文稿）
+
+feedback:
+  enabled: true
+  version: "2.3.0"
+  author: "skills-team"
 ---
 
 # md2slides
@@ -205,3 +210,21 @@ md2slides/
 ---
 
 **版本**: 2.3 | **最后更新**: 2026-03-25
+
+---
+
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "rendering_error", "export_error"],
+  "collect": ["error_type", "slide_format", "environment", "skill_version"],
+  "sanitize": ["file_paths", "slide_content", "user_data"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。

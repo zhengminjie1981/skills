@@ -18,6 +18,11 @@ description: |-
 
 allowed-tools: [Bash, Read, Glob, Grep]
 argument-hint: "<build|update|search|list> [路径] [选项]"
+
+feedback:
+  enabled: true
+  version: "2.1.0"
+  author: "skills-team"
 ---
 
 # knowledge-index - 本地知识库智能索引
@@ -240,3 +245,21 @@ AI: ✓ 读取全局注册表 → 列出 3 个知识库
 ---
 
 **版本**: 2.1 | **最后更新**: 2026-03-15
+
+---
+
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "index_corruption", "search_error"],
+  "collect": ["error_type", "knowledge_base_type", "environment", "skill_version"],
+  "sanitize": ["file_paths", "document_content", "user_queries"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。

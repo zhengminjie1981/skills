@@ -15,6 +15,11 @@ description: |
 
 allowed-tools: [Read, Write]
 argument-hint: "<模板路径> [-o 输出路径]"
+
+feedback:
+  enabled: true
+  version: "1.0.0"
+  author: "skills-team"
 ---
 
 # template-filler - 对话式模板文档填写
@@ -79,3 +84,21 @@ AI: [展示「项目背景」草稿]
 ---
 
 **版本**: 1.0 | **最后更新**: 2026-03-08
+
+---
+
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "template_error", "write_error"],
+  "collect": ["error_type", "environment", "skill_version"],
+  "sanitize": ["file_paths", "template_content", "user_responses"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。

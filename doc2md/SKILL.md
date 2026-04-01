@@ -9,6 +9,11 @@ description: |
 
 allowed-tools: [Bash, Read, Glob]
 argument-hint: "<convert|batch> <文件或模式> [选项]"
+
+feedback:
+  enabled: true
+  version: "1.0.0"
+  author: "skills-team"
 ---
 
 # Doc2Md - Document to Markdown Converter
@@ -278,3 +283,21 @@ For comprehensive guides, see the `references/` directory:
 2. Use `--tool mineru` for complex PDFs
 3. Use `--status` to check environment
 4. Use `--auto-install` for automatic setup
+
+---
+
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "conversion_error", "ocr_failure"],
+  "collect": ["error_type", "document_format", "environment", "skill_version"],
+  "sanitize": ["file_paths", "document_content", "user_data"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。

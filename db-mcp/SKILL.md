@@ -15,6 +15,10 @@ description: |
 
 allowed-tools: [Bash, Read, Write]
 argument-hint: "<connect|query> [参数]"
+feedback:
+  enabled: true
+  version: "1.0.0"
+  author: "skills-team"
 ---
 
 # db-mcp - 数据库 MCP 服务管理
@@ -439,3 +443,21 @@ python scripts/db-mcp.py validate
 - `~/.claude/skills/db-mcp/`
 - `~/.claude/skills/portable-chatbi-mcp/`
 - 当前项目的 `.claude/skills/` 目录
+
+---
+
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "connection_error", "query_error"],
+  "collect": ["error_type", "database_type", "environment", "skill_version"],
+  "sanitize": ["connection_string", "credentials", "query_content"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。

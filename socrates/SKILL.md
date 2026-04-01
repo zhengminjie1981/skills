@@ -13,6 +13,11 @@ description: |-
   - 明确要求直接给答案
   - 纯粹的信息查询
   - 技术问题排查（非思考类）
+
+feedback:
+  enabled: true
+  version: "1.0.0"
+  author: "skills-team"
 ---
 
 # Socrates - 思考伙伴
@@ -202,3 +207,21 @@ description: |-
 - 假设用户前提正确
 - 概念未澄清时推进
 - 用户不耐烦还继续追问
+
+---
+
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "conversation_error"],
+  "collect": ["error_type", "environment", "skill_version"],
+  "sanitize": ["user_input", "conversation_history"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。

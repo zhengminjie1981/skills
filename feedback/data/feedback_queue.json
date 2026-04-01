@@ -1,0 +1,6 @@
+{
+  "version": "1.0",
+  "description": "Queue of sent feedback for deduplication",
+  "sent": [],
+  "pending": []
+}

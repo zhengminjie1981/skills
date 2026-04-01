@@ -152,6 +152,11 @@ description: |
 
   **不触发场景**：
   - 场景X：关键词Y
+
+feedback:
+  enabled: true
+  version: "1.0.0"
+  author: "your-name"
 ---
 ```
 
@@ -159,6 +164,7 @@ description: |
 - `description` 必须包含触发场景（这是 AI 判断是否加载的唯一依据）
 - 区分"触发"和"不触发"场景，避免误触发
 - 关键词要具体，避免泛化
+- `feedback` 字段为可选，启用后支持自动反馈收集（详见下方"反馈机制"章节）
 
 ### 按需加载模式
 
@@ -373,4 +379,84 @@ references/
 
 ---
 
-*版本: 1.4 | 最后更新: 2026-03-12*
+## 反馈机制（可选）
+
+Skills 仓库包含一个**自动反馈系统**（`feedback/` skill），用于收集使用中的改进建议。
+
+### 是否需要添加反馈支持？
+
+| 场景 | 建议 |
+|------|------|
+| 公开发布的 skill | ✅ 建议添加 |
+| 内部使用的 skill | ⚠️ 可选 |
+| 个人使用的 skill | ❌ 不需要 |
+
+### 添加反馈支持
+
+**Step 1**: 在 `SKILL.md` front matter 添加 `feedback` 字段
+
+```yaml
+---
+name: your-skill
+description: ...
+feedback:
+  enabled: true                    # 必须：启用反馈
+  version: "1.0.0"                 # 必须：skill 版本（语义化）
+  author: "your-name"              # 必须：作者标识
+---
+```
+
+**Step 2**: 在 `SKILL.md` 末尾添加触发块
+
+```markdown
+## 反馈机制
+
+本 skill 支持自动反馈改进。
+
+<!-- FEEDBACK-TRIGGER-START -->
+<feedback-config>
+{
+  "triggers": ["execution_failure", "user_retry", "anomaly"],
+  "collect": ["error_type", "environment", "skill_version"],
+  "sanitize": ["file_paths", "user_data", "code_content"]
+}
+</feedback-config>
+<!-- FEEDBACK-TRIGGER-END -->
+
+执行完成后，如检测到改进机会且用户已授权，将自动发送脱敏反馈。
+```
+
+### 触发条件配置
+
+| 触发器 | 说明 |
+|--------|------|
+| `execution_failure` | 执行失败/报错 |
+| `user_retry` | 用户重试多次 |
+| `anomaly` | 检测到异常情况 |
+| `validation_error` | 验证失败 |
+| `timeout_error` | 超时错误 |
+
+### 脱敏规则配置
+
+| 脱敏项 | 说明 |
+|--------|------|
+| `file_paths` | 文件路径替换为 `<PATH>` |
+| `user_data` | 用户输入数据脱敏 |
+| `code_content` | 代码内容移除 |
+| `credentials` | 密码/token 自动移除 |
+
+### 移除反馈支持
+
+1. **临时禁用**：`feedback.enabled: false`
+2. **完全移除**：删除 front matter 中的 `feedback` 字段和 `FEEDBACK-TRIGGER` 块
+3. **用户侧排除**：用户可在 `feedback/data/config.yaml` 的 `excluded_skills` 中添加 skill 名称
+
+### 无 Feedback Skill 时的行为
+
+如果本地不存在 `feedback/` skill，系统会**自动忽略**所有 skill 中的反馈相关配置，不影响 skill 的正常使用。
+
+详见 [feedback/SKILL.md](../feedback/SKILL.md)。
+
+---
+
+*版本: 1.5 | 最后更新: 2026-04-01*

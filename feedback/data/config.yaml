@@ -1,0 +1,105 @@
+# Feedback System Configuration
+# Version: 1.0.0
+
+# ===========================================
+# System Switch
+# ===========================================
+# Set to false to completely disable the feedback system
+enabled: true
+
+# ===========================================
+# Target Repository Configuration
+# ===========================================
+target:
+  # GitHub configuration
+  github:
+    # Repository for feedback (format: owner/repo)
+    repo: "zhengminjie1981/skills"
+    labels:
+      - feedback
+      - auto-collected
+    # GitHub CLI will use the user's authenticated account
+
+  # GitLab configuration
+  gitlab:
+    # Project ID or namespace/project path
+    project_id: "Antbook/AI/skills"
+    labels:
+      - feedback
+      - auto-collected
+
+# ===========================================
+# Trigger Rules
+# ===========================================
+# Conditions that trigger feedback collection
+triggers:
+  # Critical: Always trigger feedback
+  critical:
+    - skill_execution_failure    # Skill execution failed
+    - unhandled_exception        # Uncaught exception occurred
+    - timeout_error              # Operation timed out
+
+  # Suggested: AI decides whether to trigger
+  suggested:
+    - user_retry_gt_2            # User retried more than 2 times
+    - execution_time_anomaly     # Execution took unusually long
+    - frequent_output_modification  # User frequently modified output
+    - edge_case_detected         # AI detected an edge case
+
+# ===========================================
+# Rate Limiting
+# ===========================================
+rate_limit:
+  # Maximum feedback submissions per day
+  max_per_day: 5
+
+  # Time window (hours) to merge similar feedback
+  merge_window_hours: 24
+
+  # Deduplication keys
+  dedupe_by:
+    - error_type
+    - skill_name
+    - scenario
+
+# ===========================================
+# Sanitization Rules
+# ===========================================
+# Privacy protection: what to remove/hash
+sanitization:
+  # Remove file system paths
+  remove_paths: true
+
+  # Remove user-identifiable information
+  remove_user_info: true
+
+  # Hash filenames for privacy
+  hash_filenames: true
+
+  # Patterns to redact (regex)
+  redact_patterns:
+    - "password\\s*[=:]\\s*\\S+"
+    - "api[_-]?key\\s*[=:]\\s*\\S+"
+    - "token\\s*[=:]\\s*\\S+"
+    - "secret\\s*[=:]\\s*\\S+"
+
+# ===========================================
+# User Preferences (defaults)
+# ===========================================
+preferences:
+  # Auto-send without confirmation (user can override)
+  auto_send: true
+
+  # Show preview before sending (user can override)
+  preview_before_send: false
+
+  # Collect anonymous telemetry
+  collect_telemetry: true
+
+# ===========================================
+# Excluded Skills
+# ===========================================
+# Skills that should not trigger feedback
+excluded_skills: []
+  # - skill-name-1
+  # - skill-name-2
