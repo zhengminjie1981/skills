@@ -39,13 +39,13 @@ def get_claude_config_path():
 
 
 def get_current_project_path():
-    """获取当前项目路径（标准化为配置格式）"""
-    current_dir = Path(__file__).parent.parent.absolute()
-    # 转换为与 Claude 配置一致的格式
-    # Windows: E:\db-mcp -> E:/db-mcp
-    path_str = str(current_dir).replace('\\', '/')
-    # 确保不以 / 结尾
-    return path_str.rstrip('/')
+    """获取当前项目路径（标准化为配置格式）
+
+    注意：install_mcp.py 使用相对路径 "." 作为配置键，
+    这里需要保持一致，也返回 "."
+    """
+    # 与 install_mcp.py 保持一致，使用相对路径
+    return "."
 
 
 def check_mcp_config():
