@@ -1,0 +1,121 @@
+{
+  "entities": [
+    {
+      "id": "ga",
+      "name": "地面点A",
+      "type": "sphere",
+      "position": [-2.5, 0, 0],
+      "style": {"color": "#ff4444", "size": 0.8}
+    },
+    {
+      "id": "gb",
+      "name": "地面点B",
+      "type": "sphere",
+      "position": [2.5, 0, 0],
+      "style": {"color": "#ff4444", "size": 0.8}
+    },
+    {
+      "id": "e0a",
+      "name": "E0A",
+      "type": "sphere",
+      "position": [-2.5, 60, 0],
+      "style": {"color": "#ff8800", "size": 0.6}
+    },
+    {
+      "id": "e0b",
+      "name": "E0B(禁用)",
+      "type": "sphere",
+      "position": [2.5, 60, 0],
+      "style": {"color": "#666666", "size": 0.6, "opacity": 0.2}
+    },
+    {
+      "id": "e0b_prime",
+      "name": "E0B'",
+      "type": "sphere",
+      "position": [2.5, 55, 0],
+      "style": {"color": "#ff8800", "size": 0.6}
+    },
+    {
+      "id": "e0c",
+      "name": "E0C",
+      "type": "sphere",
+      "position": [0, 55, 2.5],
+      "style": {"color": "#ffaa00", "size": 0.6}
+    },
+    {
+      "id": "e0d",
+      "name": "E0D",
+      "type": "sphere",
+      "position": [0, 55, -2.5],
+      "style": {"color": "#ffaa00", "size": 0.6}
+    },
+    {
+      "id": "e1",
+      "name": "E1圆环",
+      "type": "sphere",
+      "distribution": {
+        "type": "circle",
+        "count": 48,
+        "radius": 25,
+        "center": [0, 60, 0],
+        "offset": 3.75
+      },
+      "style": {"color": "#44ff88", "size": 0.5}
+    }
+  ],
+  "connections": [
+    {
+      "id": "blue_e1_e0a",
+      "name": "蓝线",
+      "from": "e1",
+      "to": "e0a",
+      "style": {"color": "#4488ff", "opacity": 0.3}
+    },
+    {
+      "id": "blue_e0a_ga",
+      "name": "蓝线",
+      "from": "e0a",
+      "to": "ga",
+      "style": {"color": "#4488ff", "opacity": 0.6}
+    },
+    {
+      "id": "red_e1_16_e0c",
+      "name": "红线",
+      "from": "e1_16",
+      "to": "e0c",
+      "style": {"color": "#ff4444", "opacity": 0.5}
+    },
+    {
+      "id": "red_e1_24_e0d",
+      "name": "红线",
+      "from": "e1_24",
+      "to": "e0d",
+      "style": {"color": "#ff4444", "opacity": 0.5}
+    },
+    {
+      "id": "red_e0c_e0b_prime",
+      "name": "红线",
+      "from": "e0c",
+      "to": "e0b_prime",
+      "style": {"color": "#ff4444", "opacity": 0.6}
+    },
+    {
+      "id": "red_e0d_e0b_prime",
+      "name": "红线",
+      "from": "e0d",
+      "to": "e0b_prime",
+      "style": {"color": "#ff4444", "opacity": 0.6}
+    },
+    {
+      "id": "red_e0b_prime_gb",
+      "name": "红线",
+      "from": "e0b_prime",
+      "to": "gb",
+      "style": {"color": "#ff4444", "opacity": 0.6}
+    }
+  ],
+  "camera": {
+    "position": [80, 60, 80],
+    "lookAt": [0, 30, 0]
+  }
+}

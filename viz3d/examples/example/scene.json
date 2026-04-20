@@ -1,0 +1,146 @@
+{
+  "entities": [
+    {
+      "id": "center",
+      "name": "中心点",
+      "type": "sphere",
+      "position": [0, 10, 0],
+      "style": {
+        "color": "#ff4444",
+        "size": 2.0
+      }
+    },
+    {
+      "id": "p1",
+      "name": "点1",
+      "type": "sphere",
+      "position": [20, 5, 0],
+      "style": {
+        "color": "#4488ff",
+        "size": 1.0
+      }
+    },
+    {
+      "id": "p2",
+      "name": "点2",
+      "type": "sphere",
+      "position": [10, 5, 17.32],
+      "style": {
+        "color": "#4488ff",
+        "size": 1.0
+      }
+    },
+    {
+      "id": "p3",
+      "name": "点3",
+      "type": "sphere",
+      "position": [-10, 5, 17.32],
+      "style": {
+        "color": "#4488ff",
+        "size": 1.0
+      }
+    },
+    {
+      "id": "p4",
+      "name": "点4",
+      "type": "sphere",
+      "position": [-20, 5, 0],
+      "style": {
+        "color": "#4488ff",
+        "size": 1.0
+      }
+    },
+    {
+      "id": "p5",
+      "name": "点5",
+      "type": "sphere",
+      "position": [-10, 5, -17.32],
+      "style": {
+        "color": "#4488ff",
+        "size": 1.0
+      }
+    },
+    {
+      "id": "p6",
+      "name": "点6",
+      "type": "sphere",
+      "position": [10, 5, -17.32],
+      "style": {
+        "color": "#4488ff",
+        "size": 1.0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "name": "连接1",
+      "from": "p1",
+      "to": "center",
+      "style": {
+        "color": "#ffffff",
+        "type": "solid",
+        "opacity": 0.3
+      }
+    },
+    {
+      "id": "c2",
+      "name": "连接2",
+      "from": "p2",
+      "to": "center",
+      "style": {
+        "color": "#ffffff",
+        "type": "solid",
+        "opacity": 0.3
+      }
+    },
+    {
+      "id": "c3",
+      "name": "连接3",
+      "from": "p3",
+      "to": "center",
+      "style": {
+        "color": "#ffffff",
+        "type": "solid",
+        "opacity": 0.3
+      }
+    },
+    {
+      "id": "c4",
+      "name": "连接4",
+      "from": "p4",
+      "to": "center",
+      "style": {
+        "color": "#ffffff",
+        "type": "solid",
+        "opacity": 0.3
+      }
+    },
+    {
+      "id": "c5",
+      "name": "连接5",
+      "from": "p5",
+      "to": "center",
+      "style": {
+        "color": "#ffffff",
+        "type": "solid",
+        "opacity": 0.3
+      }
+    },
+    {
+      "id": "c6",
+      "name": "连接6",
+      "from": "p6",
+      "to": "center",
+      "style": {
+        "color": "#ffffff",
+        "type": "solid",
+        "opacity": 0.3
+      }
+    }
+  ],
+  "camera": {
+    "position": [50, 40, 50],
+    "lookAt": [0, 8, 0]
+  }
+}

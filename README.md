@@ -80,38 +80,6 @@ AI: [调用 list_tables] 找到 5 个表：users, orders, products...
 
 ---
 
-### [doc2md](./doc2md/) - 文档转 Markdown
-
-使用 Pandoc 和 MinerU 将 40+ 种文档格式转换为 Markdown。
-
-**特性：**
-- **Pandoc**：通用转换器，支持 DOCX、EPUB、HTML、PPTX、LaTeX 等
-- **MinerU**：高级 PDF 解析器，支持 OCR、表格提取、版面识别
-- **PyMuPDF**：快速轻量的 PDF 转换器
-- 支持 glob 模式批量处理
-- 灵活的图片处理（相对路径或 Base64 嵌入）
-
-**支持格式：**
-- 文档：DOCX、DOC、ODT、RTF、PDF
-- 电子书：EPUB、FB2
-- 演示文稿：PPTX
-- 网页：HTML、XHTML、XML
-- 学术：LaTeX、TeX
-- 以及 30+ 种其他格式
-
-**快速开始：**
-```
-用户: 帮我把这个 Word 文档转成 Markdown
-AI: [加载 doc2md skill] 好的，我来转换...
-    python scripts/converter.py document.docx --relative-images --skip-toc
-
-用户: 这个 PDF 有表格，能保留吗？
-AI: 可以，使用 MinerU 工具处理表格...
-    python scripts/converter.py document.pdf --tool mineru --relative-images
-```
-
----
-
 ### [template-filler](./template-filler/) - 对话式模板文档填写
 
 通过对话访谈方式引导用户按 Markdown 模板逐步填写内容，最终自动生成并保存完整文档文件。
@@ -224,6 +192,40 @@ AI: 检索索引，找到 5 个相关文档，按相关度排序返回
 
 ---
 
+### [viz3d](./viz3d/) - 3D场景生成器
+
+通过自然语言生成3D场景HTML文件，支持规则分布的自动展开和配置驱动渲染。
+
+**核心特性：**
+- **配置驱动**：使用 `distribution` 描述规则分布（circle/grid/line/layers）
+- **自动展开**：浏览器JS自动计算坐标，无需手动指定每个点
+- **组引用连线**：连线可引用整个组（如 `"from": "orbit"` 自动展开）
+- **数据验证**：自动检测配置错误并显示警告
+- **多种分布**：circle、grid、line、layers 等规则分布模式
+
+**支持的分布：**
+- `circle` - 圆形分布（count, radius, center, offset）
+- `grid` - 网格分布（rows, cols, spacing, center）
+- `line` - 线性分布（count, spacing, axis, center）
+- `layers` - 多层圆环（layers: [{radius, count, height}]）
+
+**触发场景：**
+- "创建3D场景"、"三维可视化"、"画点位"、"空间布局"
+- "生成场景"、"可视化场景"
+
+**快速开始：**
+```
+用户: 创建48个点围成圆，半径25米
+AI: ✓ 已生成 scene.json 和 preview.html
+    修改配置后刷新浏览器或重新生成HTML
+
+用户: 把半径改成30米
+AI: ✓ 已修改 radius: 30
+    刷新浏览器查看
+```
+
+---
+
 ### [socrates](./socrates/) - 苏格拉底式思考伙伴
 
 通过提问引导用户自己发现答案，而非直接提供解决方案。
@@ -277,11 +279,10 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 
 - `dev-workflow/SKILL.md` - 文档驱动开发工作流规范
 - `db-mcp/SKILL.md` - 数据库管理使用指南
-- `doc2md/SKILL.md` - 文档转换工作流
 - `knowledge-index/SKILL.md` - 知识库索引指南
 - `template-filler/SKILL.md` - 对话式模板文档填写
-- `md2slides/SKILL.md` - Markdown 转演示文稿
 - `socrates/SKILL.md` - 苏格拉底式思考伙伴
+- `viz3d/SKILL.md` - 3D场景生成器（配置驱动，自动展开）
 
 ## 技能调用格式
 
@@ -299,15 +300,13 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 | | `/dev-workflow check [模块名]` | 验证文档一致性 |
 | db-mcp | `/db-mcp connect <类型> <主机> <库> [用户]` | 连接数据库 |
 | | `/db-mcp query <SQL>` | 执行只读查询 |
-| doc2md | `/doc2md convert <文件> [--tool ...]` | 转换文档为 Markdown |
-| | `/doc2md batch <模式> [-o 目录]` | 批量转换文档 |
 | knowledge-index | `/knowledge-index build <路径>` | 构建知识索引 |
 | | `/knowledge-index update <路径>` | 增量更新索引 |
 | | `/knowledge-index search <查询>` | 搜索知识库 |
 | | `/knowledge-index list` | 列出所有知识库 |
 | template-filler | `/template-filler <模板路径>` | 对话式填写模板 |
-| md2slides | `/md2slides convert <文件>` | MD 转 HTML 演示文稿 |
-| | `/md2slides pdf <文件>` | HTML 导出 PDF |
+| viz3d | `/viz3d create <项目名>` | 创建3D场景项目 |
+| | `/viz3d generate <项目名>` | 生成或更新场景HTML |
 | socrates | `/socrates` | 启动苏格拉底式对话 |
 
 **注意**：以上格式使用空格分隔参数，符合 Claude Code 最新规范。AI 会根据上下文理解参数含义。
