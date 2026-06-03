@@ -10,3 +10,6 @@ __pycache__/
 
 # md2slides intermediate files
 .slides/
+
+# Task stack personal data
+.tasks/

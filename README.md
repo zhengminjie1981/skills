@@ -39,47 +39,6 @@ AI: [加载 dev-workflow skill] 在修改代码前，请先确认相关文档...
 
 ---
 
-### [db-mcp](./db-mcp/) - 数据库 MCP 服务管理
-
-支持零配置启动和自动依赖管理的数据库 MCP 服务。
-
-**特性：**
-- **零配置启动** - 无需配置文件即可启动，通过 AI 工具自动设置
-- **自动安装依赖** - 自动检测并安装缺失的数据库驱动
-- **智能诊断** - 系统能力检测和连接测试
-- 支持 MySQL、PostgreSQL 和 SQLite（MySQL 兼容 AnalyticDB 等云数据库变体）
-- 安全的只读查询，带 SQL 注入防护
-
-**主要工具：**
-- `check_capabilities()` - 检查已安装驱动、配置状态，获取建议
-- `auto_setup_database()` - 零配置设置：自动安装驱动、创建配置、测试连接
-- `test_connection()` - 测试数据库连接，返回延迟和服务器信息
-- `list_tables` - 列出数据库中所有表
-- `describe_table` - 查看表结构和 schema
-- `execute_query` - 执行 SELECT 查询
-
-**命令行工具区分：**
-- `python scripts/db-mcp.py check` — 检查 MCP 服务是否注册（≠ 数据库连接状态）
-- `python scripts/db-mcp.py validate` — 验证数据库连接配置
-
-**快速开始：**
-```
-# 首次使用需安装 MCP 服务（仅需一次）
-cd db-mcp && python scripts/db-mcp.py setup
-# 然后重启 Claude Code
-
-# 安装后，通过对话使用：
-用户: 帮我连接到 MySQL 数据库，主机是 localhost
-AI: [调用 check_capabilities 检查状态]
-    [调用 auto_setup_database 自动安装驱动并配置]
-    连接成功！数据库版本：8.0
-
-用户: 查看有哪些表
-AI: [调用 list_tables] 找到 5 个表：users, orders, products...
-```
-
----
-
 ### [template-filler](./template-filler/) - 对话式模板文档填写
 
 通过对话访谈方式引导用户按 Markdown 模板逐步填写内容，最终自动生成并保存完整文档文件。
@@ -98,60 +57,6 @@ AI: [调用 list_tables] 找到 5 个表：users, orders, products...
 ```
 用户: 帮我按这个模板写文档 /path/to/template.md
 AI: 已读取模板，共 N 个章节。我们从「章节名」开始...
-```
-
----
-
-### [md2slides](./md2slides/) - Markdown 转演示文稿
-
-将原始材料或 Markdown 文件转换为 HTML 格式的演示文稿，支持 AI 版式规划（27 种布局模板）、图片嵌入、数据图表和 PDF 导出。
-
-**核心能力：**
-- **内容策划**：AI 分析材料，自动规划页面结构和内容分配，生成 MD 提纲
-- **版式规划**：AI 逐页分析内容，从 27 种布局模板中选择最佳版式，写入 tree JSON
-- **图片支持**：标准 Markdown 语法引用图片，路径自动修正，支持多种布局集成方式
-- **数据图表**：自动识别数据并生成柱状图、折线图、饼图等（Chart.js）
-- **5 套主题**：professional-dark/light、creative-gradient、minimal-clean、warm-earth
-- **精细调整**：通过对话调整任意页面版式、样式；内容变更后保留已有版式
-- **PDF 导出**：每张幻灯片对应一页 PDF，支持离线资源内联
-
-**主题速查：**
-
-| 主题 | 适用场景 |
-|------|---------|
-| `professional-dark` | 商务汇报、客户演示 |
-| `professional-light` | 正式文档、打印版 |
-| `keynote-white` | 产品发布、All-hands、对外演讲 |
-| `tech-terminal` | 工程师分享、架构评审 |
-| `celebration` | 年会、颁奖、节日庆典 |
-| `caring-green` | 员工关怀、团建、企业文化 |
-| `creative-gradient` | AI 展示、创意提案 |
-| `minimal-clean` | 极简风、设计评审 |
-| `warm-earth` | 企业历史、文化宣讲 |
-
-**触发场景：**
-- 生成演示文稿：做成演示文稿、做成幻灯片、做成 PPT、转成 HTML、生成 slides
-- 版式规划：设计版式、帮我排版、版式规划、选布局、换版式、换布局
-- 数据图表：数据可视化、柱状图、折线图、饼图
-- PDF 导出：转成 PDF、导出 PDF
-
-**快速开始：**
-```bash
-# 阶段一：AI 策划 MD 内容（直接对话）
-
-# 阶段二：AI 版式规划，写入 slide-tree.json（直接对话）
-
-# 阶段三：MD + tree -> HTML（--serve 生成后直接用浏览器打开）
-python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.json --serve
-
-# 推荐：内联资源，离线可用（中国网络友好）
-python scripts/convert.py --input demo.md --output demo.html --tree slide-tree.json --inline-assets
-
-# 批量截图预览所有页面
-python scripts/preview.py --input demo.html
-
-# HTML -> PDF
-python scripts/html2pdf.py --input demo.html --output demo.pdf
 ```
 
 ---
@@ -226,6 +131,34 @@ AI: ✓ 已修改 radius: 30
 
 ---
 
+### [task-stack](./task-stack/) - 跨会话任务堆栈管理
+
+用栈式模型管理主线任务、临时插入任务和后续待办，支持跨会话恢复。
+
+**核心特性：**
+- **轻量待办**：`.tasks/backlog.jsonl` 一行一个后续任务，记录待办不打断当前工作
+- **执行流栈**：`.tasks/stack.json` 只保存 active 和 stack 顺序
+- **恢复上下文**：active / suspended / blocked 任务使用 `.tasks/tasks/<id>.json` 保存 `resume_hint` 和 `progress_snapshot`
+- **先快照再插入**：临时插入新任务前，自动保存当前任务进展和关键判断
+- **提示词迁移**：支持从 v1 大 JSON 结构迁移到 v2.1 混合模型
+
+**触发场景：**
+- 任务管理：创建任务、查看任务、任务堆栈、我的任务、待办
+- 任务切换：先处理、临时插入、挂起任务、继续任务、回到主线
+- 后续记录：后续还要做、先记一下、追加待办
+
+**快速开始：**
+```
+用户: 后续还要补 API 文档和优化缓存策略
+AI: [加载 task-stack skill] 已记录 2 项后续任务，当前任务不变。
+
+用户: 先停一下，马上修 token 刷新 bug
+AI: [保存当前任务 progress_snapshot]
+    已挂起当前任务并开始新任务。
+```
+
+---
+
 ### [socrates](./socrates/) - 苏格拉底式思考伙伴
 
 通过提问引导用户自己发现答案，而非直接提供解决方案。
@@ -278,9 +211,9 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 每个 skill 都有自己的 `SKILL.md` 文件，包含详细说明：
 
 - `dev-workflow/SKILL.md` - 文档驱动开发工作流规范
-- `db-mcp/SKILL.md` - 数据库管理使用指南
 - `knowledge-index/SKILL.md` - 知识库索引指南
 - `template-filler/SKILL.md` - 对话式模板文档填写
+- `task-stack/SKILL.md` - 跨会话任务堆栈管理
 - `socrates/SKILL.md` - 苏格拉底式思考伙伴
 - `viz3d/SKILL.md` - 3D场景生成器（配置驱动，自动展开）
 
@@ -298,13 +231,16 @@ cp -r */ ~/.claude/skills/                               # Linux/Mac（在项目
 | dev-workflow | `/dev-workflow new <模块名>` | 启动新模块开发 |
 | | `/dev-workflow change <模块名>` | 修改现有模块 |
 | | `/dev-workflow check [模块名]` | 验证文档一致性 |
-| db-mcp | `/db-mcp connect <类型> <主机> <库> [用户]` | 连接数据库 |
-| | `/db-mcp query <SQL>` | 执行只读查询 |
 | knowledge-index | `/knowledge-index build <路径>` | 构建知识索引 |
 | | `/knowledge-index update <路径>` | 增量更新索引 |
 | | `/knowledge-index search <查询>` | 搜索知识库 |
 | | `/knowledge-index list` | 列出所有知识库 |
 | template-filler | `/template-filler <模板路径>` | 对话式填写模板 |
+| task-stack | `/task-stack list` | 查看当前任务栈和待办 |
+| | `/task-stack add <任务>` | 记录后续待办，不打断当前任务 |
+| | `/task-stack push <任务>` | 保存当前进展并临时插入新任务 |
+| | `/task-stack done` | 完成当前任务并恢复主线 |
+| | `/task-stack resume [任务ID]` | 恢复挂起任务 |
 | viz3d | `/viz3d create <项目名>` | 创建3D场景项目 |
 | | `/viz3d generate <项目名>` | 生成或更新场景HTML |
 | socrates | `/socrates` | 启动苏格拉底式对话 |
